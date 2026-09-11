@@ -63,3 +63,10 @@ public enum ReportStatus
     ResolvedActioned,
     ResolvedDismissed
 }
+
+/// <summary>Role within a Reading Circle.</summary>
+public enum CircleRole
+{
+    Member,
+    Moderator
+}

@@ -35,7 +35,7 @@ public record MessageDto(
     DateTime CreatedAt,
     IReadOnlyList<ReactionSummaryDto> Reactions);
 
-public record MessagesPage(IReadOnlyList<MessageDto> Items, int Total, int Limit, int Offset);
+public record MessagesPage<T>(IReadOnlyList<T> Items, int Total, int Limit, int Offset);
 
 public record ReportRequest(
     [ Required, MinLength(3), MaxLength(500)] string Reason);
@@ -47,3 +47,4 @@ public record SetMessageStatusRequest([ Required, MaxLength(20)] string Status);
 public record ReactRequest([ Required, MaxLength(20)] string Kind);
 
 public record ReactionResult(IReadOnlyList<ReactionSummaryDto> Reactions);
+

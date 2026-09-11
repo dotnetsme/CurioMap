@@ -20,6 +20,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Challenge> Challenges => Set<Challenge>();
     public DbSet<Draft> Drafts => Set<Draft>();
     public DbSet<DraftChapter> DraftChapters => Set<DraftChapter>();
+    public DbSet<ReadingCircle> ReadingCircles => Set<ReadingCircle>();
+    public DbSet<CircleMembership> CircleMemberships => Set<CircleMembership>();
+    public DbSet<CircleMessage> CircleMessages => Set<CircleMessage>();
+    public DbSet<CircleReaction> CircleReactions => Set<CircleReaction>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -172,7 +176,53 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // (end of model configuration)
+        modelBuilder.Entity<ReadingCircle>(e =>
+        {
+            e.Property(c => c.Handle).HasMaxLength(60).IsRequired();
+            e.Property(c => c.Name).HasMaxLength(80).IsRequired();
+            e.Property(c => c.Description).HasMaxLength(500);
+            e.HasIndex(c => c.Handle).IsUnique();
+            e.HasOne(c => c.Book).WithMany()
+                .HasForeignKey(c => c.BookId).OnDelete(DeleteBehavior.SetNull);
+            e.HasOne(c => c.Creator).WithMany()
+                .HasForeignKey(c => c.CreatedBy).OnDelete(DeleteBehavior.Cascade);
+            e.HasMany(c => c.Members).WithOne(m => m.Circle)
+                .HasForeignKey(m => m.CircleId).OnDelete(DeleteBehavior.Cascade);
+            e.HasMany(c => c.Messages).WithOne(m => m.Circle)
+                .HasForeignKey(m => m.CircleId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CircleMembership>(e =>
+        {
+            e.Property(m => m.Role).HasConversion<string>().HasMaxLength(20);
+            e.HasIndex(m => new { m.CircleId, m.UserId }).IsUnique();
+            e.HasOne(m => m.Circle).WithMany(c => c.Members)
+                .HasForeignKey(m => m.CircleId);
+            e.HasOne(m => m.User).WithMany()
+                .HasForeignKey(m => m.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CircleMessage>(e =>
+        {
+            e.Property(m => m.Content).HasMaxLength(2000).IsRequired();
+            e.Property(m => m.Status).HasConversion<string>().HasMaxLength(20);
+            e.HasOne(m => m.Circle).WithMany(c => c.Messages)
+                .HasForeignKey(m => m.CircleId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(m => m.Author).WithMany()
+                .HasForeignKey(m => m.AuthorId).OnDelete(DeleteBehavior.NoAction);
+            e.HasMany(m => m.Reactions).WithOne(r => r.Message)
+                .HasForeignKey(r => r.MessageId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CircleReaction>(e =>
+        {
+            e.Property(r => r.Kind).HasConversion<string>().HasMaxLength(20);
+            e.HasIndex(r => new { r.MessageId, r.UserId, r.Kind }).IsUnique();
+            e.HasOne(r => r.Message).WithMany(m => m.Reactions)
+                .HasForeignKey(r => r.MessageId);
+            e.HasOne(r => r.User).WithMany()
+                .HasForeignKey(r => r.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
     }
 
     public override int SaveChanges()
