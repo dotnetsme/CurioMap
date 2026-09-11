@@ -56,6 +56,15 @@ export interface Settings {
   location: LocationDto | null;
 }
 
+export interface ChallengeStats {
+  year: number;
+  target: number;
+  finished: number;
+  average: number;
+  aheadOfPace: boolean;
+  pct: number;
+}
+
 export interface UpdateProfilePayload {
   handle?: string;
   avatarId?: string;
