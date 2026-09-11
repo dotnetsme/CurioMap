@@ -1,0 +1,39 @@
+-- Curated starter catalog (0002). Upsert by ISBN so re-runs are idempotent.
+-- affiliate_links stays empty: links are computed at read time from ISBN + configured tags.
+
+INSERT INTO books (title, author, isbn, cover_url, description, affiliate_links, metadata) VALUES
+('Meditations', 'Marcus Aurelius', '9780140449334',
+ 'https://covers.openlibrary.org/b/isbn/9780140449334-L.jpg',
+ 'The private reflections of a Roman emperor on duty, death, and the disciplined mind.',
+ '{}', '{"source":"seed"}'),
+('Man''s Search for Meaning', 'Viktor E. Frankl', '9780807014295',
+ 'https://covers.openlibrary.org/b/isbn/9780807014295-L.jpg',
+ 'A psychiatrist''s testimony from the camps and the psychology of finding purpose.',
+ '{}', '{"source":"seed"}'),
+('Sapiens: A Brief History of Humankind', 'Yuval Noah Harari', '9780062316097',
+ 'https://covers.openlibrary.org/b/isbn/9780062316097-L.jpg',
+ 'How an insignificant ape came to dominate the planet, told across 70,000 years.',
+ '{}', '{"source":"seed"}'),
+('Thinking, Fast and Slow', 'Daniel Kahneman', '9780374533557',
+ 'https://covers.openlibrary.org/b/isbn/9780374533557-L.jpg',
+ 'The two systems behind every judgment — and the biases we never see coming.',
+ '{}', '{"source":"seed"}'),
+('The Pragmatic Programmer', 'David Thomas, Andrew Hunt', '9780135957059',
+ 'https://covers.openlibrary.org/b/isbn/9780135957059-L.jpg',
+ 'Timeless career craft for software developers, updated for the modern era.',
+ '{}', '{"source":"seed"}'),
+('Dune', 'Frank Herbert', '9780441013593',
+ 'https://covers.openlibrary.org/b/isbn/9780441013593-L.jpg',
+ 'Politics, prophecy and ecology on a desert planet. The sci-fi masterpiece.',
+ '{}', '{"source":"seed"}'),
+('The Hobbit', 'J. R. R. Tolkien', '9780547928227',
+ 'https://covers.openlibrary.org/b/isbn/9780547928227-L.jpg',
+ 'An unlikely burglar, a dragon, and the journey that started Middle-earth.',
+ '{}', '{"source":"seed"}'),
+('Nineteen Eighty-Four', 'George Orwell', '9780451524935',
+ 'https://covers.openlibrary.org/b/isbn/9780451524935-L.jpg',
+ 'The definitive dystopia: surveillance, doublespeak, and the death of truth.',
+ '{}', '{"source":"seed"}')
+ON CONFLICT (lower(isbn)) DO UPDATE
+SET cover_url = EXCLUDED.cover_url,
+    description = EXCLUDED.description;

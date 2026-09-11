@@ -1,0 +1,166 @@
+
+> curiomap-web@0.1.0 lint
+> eslint .
+
+
+D:\dev\CurioMap\frontend\app\books\[id]\conversations\page.tsx
+  22:12  error    Error: Cannot access variable before it is declared
+
+`load` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+D:\dev\CurioMap\frontend\app\books\[id]\conversations\page.tsx:22:12
+  20 |     void params.then(({ id }) => {
+  21 |       setBookId(id);
+> 22 |       void load(id);
+     |            ^^^^ `load` accessed before it is declared
+  23 |     });
+  24 |   }, [params]);
+  25 |
+
+D:\dev\CurioMap\frontend\app\books\[id]\conversations\page.tsx:26:3
+  24 |   }, [params]);
+  25 |
+> 26 |   const load = useCallback(async (id: string) => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 27 |     try {
+     | ^^^^^^^^^
+> 28 |       const [b, c] = await Promise.all([getBook(id), listForBook(id)]);
+     | ^^^^^^^^^
+> 29 |       setBook(b);
+     | ^^^^^^^^^
+> 30 |       setConversations(c.items);
+     | ^^^^^^^^^
+> 31 |     } catch (e) {
+     | ^^^^^^^^^
+> 32 |       setError(e instanceof Error ? e.message : "Failed to load conversations");
+     | ^^^^^^^^^
+> 33 |     }
+     | ^^^^^^^^^
+> 34 |   }, []);
+     | ^^^^^^^^^^ `load` is declared here
+  35 |
+  36 |   if (error) return <ErrorState message={error} />;
+  37 |   if (!book || !bookId) return <PageLoading />;  react-hooks/immutability
+  24:6   warning  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+
+D:\dev\CurioMap\frontend\app\discover\nearby\page.tsx
+  5:10  warning  'Button' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\dev\CurioMap\frontend\app\me\settings\page.tsx
+   11:15  warning  'AuthUser' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+   31:10  warning  'savingPrivacy' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+   48:9   error    Error: Cannot access variable before it is declared
+
+`setLocationFields` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+D:\dev\CurioMap\frontend\app\me\settings\page.tsx:48:9
+  46 |         setRealName(user.realName ?? "");
+  47 |         setBio(user.bio ?? "");
+> 48 |         setLocationFields(s.location);
+     |         ^^^^^^^^^^^^^^^^^ `setLocationFields` accessed before it is declared
+  49 |       } catch (e) {
+  50 |         setError(e instanceof Error ? e.message : "Failed to load settings");
+  51 |       }
+
+D:\dev\CurioMap\frontend\app\me\settings\page.tsx:55:3
+  53 |   }, [user, loading]);
+  54 |
+> 55 |   function setLocationFields(loc: Settings["location"]) {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 56 |     setCountry(loc?.country ?? "");
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 57 |     setRegion(loc?.region ?? "");
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 58 |     setCity(loc?.city ?? "");
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |   }
+     | ^^^^ `setLocationFields` is declared here
+  60 |
+  61 |   if (loading) return <PageLoading />;
+  62 |   if (!user)  react-hooks/immutability
+  149:53  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react/no-unescaped-entities
+  149:70  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react/no-unescaped-entities
+
+D:\dev\CurioMap\frontend\components\admin\ReportsBoard.tsx
+  28:41  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\dev\CurioMap\frontend\components\admin\ReportsBoard.tsx:28:41
+  26 |
+  27 |   useEffect(() => {
+> 28 |     if (!loading && user?.isAdmin) void load();
+     |                                         ^^^^ Avoid calling setState() directly within an effect
+  29 |   }, [loading, user?.isAdmin, load]);
+  30 |
+  31 |   if (loading) return <PageLoading />;  react-hooks/set-state-in-effect
+
+D:\dev\CurioMap\frontend\components\books\BookDetail.tsx
+  32:10  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\dev\CurioMap\frontend\components\books\BookDetail.tsx:32:10
+  30 |
+  31 |   useEffect(() => {
+> 32 |     void load();
+     |          ^^^^ Avoid calling setState() directly within an effect
+  33 |   }, [load]);
+  34 |
+  35 |   if (error) return <ErrorState message={error} />;  react-hooks/set-state-in-effect
+
+D:\dev\CurioMap\frontend\components\books\SearchPageClient.tsx
+  17:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\dev\CurioMap\frontend\components\books\SearchPageClient.tsx:17:5
+  15 |
+  16 |   useEffect(() => {
+> 17 |     setQuery(initialQuery);
+     |     ^^^^^^^^ Avoid calling setState() directly within an effect
+  18 |   }, [initialQuery]);
+  19 |
+  20 |   useEffect(() => {  react-hooks/set-state-in-effect
+
+D:\dev\CurioMap\frontend\components\bookshelf\AddBookButton.tsx
+  10:21  warning  'BookStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\dev\CurioMap\frontend\components\bookshelf\AddToBookshelf.tsx
+  7:37  warning  'ShelfVisibility' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\dev\CurioMap\frontend\components\bookshelf\BookshelfList.tsx
+  25:10  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\dev\CurioMap\frontend\components\bookshelf\BookshelfList.tsx:25:10
+  23 |
+  24 |   useEffect(() => {
+> 25 |     void load();
+     |          ^^^^ Avoid calling setState() directly within an effect
+  26 |   }, [load]);
+  27 |
+  28 |   if (error) return <ErrorState message={error} />;  react-hooks/set-state-in-effect
+
+D:\dev\CurioMap\frontend\components\conversations\MessageList.tsx
+  3:8  warning  'Link' is defined but never used  @typescript-eslint/no-unused-vars
+
+G£û 15 problems (8 errors, 7 warnings)
+

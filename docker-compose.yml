@@ -1,0 +1,39 @@
+# Local development dependencies for CurioMap.
+# Usage: docker compose up -d
+# Postgres is exposed on 5433 and Redis on 6380 to avoid clashing with other projects.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: curiomap-postgres
+    environment:
+      POSTGRES_USER: curiomap
+      POSTGRES_PASSWORD: curiomap
+      POSTGRES_DB: curiomap
+    ports:
+      - "5433:5432"
+    volumes:
+      - curiomap_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U curiomap -d curiomap"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: curiomap-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6380:6379"
+    volumes:
+      - curiomap_redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  curiomap_pgdata:
+  curiomap_redisdata:

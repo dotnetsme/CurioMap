@@ -1,0 +1,21 @@
+# fly.toml — CurioMap web app
+app = "curiomap-web"
+primary_region = "fra"
+
+[build]
+  dockerfile = "infra/web.Dockerfile"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  memory = "512"
+  swap_size = "512"
+
+[env]
+  # Same-origin /api proxy forwards here over Fly's private network.
+  API_INTERNAL_URL = "http://curiomap-api.internal:8080"

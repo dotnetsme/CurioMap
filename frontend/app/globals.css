@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #070b18;
+  --panel: rgba(255, 255, 255, 0.04);
+  --border: rgba(255, 255, 255, 0.1);
+  --accent: #8b5cf6;
+  --accent2: #22d3ee;
+}
+
+body {
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(139, 92, 246, 0.14), transparent 60%),
+    radial-gradient(1000px 500px at 85% 0%, rgba(34, 211, 238, 0.1), transparent 55%),
+    var(--bg);
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgba(139, 92, 246, 0.4);
+}
+
+@layer components {
+  .glass {
+    @apply rounded-2xl border border-white/10 bg-white/[0.04];
+  }
+
+  .glass-hover {
+    @apply transition hover:border-white/25 hover:bg-white/[0.07];
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-violet-400 to-cyan-300 bg-clip-text text-transparent;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-violet-400/60;
+  }
+
+  .chip {
+    @apply cursor-pointer rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300 transition hover:border-violet-400/50 hover:text-white;
+  }
+
+  .chip-active {
+    @apply border-violet-400/70 bg-violet-500/20 text-white;
+  }
+}

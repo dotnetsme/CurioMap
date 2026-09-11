@@ -1,0 +1,171 @@
+using System.Text;
+using System.Threading.RateLimiting;
+using CurioMap.Api.Auth;
+using CurioMap.Api.Common;
+using CurioMap.Api.Data;
+using CurioMap.Api.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Npgsql;
+using StackExchange.Redis;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// ---------------------------------------------------------------------------
+// Configuration: environment first (12-factor / Fly.io), appsettings as fallback.
+// ---------------------------------------------------------------------------
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+var connectionString = !string.IsNullOrWhiteSpace(databaseUrl)
+    ? DbUrl.ToNpgsql(databaseUrl)
+    : builder.Configuration.GetConnectionString("Database")
+      ?? "Host=localhost;Port=5433;Database=curiomap;Username=curiomap;Password=curiomap";
+
+var redisUrl = Environment.GetEnvironmentVariable("REDIS_URL")
+    ?? builder.Configuration.GetConnectionString("Redis")
+    ?? "localhost:6380";
+
+// ---------------------------------------------------------------------------
+// Services
+// ---------------------------------------------------------------------------
+builder.Services.AddControllers();
+builder.Services.AddOpenApi();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    // Dynamic JSON opt-in: Dictionary<string,string> etc. map to jsonb (Npgsql 8+ requirement).
+    var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+    dataSourceBuilder.EnableDynamicJson();
+    var dataSource = dataSourceBuilder.Build();
+
+    options.UseNpgsql(dataSource, npgsql => npgsql.EnableRetryOnFailure(3))
+           .UseSnakeCaseNamingConvention();
+});
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(
+    RedisUrl.Normalize(redisUrl),
+    options =>
+    {
+        options.AbortOnConnectFail = false;
+        options.ConnectRetry = 5;
+        options.ConnectTimeout = 5000;
+    }));
+
+builder.Services.AddScoped<ICacheService, RedisCacheService>();
+builder.Services.AddScoped<IRedisRateLimiter, RedisRateLimiter>();
+
+builder.Services.AddHttpClient<OpenLibraryService>(client =>
+{
+    client.BaseAddress = new Uri("https://openlibrary.org/");
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
+builder.Services.AddHttpClient<GeoResolveService>(client =>
+{
+    client.BaseAddress = new Uri("https://geocoding-api.open-meteo.com/");
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
+
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<AffiliateOptions>(builder.Configuration.GetSection("Affiliate"));
+builder.Services.Configure<OpenLibraryOptions>(builder.Configuration.GetSection("OpenLibrary"));
+builder.Services.Configure<ConversationOptions>(builder.Configuration.GetSection("Conversations"));
+builder.Services.Configure<AdminOptions>(builder.Configuration.GetSection("Admin"));
+
+builder.Services.AddScoped<JwtTokenService>();
+builder.Services.AddScoped<RefreshTokenService>();
+builder.Services.AddScoped<PasswordHasher>();
+builder.Services.AddScoped<CurrentUser>();
+builder.Services.AddScoped<HandleGenerator>();
+builder.Services.AddScoped<ProfanityFilter>();
+builder.Services.AddScoped<ActivityService>();
+builder.Services.AddScoped<AffiliateLinkService>();
+builder.Services.AddHttpContextAccessor();
+
+// ---------------------------------------------------------------------------
+// Auth
+// ---------------------------------------------------------------------------
+var jwt = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        // Keep raw JWT claim names ("sub", "role", "email") — no MS claim remapping.
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwt.Issuer,
+            ValidateAudience = true,
+            ValidAudience = jwt.Audience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Secret)),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30),
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+    options.AddPolicy("Admin", policy => policy.RequireClaim("role", "admin")));
+
+// ---------------------------------------------------------------------------
+// CORS (the web app normally proxies same-origin; this supports direct clients)
+// ---------------------------------------------------------------------------
+var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? ["http://localhost:3000"];
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
+    policy.WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
+
+// ---------------------------------------------------------------------------
+// Rate limiting (per-instance; message posting also has a Redis-backed limiter)
+// ---------------------------------------------------------------------------
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("auth", context => RateLimitPartition.GetFixedWindowLimiter(
+        PartitionKey(context),
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 20, Window = TimeSpan.FromMinutes(1) }));
+    options.AddPolicy("write", context => RateLimitPartition.GetFixedWindowLimiter(
+        PartitionKey(context),
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 40, Window = TimeSpan.FromMinutes(1) }));
+    options.AddPolicy("search", context => RateLimitPartition.GetFixedWindowLimiter(
+        PartitionKey(context),
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 60, Window = TimeSpan.FromMinutes(1) }));
+});
+
+builder.Services.AddExceptionHandler<AppExceptionHandler>();
+builder.Services.AddProblemDetails();
+
+var app = builder.Build();
+
+// ---------------------------------------------------------------------------
+// Database: apply ordered SQL migrations + seed at startup (advisory-locked).
+// ---------------------------------------------------------------------------
+await DbInitializer.InitializeAsync(app.Services, app.Logger);
+
+app.UseExceptionHandler();
+app.UseCors();
+app.UseRateLimiter();
+app.UseDefaultFiles();
+app.UseStaticFiles();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapOpenApi();
+app.MapControllers();
+
+app.MapGet("/", () => Results.Json(new
+{
+    name = "CurioMap API",
+    tagline = "live map of human curiosity",
+    docs = "/docs",
+    openapi = "/openapi/v1.json",
+    health = "/health",
+}));
+
+static string PartitionKey(HttpContext context) =>
+    context.User.FindFirst("sub")?.Value
+    ?? context.Connection.RemoteIpAddress?.ToString()
+    ?? "anon";
+
+app.Run();
+

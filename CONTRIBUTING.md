@@ -1,0 +1,46 @@
+# Contributing to CurioMap
+
+First: thank you. CurioMap is built in public, and every avatar, prompt, bug fix,
+and doc improvement makes the map of human curiosity a little richer.
+
+## Code of Conduct
+
+By participating you agree to our [Code of Conduct](CODE_OF_CONDUCT.md).
+Be curious, be kind, be honest.
+
+## How to contribute
+
+1. **Find or open an issue.** Look for `good first issue` and `help wanted` labels.
+2. **Fork + branch.** Branch from `main`: `feat/short-description` or `fix/short-description`.
+3. **Make the change.** Keep PRs small and focused; include tests for behavior changes.
+4. **Run checks locally:**
+   ```bash
+   dotnet test backend/CurioMap.slnx          # API unit tests
+   cd frontend && npm run lint && npm run build
+   ```
+5. **Open a PR.** Describe the *why*, not just the *what*. Screenshots for UI changes.
+
+## Project layout
+
+- `backend/src/CurioMap.Api` — API (controllers → services → EF Core; no MediatR)
+- `backend/src/CurioMap.Api/Data/Migrations/*.sql` — ordered SQL migrations (applied at startup; never edit an applied migration — add a new one)
+- `frontend` — Next.js App Router app; pages are thin wrappers around `components/`
+- `infra/` — Fly.io deployment configuration
+
+## Conventions
+
+- **API**: REST, JSON, camelCase; enums cross the wire as lowercase snake_case (`reading`, `region_city`).
+- **DB**: snake_case everywhere; the EF model must stay in sync with the SQL migrations.
+- **Frontend**: TypeScript strict; API access only through `lib/api/*`; no direct `fetch` in components.
+- **Privacy is a feature**: never add telemetry, exact coordinates, or personal data without an issue discussing it first.
+
+## Easy wins (great first issues)
+
+- New curated avatars: `frontend/lib/avatars.ts` + `CurioAvatars` registry count in `backend/.../Common/Common.cs`
+- New conversation prompts: `Prompts.All` in the API + `lib/prompts` in the web app
+- New seed books: `backend/src/CurioMap.Api/Data/Migrations/0004_*.sql` (upsert by ISBN)
+
+## Dev logs
+
+If you build something interesting, write a short entry in `docs/dev-log/`.
+Building in public is part of the culture here.

@@ -1,0 +1,38 @@
+-- Curated starter catalog, part 2 (0003).
+
+INSERT INTO books (title, author, isbn, cover_url, description, affiliate_links, metadata) VALUES
+('Brave New World', 'Aldous Huxley', '9780060850524',
+ 'https://covers.openlibrary.org/b/isbn/9780060850524-L.jpg',
+ 'Comfort as a cage: the engineered society that chose pleasure over freedom.',
+ '{}', '{"source":"seed"}'),
+('Atomic Habits', 'James Clear', '9780735211292',
+ 'https://covers.openlibrary.org/b/isbn/9780735211292-L.jpg',
+ 'Tiny changes, remarkable results — a practical system for behavior change.',
+ '{}', '{"source":"seed"}'),
+('The Alchemist', 'Paulo Coelho', '9780062315007',
+ 'https://covers.openlibrary.org/b/isbn/9780062315007-L.jpg',
+ 'A shepherd boy follows his dream across the desert and learns to listen.',
+ '{}', '{"source":"seed"}'),
+('Educated', 'Tara Westover', '9780399590504',
+ 'https://covers.openlibrary.org/b/isbn/9780399590504-L.jpg',
+ 'From a survivalist household with no school to a Cambridge PhD.',
+ '{}', '{"source":"seed"}'),
+('Gödel, Escher, Bach', 'Douglas R. Hofstadter', '9780465026562',
+ 'https://covers.openlibrary.org/b/isbn/9780465026562-L.jpg',
+ 'Strange loops, self-reference, and how minds might emerge from symbols.',
+ '{}', '{"source":"seed"}'),
+('Zero to One', 'Peter Thiel, Blake Masters', '9780804139298',
+ 'https://covers.openlibrary.org/b/isbn/9780804139298-L.jpg',
+ 'Notes on startups: how to build the future by going from zero to one.',
+ '{}', '{"source":"seed"}'),
+('Deep Work', 'Cal Newport', '9781455586691',
+ 'https://covers.openlibrary.org/b/isbn/9781455586691-L.jpg',
+ 'Rules for focused success in a distracted world.',
+ '{}', '{"source":"seed"}'),
+('Antifragile', 'Nassim Nicholas Taleb', '9780812979686',
+ 'https://covers.openlibrary.org/b/isbn/9780812979686-L.jpg',
+ 'Things that gain from disorder — beyond resilience and robustness.',
+ '{}', '{"source":"seed"}')
+ON CONFLICT (lower(isbn)) DO UPDATE
+SET cover_url = EXCLUDED.cover_url,
+    description = EXCLUDED.description;

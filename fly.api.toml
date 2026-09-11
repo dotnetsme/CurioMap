@@ -1,0 +1,29 @@
+# fly.toml — CurioMap API (see infra/README.md for the web app + constants)
+app = "curiomap-api"
+primary_region = "fra"
+
+[build]
+  dockerfile = "infra/api.Dockerfile"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  memory = "512"
+  swap_size = "512"
+
+# Fly private networking: web app talks to the API over the internal network.
+# Provide via `fly secrets set`:
+#   DATABASE_URL  (Neon postgres:// URL or libpq key=value)
+#   REDIS_URL     (redis:// or rediss:// URL, e.g. Upstash)
+#   JWT__SECRET   (long random string; overrides appsettings)
+
+[env]
+  PORT = "8080"
+
+# PostgreSQL is external (Neon) and Redis is external (Upstash/Redis Cloud) —
+# no addons here; the API only needs outbound TLS connectivity.
