@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { remove as removeEntry, update as updateEntry } from "@/lib/api/bookshelf";
-import { BookCover } from "@/components/books/BookCard";
+import { BookCover } from "@/components/books/BookCover";
 import type { BookshelfEntry, BookStatus, ShelfVisibility } from "@/types";
 
 export function BookshelfEntryCard({

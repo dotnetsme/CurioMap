@@ -113,7 +113,16 @@ public class AuthController(
     {
         var raw = Request.Cookies[RefreshCookie] ?? request?.RefreshToken;
         await refresh.RevokeAsync(raw);
-        Response.Cookies.Delete(RefreshCookie, new CookieOptions { Path = "/", HttpOnly = true });
+        // Clear with the same cookie attributes used when setting it, or the
+        // browser keeps the stale refresh cookie (path/SameSite/Secure mismatch).
+        Response.Cookies.Append(RefreshCookie, string.Empty, new CookieOptions
+        {
+            Path = "/",
+            HttpOnly = true,
+            Secure = !env.IsDevelopment(),
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTimeOffset.UnixEpoch,
+        });
         return Ok(new LogoutResponse(true));
     }
 

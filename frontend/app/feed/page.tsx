@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Flame } from "lucide-react";
 import { FeedList } from "@/components/feed/FeedList";
 import { Button } from "@/components/ui/Button";
-import { ErrorState, PageLoading } from "@/components/ui/Feedback";
+import { BookCardSkeleton } from "@/components/ui/Skeleton";
+import { ErrorState } from "@/components/ui/Feedback";
 import { feed } from "@/lib/api/feed";
 import type { FeedEvent } from "@/types";
 
@@ -40,22 +42,38 @@ export default function FeedPage() {
   }
 
   if (error) return <ErrorState message={error} />;
-  if (!events) return <PageLoading />;
 
   return (
     <div className="mx-auto max-w-2xl py-4">
-      <div className="mb-2 flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold text-white">Your feed</h1>
-        <span className="text-xs text-slate-500">people you follow · books you care about</span>
-      </div>
-      <FeedList events={events} />
-      {nextOffset ? (
-        <div className="mt-6 text-center">
-          <Button variant="ghost" onClick={() => void loadMore()} disabled={loadingMore}>
-            {loadingMore ? "Loading…" : "Load more"}
-          </Button>
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="label-sm inline-flex items-center gap-1.5 text-accent-strong">
+            <Flame size={12} /> Activity
+          </p>
+          <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+            Your feed
+          </h1>
+          <p className="mt-1 text-sm text-ink-muted">People you follow · books you care about</p>
         </div>
-      ) : null}
+      </div>
+      {!events ? (
+        <div className="flex flex-col gap-3">
+          <BookCardSkeleton />
+          <BookCardSkeleton />
+          <BookCardSkeleton />
+        </div>
+      ) : (
+        <>
+          <FeedList events={events} />
+          {nextOffset ? (
+            <div className="mt-6 text-center">
+              <Button variant="ghost" onClick={() => void loadMore()} disabled={loadingMore}>
+                {loadingMore ? "Loading…" : "Load more"}
+              </Button>
+            </div>
+          ) : null}
+        </>
+      )}
     </div>
   );
 }

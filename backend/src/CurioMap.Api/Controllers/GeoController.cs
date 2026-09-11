@@ -54,9 +54,13 @@ public class GeoController(AppDbContext db, CurrentUser me, GeoResolveService ge
             coords = await geoResolver.ResolveCityAsync(country, region, city);
         }
 
-        var (latFuzzed, lngFuzzed) = coords is { } c
-            ? (GeoFuzz.Fuzz(c.Lat, c.Lng).Lat, GeoFuzz.Fuzz(c.Lat, c.Lng).Lng)
-            : (default(double?), default(double?));
+        (double? latFuzzed, double? lngFuzzed) = (null, null);
+        if (coords is { } resolved)
+        {
+            var fuzzed = GeoFuzz.Fuzz(resolved.Lat, resolved.Lng);
+            latFuzzed = fuzzed.Lat;
+            lngFuzzed = fuzzed.Lng;
+        }
 
         var location = await db.Locations.FirstOrDefaultAsync(l =>
             (l.Country ?? "") == (country ?? "")

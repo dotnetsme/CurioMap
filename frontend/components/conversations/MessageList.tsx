@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Avatar } from "@/components/profile/Avatar";
+import { timeAgo } from "@/lib/time";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
@@ -61,7 +62,7 @@ function MessageRow({ message, onReact }: { message: Message; onReact?: (m: Mess
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-ink">{message.author.displayName}</p>
           <p className="text-[11px] text-ink-3">
-            {new Date(message.createdAt).toLocaleString()}
+                        {timeAgo(message.createdAt)}
           </p>
         </div>
         {user && user.id !== message.author.id ? (

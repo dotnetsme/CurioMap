@@ -8,7 +8,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<User> Users => Set<User>();
     public DbSet<Location> Locations => Set<Location>();
     public DbSet<Book> Books => Set<Book>();
-    public DbSet<BookshelfEntry> BookshelfEntries => Set<BookshelfEntry>();
+        public DbSet<BookshelfEntry> BookshelfEntries => Set<BookshelfEntry>();
+    public DbSet<Rating> Ratings => Set<Rating>();
     public DbSet<Conversation> Conversations => Set<Conversation>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<MessageReaction> MessageReactions => Set<MessageReaction>();
@@ -64,8 +65,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(x => x.Visibility).HasConversion<string>().HasMaxLength(20);
             e.HasOne(x => x.User).WithMany(u => u.BookshelfEntries)
                 .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
-            e.HasOne(x => x.Book).WithMany(b => b.Entries)
+                        e.HasOne(x => x.Book).WithMany(b => b.Entries)
                 .HasForeignKey(x => x.BookId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Rating>(e =>
+        {
+            e.Property(r => r.Value).HasColumnType("smallint");
+            e.HasIndex(r => r.BookId);
+            e.HasOne(r => r.User).WithMany().HasForeignKey(r => r.UserId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(r => r.Book).WithMany().HasForeignKey(r => r.BookId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Conversation>(e =>

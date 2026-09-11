@@ -45,10 +45,13 @@ public class RefreshTokenService(AppDbContext db, IOptions<JwtOptions> options)
             return null;
         }
 
+        // Rotation must be atomic: concurrent use of the same token must not mint two sessions.
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
         token.RevokedAt = DateTime.UtcNow;
         var (fresh, newRaw) = Issue(token.User);
         db.RefreshTokens.Add(fresh);
         await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
         return (token.User, fresh, newRaw);
     }
 

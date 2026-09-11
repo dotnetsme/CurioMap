@@ -12,7 +12,9 @@ export interface Book extends BookStub {
   metadata: Record<string, string>;
   readersCount: number;
   conversationsCount: number;
-  createdAt: string;
+      averageRating: number;
+    ratingCount: number;
+    createdAt: string;
 }
 
 export interface SearchResponse {

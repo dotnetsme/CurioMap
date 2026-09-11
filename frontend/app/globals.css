@@ -13,12 +13,28 @@
   --color-accent: #d97706;
   --color-accent-strong: #b45309;
   --color-accent-soft: #fef3c7;
+  --color-accent-ink: #92400e;
+
+  --color-amber: #d97706;
 
   --color-reading: #16a34a;
   --color-reading-soft: #dcfce7;
 
   --color-violet: #7c3aed;
   --color-cyan: #0891b2;
+
+  /* Cinematic night palette for the map hero + dark panels. */
+  --color-night: #0c0a14;
+  --color-night-2: #141021;
+  --color-night-3: #1d1730;
+  --color-night-line: rgba(251, 191, 36, 0.14);
+  --color-glow: #fbbf24;
+  --color-glow-soft: #f59e0b;
+
+  /* Semantic aliases used across the app (Tailwind v4 exposes each as utilities). */
+  --color-ink-muted: #4a443c;
+  --color-ink-faint: #8a8278;
+  --color-ink-soft: #4a443c;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-playfair), ui-serif, Georgia, serif;
@@ -66,7 +82,8 @@ body {
   line-height: 1.1;
 }
 
-.mono-label {
+.mono-label,
+.label-sm {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 500;
@@ -79,6 +96,28 @@ body {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
+}
+
+/* Legacy alias used across pages/components for the same elevated surface. */
+.surface {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+}
+
+/* Frosted-glass panel (light warm-paper variant of the old dark theme). */
+.glass {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  backdrop-filter: blur(8px);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .card-hover {
@@ -229,4 +268,87 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--ink-3);
+}
+
+/* Night map hero */
+.night-panel {
+  background:
+    radial-gradient(1200px 500px at 50% -10%, rgba(251, 191, 36, 0.14), transparent 60%),
+    radial-gradient(800px 420px at 85% 110%, rgba(124, 58, 237, 0.22), transparent 60%),
+    linear-gradient(180deg, #141021 0%, #0c0a14 100%);
+  border: 1px solid rgba(251, 191, 36, 0.16);
+}
+
+.map-dark-frame {
+  border-radius: var(--radius-card);
+  border: 1px solid rgba(251, 191, 36, 0.16);
+  overflow: hidden;
+  background: #0c0a14;
+  box-shadow: 0 24px 80px -24px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.4),
+    0 0 64px -24px rgba(251, 191, 36, 0.35);
+}
+
+.leaflet-container {
+  background: #0c0a14;
+  font-family: var(--font-sans);
+  outline: none;
+}
+.leaflet-container .leaflet-tile-pane {
+  filter: saturate(0.72) brightness(0.94) contrast(1.04);
+}
+.leaflet-container .leaflet-control-zoom a {
+  background: rgba(20, 16, 33, 0.92);
+  color: #fcd34d;
+  border-color: rgba(251, 191, 36, 0.2);
+}
+.leaflet-container .leaflet-control-attribution {
+  background: rgba(12, 10, 20, 0.72);
+  color: rgba(252, 211, 77, 0.55);
+  font-size: 10px;
+}
+.leaflet-container .leaflet-control-attribution a {
+  color: rgba(252, 211, 77, 0.8);
+}
+
+/* Motion + shimmer */
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes pulse-ring {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  70% { transform: scale(1.6); opacity: 0; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+.anim-floaty { animation: floaty 6s ease-in-out infinite; }
+.anim-pulse-ring { animation: pulse-ring 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite; transform-origin: center; }
+.anim-marquee { animation: marquee 32s linear infinite; }
+
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 25%, #fff 40%, var(--surface-2) 55%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* Embla carousel */
+.embla { overflow: hidden; }
+.embla__container { display: flex; gap: 16px; }
+.embla__slide { flex: 0 0 auto; min-width: 0; }
+
+/* Hide scrollbars for horizontal rails while keeping scroll */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-floaty, .anim-pulse-ring, .anim-marquee, .skeleton { animation: none; }
+  html { scroll-behavior: auto; }
 }

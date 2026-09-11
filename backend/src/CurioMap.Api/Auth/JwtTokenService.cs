@@ -20,7 +20,8 @@ public class JwtTokenService(IOptions<JwtOptions> options)
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email),
             new("handle", user.Handle),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            // Fresh jti per token so identical claims still produce distinct JWTs.
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
         };
         if (user.IsAdmin)
         {

@@ -13,6 +13,7 @@ export function BookshelfList({ ownerId }: { ownerId?: string }) {
   const editable = !ownerId;
 
   const load = useCallback(async () => {
+    setError(null);
     try {
       setEntries(ownerId ? await publicShelf(ownerId) : await myShelf());
     } catch (e) {
@@ -21,7 +22,6 @@ export function BookshelfList({ ownerId }: { ownerId?: string }) {
   }, [ownerId]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- setState runs after `await` in load()
     void load();
   }, [load]);
 

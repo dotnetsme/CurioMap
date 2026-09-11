@@ -32,6 +32,17 @@ Thumbs.db
 
 # Logs
 *.log
+*.log.*
+frontend/lint*.txt
+frontend/*-err.txt
+frontend/build-log*.txt
+frontend/frontend-*.log
+frontend/tail-*.txt
+frontend/pre-err.txt
+smoke-*.txt
+smoke-*.log
+.cookies.txt
+cookies.txt
 
 # Fly / deploy artifacts
 *.flyc

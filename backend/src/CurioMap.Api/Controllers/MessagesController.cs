@@ -53,13 +53,12 @@ public class MessagesController(AppDbContext db, CurrentUser me) : ControllerBas
             throw new AppException(400, "Unknown status. Use visible, muted or deleted.");
         }
 
-        var message = await db.Messages.AsNoTracking()
+        var message = await db.Messages
             .Include(m => m.Author)
             .FirstOrDefaultAsync(m => m.Id == id)
             ?? throw new AppException(404, "Message not found.");
 
-        db.Messages.Where(m => m.Id == id).ExecuteUpdate(s =>
-            s.SetProperty(m => m.Status, status));
+        message.Status = status;
         await db.SaveChangesAsync();
 
         return Ok(new MessageDto(

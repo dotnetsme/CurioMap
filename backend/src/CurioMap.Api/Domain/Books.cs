@@ -32,6 +32,21 @@ public class BookAffiliateLinks
     public string? Publisher { get; set; }
 }
 
+/// <summary>A user's 1–5 star rating for a book.</summary>
+public class Rating : IAuditable
+{
+    public Guid UserId { get; set; }
+    public User? User { get; set; }
+    public Guid BookId { get; set; }
+    public Book? Book { get; set; }
+
+    /// <summary>1–5 inclusive.</summary>
+    public int Value { get; set; }
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
 /// <summary>A user's relationship with a book.</summary>
 public class BookshelfEntry : IAuditable
 {

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { ErrorState, PageLoading } from "@/components/ui/Feedback";
+import { timeAgo } from "@/lib/time";
 import * as adminApi from "@/lib/api/admin";
 import { useAuth } from "@/components/providers/AuthProvider";
 import type { AdminReport } from "@/types";
@@ -16,6 +17,7 @@ export function ReportsBoard() {
   const [filter, setFilter] = useState("open");
 
   const load = useCallback(async () => {
+    setError(null);
     try {
       setReports(await adminApi.reports(filter));
     } catch (e) {
@@ -25,7 +27,6 @@ export function ReportsBoard() {
 
   useEffect(() => {
     if (!loading && user?.isAdmin) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- setState runs after `await` in load()
       void load();
     }
   }, [loading, user?.isAdmin, load]);
@@ -64,7 +65,7 @@ export function ReportsBoard() {
       {error ? <ErrorState message={error} /> : null}
       {!reports ? <PageLoading /> : null}
 
-      {reports?.length === 0 ? <p className="text-sm text-slate-400">No reports in this state.</p> : null}
+            {reports?.length === 0 ? <p className="text-sm text-ink-3">No reports in this state.</p> : null}
 
       <div className="flex flex-col gap-3">
         {reports?.map((r) => (
@@ -73,11 +74,11 @@ export function ReportsBoard() {
               <Badge tone={r.status === "open" ? "amber" : "emerald"}>{r.status}</Badge>
               <Badge tone="slate">message: {r.messageStatus}</Badge>
               <span className="text-xs text-slate-500">
-                by @{r.reporter.handle} · {new Date(r.createdAt).toLocaleString()}
+                              by @{r.reporter.handle} · {timeAgo(r.createdAt)}
               </span>
             </div>
-            <p className="mt-2 text-sm text-slate-200">“{r.messageContent}”</p>
-            <p className="mt-1 text-xs text-slate-400">
+                        <p className="mt-2 text-sm text-ink-2">“{r.messageContent}”</p>
+            <p className="mt-1 text-xs text-ink-3">
               reason: {r.reason} — author @{r.author.handle}
             </p>
             <div className="mt-3 flex gap-2">

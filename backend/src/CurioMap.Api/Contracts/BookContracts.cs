@@ -13,6 +13,8 @@ public record BookDto(
     Dictionary<string, string> Metadata,
     int ReadersCount,
     int ConversationsCount,
+    double? AverageRating,
+    int RatingCount,
     DateTime CreatedAt);
 
 public record SearchResponse(IReadOnlyList<BookDto> Items, int Total, bool FromExternal);

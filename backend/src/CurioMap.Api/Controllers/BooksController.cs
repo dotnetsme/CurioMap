@@ -52,25 +52,31 @@ public class BooksController(
             var external = await openLibrary.SearchAsync(query, Math.Min(limit, 12));
             if (external.Count > 0)
             {
+                var isbns = external.Where(r => r.Isbn != null).Select(r => r.Isbn!).ToList();
+                var known = isbns.Count == 0
+                    ? new HashSet<string>()
+                    : (await db.Books.AsNoTracking().Where(b => b.Isbn != null && isbns.Contains(b.Isbn!))
+                        .Select(b => b.Isbn!).ToListAsync()).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 foreach (var result in external)
                 {
-                    var exists = result.Isbn != null && await db.Books.AnyAsync(b => b.Isbn == result.Isbn);
-                    if (!exists)
+                    if (result.Isbn != null && known.Contains(result.Isbn))
                     {
-                        var metadata = new Dictionary<string, string> { ["source"] = "openlibrary" };
-                        if (result.Year is not null)
-                        {
-                            metadata["year"] = result.Year.Value.ToString();
-                        }
-                        db.Books.Add(new Book
-                        {
-                            Title = result.Title,
-                            Author = result.Author,
-                            Isbn = result.Isbn,
-                            CoverUrl = result.CoverUrl,
-                            Metadata = metadata,
-                        });
+                        continue;
                     }
+
+                    var metadata = new Dictionary<string, string> { ["source"] = "openlibrary" };
+                    if (result.Year is not null)
+                    {
+                        metadata["year"] = result.Year.Value.ToString();
+                    }
+                    db.Books.Add(new Book
+                    {
+                        Title = result.Title,
+                        Author = result.Author,
+                        Isbn = result.Isbn,
+                        CoverUrl = result.CoverUrl,
+                        Metadata = metadata,
+                    });
                 }
                 await db.SaveChangesAsync();
                 fromExternal = true;
@@ -87,7 +93,7 @@ public class BooksController(
         return Ok(new SearchResponse(books.Select(b => ToDto(b, 0, 0)).ToList(), total, fromExternal));
     }
 
-    [HttpGet("{id:guid}")]
+        [HttpGet("{id:guid}")]
     [AllowAnonymous]
     public async Task<ActionResult<BookDto>> Detail(Guid id)
     {
@@ -97,8 +103,13 @@ public class BooksController(
         var readers = await db.BookshelfEntries.CountAsync(s =>
             s.BookId == id && s.Status == BookStatus.Reading && s.Visibility == ShelfVisibility.Public);
         var conversations = await db.Conversations.CountAsync(c => c.BookId == id && !c.IsArchived);
+        var ratingStats = await db.Ratings
+            .Where(r => r.BookId == id)
+            .GroupBy(r => 1)
+            .Select(g => new { Avg = g.Average(r => r.Value), Count = g.Count() })
+            .FirstOrDefaultAsync() ?? new { Avg = 0.0, Count = 0 };
 
-        return Ok(ToDto(book, readers, conversations));
+        return Ok(ToDto(book, readers, conversations, ratingStats.Avg, ratingStats.Count));
     }
 
     [HttpPost("import")]
@@ -111,7 +122,7 @@ public class BooksController(
         var existing = await db.Books.AsNoTracking().FirstOrDefaultAsync(b => b.Isbn == isbn);
         if (existing is not null)
         {
-            return Ok(ToDto(existing, 0, 0));
+            return Ok(ToDto(existing, 0, 0, 0, 0));
         }
 
         var results = await openLibrary.SearchAsync(isbn, 3);
@@ -137,10 +148,10 @@ public class BooksController(
         };
         db.Books.Add(book);
         await db.SaveChangesAsync();
-        return Ok(ToDto(book, 0, 0));
+        return Ok(ToDto(book, 0, 0, 0, 0));
     }
 
-    private BookDto ToDto(Book book, int readers, int conversations) => new(
+    private BookDto ToDto(Book book, int readers, int conversations, double avgRating, int ratingCount) => new(
         book.Id,
         book.Title,
         book.Author,
@@ -151,5 +162,7 @@ public class BooksController(
         book.Metadata,
         readers,
         conversations,
+        avgRating,
+        ratingCount,
         book.CreatedAt);
 }

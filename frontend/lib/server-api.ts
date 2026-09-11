@@ -3,14 +3,22 @@ import type { GlobalDiscovery, StatsSummary } from "@/types";
 
 const base = process.env.API_INTERNAL_URL ?? "http://localhost:8080";
 
-export async function stats(): Promise<StatsSummary> {
-  const res = await fetch(`${base}/stats/summary`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`stats ${res.status}`);
-  return res.json();
+async function getJson<T>(url: string, label: string): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8_000);
+  try {
+    const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+    if (!res.ok) throw new Error(`${label} ${res.status}`);
+    return (await res.json()) as T;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
-export async function globalDiscovery(): Promise<GlobalDiscovery> {
-  const res = await fetch(`${base}/discover/global`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`global ${res.status}`);
-  return res.json();
+export function stats(): Promise<StatsSummary> {
+  return getJson<StatsSummary>(`${base}/stats/summary`, "stats");
+}
+
+export function globalDiscovery(): Promise<GlobalDiscovery> {
+  return getJson<GlobalDiscovery>(`${base}/discover/global`, "global");
 }

@@ -74,6 +74,11 @@ public class RedisCacheService(IConnectionMultiplexer redis, ILogger<RedisCacheS
         }
 
         var value = await factory();
+        if (value is null)
+        {
+            return value;
+        }
+
         await SetAsync(key, value, ttl);
         return value;
     }

@@ -4,6 +4,7 @@ export class ApiError extends Error {
     public status: number,
   ) {
     super(message);
+    this.name = "ApiError";
   }
 }
 
@@ -59,9 +60,9 @@ async function tryRefresh(): Promise<boolean> {
 
 export async function api<T>(
   path: string,
-  init: RequestInit & { auth?: boolean } = {},
+  init: RequestInit & { auth?: boolean; timeoutMs?: number } = {},
 ): Promise<T> {
-  const { auth = true, ...rest } = init;
+  const { auth = true, timeoutMs = 15_000, ...rest } = init;
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   Object.assign(headers, rest.headers);
 
@@ -69,13 +70,26 @@ export async function api<T>(
     headers.Authorization = `Bearer ${accessToken}`;
   }
 
-  let res = await fetch(`/api${path}`, { ...rest, headers, credentials: "include" });
+  const request = async (signal: AbortSignal) =>
+    fetch(`/api${path}`, { ...rest, headers, credentials: "include", signal });
+
+  const withTimeout = async () => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await request(controller.signal);
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+
+  let res = await withTimeout();
 
   // Access token expired → try the httpOnly refresh cookie once, then retry.
   if (res.status === 401 && auth) {
     if (await tryRefresh()) {
       if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
-      res = await fetch(`/api${path}`, { ...rest, headers, credentials: "include" });
+      res = await withTimeout();
     }
   }
 
@@ -85,5 +99,10 @@ export async function api<T>(
 
   if (res.status === 204) return undefined as T;
   const text = await res.text();
-  return (text ? JSON.parse(text) : undefined) as T;
+  if (!text) return undefined as T;
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new ApiError("Unexpected response from server.", res.status);
+  }
 }

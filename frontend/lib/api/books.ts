@@ -14,3 +14,17 @@ export function getBook(id: string): Promise<Book> {
 export function importBook(isbn: string): Promise<Book> {
   return api("/books/import", { method: "POST", body: JSON.stringify({ isbn }) });
 }
+
+export interface RatingStats {
+  average: number;
+  count: number;
+  ratedByCurrentUser: boolean;
+}
+
+export function getRatingStats(bookId: string): Promise<RatingStats> {
+  return api(`/books/${bookId}/rating`, { auth: false });
+}
+
+export function rateBook(bookId: string, value: number): Promise<RatingStats> {
+  return api(`/books/${bookId}/rating`, { method: "PUT", body: JSON.stringify({ value }) });
+}

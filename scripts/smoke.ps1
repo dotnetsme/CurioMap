@@ -1,9 +1,9 @@
 # smoke.ps1
-# Requires: running API on http://localhost:8080 and frontend on http://localhost:3123
+# Requires: running API on http://localhost:8080 and frontend on http://localhost:3000
 
 param(
     [string]$ApiUrl = 'http://localhost:8080',
-    [string]$FrontendUrl = 'http://localhost:3123'
+    [string]$FrontendUrl = 'http://localhost:3000'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -56,12 +56,13 @@ $uid = $null
 $bid = $null
 $cid = $null
 if ($reg.ok -and $reg.body) {
-    $t = $reg.body.token
+    # Contract: { user, accessToken, expiresIn } (camelCase via JSON policy).
+    $t = $reg.body.accessToken
     $uid = [guid]::Parse($reg.body.user.id)
 
     $me = Invoke-Http -Uri "$ApiUrl/auth/me" -Headers @{ Authorization = "Bearer $t" }
     if ($me.ok) {
-        $out.Add("AUTH_ME: OK handle=$($me.body.handle)")
+        $out.Add("AUTH_ME: OK handle=$($me.body.user.handle)")
     } else {
         $out.Add("AUTH_ME: FAIL status=$($me.status) err=$($me.err)")
     }
@@ -74,18 +75,19 @@ if ($reg.ok -and $reg.body) {
     }
 
     $books = Invoke-Http -Uri "$ApiUrl/books/search?q=Neuromancer"
+    $items = @($books.body.items)
     $out.Add("BOOK_SEARCH: OK total=$($books.body.total)")
-    if ($books.ok -and $books.body.books.Count -gt 0) {
-        $bid = [guid]::Parse($books.body.books[0].id)
+    if ($books.ok -and $items.Count -gt 0) {
+        $bid = [guid]::Parse($items[0].id)
 
-        $bs = Invoke-Http -Uri "$ApiUrl/bookshelf" -Method Post -Body @{ book_id = $bid.ToString(); status = 'reading'; visibility = 'public' } -Headers @{ Authorization = "Bearer $t" }
+        $bs = Invoke-Http -Uri "$ApiUrl/bookshelf" -Method Post -Body @{ bookId = $bid.ToString(); status = 'reading'; visibility = 'public' } -Headers @{ Authorization = "Bearer $t" }
         if ($bs.ok) {
             $out.Add("BOOKSHELF_ADD: OK")
         } else {
             $out.Add("BOOKSHELF_ADD: FAIL status=$($bs.status) err=$($bs.err)")
         }
 
-        $con = Invoke-Http -Uri "$ApiUrl/books/$bid/conversations" -Method Post -Body @{ topic_type = 'general'; title = "Neuromancer thoughts $rand" } -Headers @{ Authorization = "Bearer $t" }
+        $con = Invoke-Http -Uri "$ApiUrl/books/$bid/conversations" -Method Post -Body @{ topicType = 'general'; title = "Neuromancer thoughts $rand" } -Headers @{ Authorization = "Bearer $t" }
         if ($con.ok -and $con.body) {
             $out.Add("CONV_CREATE: OK conv=$($con.body.id)")
             $cid = [guid]::Parse($con.body.id)
@@ -93,15 +95,16 @@ if ($reg.ok -and $reg.body) {
             $msg = Invoke-Http -Uri "$ApiUrl/conversations/$cid/messages" -Method Post -Body @{ content = 'First message from smoke test.' } -Headers @{ Authorization = "Bearer $t" }
             if ($msg.ok) {
                 $out.Add("MSG_POST: OK")
+                $mid = [guid]::Parse($msg.body.id)
+
+                $rep = Invoke-Http -Uri "$ApiUrl/messages/$mid/report" -Method Post -Body @{ reason = 'spam message' } -Headers @{ Authorization = "Bearer $t" }
+                if ($rep.ok) {
+                    $out.Add("MSG_REPORT: OK")
+                } else {
+                    $out.Add("MSG_REPORT: FAIL status=$($rep.status) err=$($rep.err)")
+                }
             } else {
                 $out.Add("MSG_POST: FAIL status=$($msg.status) err=$($msg.err)")
-            }
-
-            $rep = Invoke-Http -Uri "$ApiUrl/messages/$cid/report" -Method Post -Body @{ reason = 'spam'; reporter_id = $uid.ToString() } -Headers @{ Authorization = "Bearer $t" }
-            if ($rep.ok) {
-                $out.Add("MSG_REPORT: OK")
-            } else {
-                $out.Add("MSG_REPORT: FAIL status=$($rep.status) err=$($rep.err)")
             }
         } else {
             $out.Add("CONV_CREATE: FAIL status=$($con.status) err=$($con.err)")

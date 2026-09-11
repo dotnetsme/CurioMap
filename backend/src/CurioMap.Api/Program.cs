@@ -3,7 +3,7 @@ using System.Threading.RateLimiting;
 using CurioMap.Api.Auth;
 using CurioMap.Api.Common;
 using CurioMap.Api.Data;
-using CurioMap.Api.Services;
+using CurioMap.Api.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -43,17 +43,31 @@ builder.Services.AddDbContext<AppDbContext>(options =>
            .UseSnakeCaseNamingConvention();
 });
 
-builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(
-    RedisUrl.Normalize(redisUrl),
-    options =>
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<Program>>();
+    try
     {
-        options.AbortOnConnectFail = false;
-        options.ConnectRetry = 5;
-        options.ConnectTimeout = 5000;
-    }));
+        return ConnectionMultiplexer.Connect(
+            RedisUrl.Normalize(redisUrl),
+            options =>
+            {
+                options.AbortOnConnectFail = false;
+                options.ConnectRetry = 5;
+                options.ConnectTimeout = 5000;
+            });
+    }
+    catch (Exception ex)
+    {
+        // Redis is a best-effort cache/rate-limit tier: boot healthy without it.
+        logger.LogWarning(ex, "Redis unavailable at startup; continuing without cache.");
+        return ConnectionMultiplexer.Connect("localhost:0,abortConnect=false,connectTimeout=500");
+    }
+});
 
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddScoped<IRedisRateLimiter, RedisRateLimiter>();
+builder.Services.AddScoped<IRatingService, RatingService>();
 
 builder.Services.AddHttpClient<OpenLibraryService>(client =>
 {
@@ -85,7 +99,17 @@ builder.Services.AddHttpContextAccessor();
 // ---------------------------------------------------------------------------
 // Auth
 // ---------------------------------------------------------------------------
-var jwt = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
+var jwtSection = builder.Configuration.GetSection("Jwt");
+var jwtSecret = Environment.GetEnvironmentVariable("JWT__SECRET") ?? jwtSection["Secret"];
+if (!string.IsNullOrWhiteSpace(jwtSecret))
+{
+    jwtSection["Secret"] = jwtSecret;
+}
+var jwt = jwtSection.Get<JwtOptions>() ?? new JwtOptions();
+if (jwt.Secret.Length < 32 && !builder.Environment.IsDevelopment())
+{
+    throw new InvalidOperationException("JWT secret must be at least 32 characters. Set JWT__SECRET.");
+}
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -121,6 +145,10 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            PartitionKey(context),
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = 200, Window = TimeSpan.FromMinutes(1) }));
     options.AddPolicy("auth", context => RateLimitPartition.GetFixedWindowLimiter(
         PartitionKey(context),
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 20, Window = TimeSpan.FromMinutes(1) }));

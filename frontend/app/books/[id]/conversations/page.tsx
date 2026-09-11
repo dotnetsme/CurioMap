@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { BookCover } from "@/components/books/BookCard";
+import { BookCover } from "@/components/books/BookCover";
 import { ConversationList } from "@/components/conversations/ConversationList";
 import { NewConversationForm } from "@/components/conversations/NewConversationForm";
 import { ErrorState, PageLoading } from "@/components/ui/Feedback";
