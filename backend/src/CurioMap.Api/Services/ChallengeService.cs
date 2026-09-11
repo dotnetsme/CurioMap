@@ -12,7 +12,7 @@ public static class ChallengeMath
 {
     /// <summary>Percent of the target completed, floored to an integer.</summary>
     public static int Pct(int finished, int target) =>
-        target == 0 ? 0 : (int)(finished * 100.0 / target);
+        target == 0 ? 0 : Math.Min(100, (int)(finished * 100.0 / target));
 
     /// <summary>
     /// True when the user has finished more books than the year-to-date share
