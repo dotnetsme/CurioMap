@@ -3,7 +3,7 @@ using System.Threading.RateLimiting;
 using CurioMap.Api.Auth;
 using CurioMap.Api.Common;
 using CurioMap.Api.Data;
-using CurioMap.Api.Auth;
+using CurioMap.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -68,6 +68,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddScoped<IRedisRateLimiter, RedisRateLimiter>();
 builder.Services.AddScoped<IRatingService, RatingService>();
+builder.Services.AddScoped<IChallengeService, ChallengeService>();
 
 builder.Services.AddHttpClient<OpenLibraryService>(client =>
 {

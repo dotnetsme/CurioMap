@@ -31,6 +31,12 @@ public class User : IAuditable
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<BookshelfEntry> BookshelfEntries { get; set; } = [];
+
+    /// <summary>
+    /// Yearly reading challenges (e.g. "read 50 books in 2025").
+    /// One per user per year; lazily created on first read.
+    /// </summary>
+    public ICollection<Challenge> Challenges { get; set; } = [];
 }
 
 /// <summary>
@@ -47,7 +53,24 @@ public class Location
     public double? LngFuzzed { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public ICollection<User> Users { get; set; } = [];
+        public ICollection<User> Users { get; set; } = [];
+}
+
+/// <summary>
+/// Yearly reading challenge — a count goal the user opts into (default 50 books / year).
+/// One row per user per year, keyed by (user_id, year).
+/// </summary>
+public class Challenge : IAuditable
+{
+    public Guid UserId { get; set; }
+    public User? User { get; set; }
+    public int Year { get; set; } = DateTime.UtcNow.Year;
+
+    /// <summary>Target books to finish this year (default 50).</summary>
+    public int Target { get; set; } = 50;
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
 
 /// <summary>Social graph edge.</summary>

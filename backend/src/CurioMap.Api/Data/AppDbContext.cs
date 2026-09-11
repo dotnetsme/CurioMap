@@ -17,6 +17,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Follow> Follows => Set<Follow>();
     public DbSet<ActivityEvent> ActivityEvents => Set<ActivityEvent>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Challenge> Challenges => Set<Challenge>();
     public DbSet<Draft> Drafts => Set<Draft>();
     public DbSet<DraftChapter> DraftChapters => Set<DraftChapter>();
 
@@ -162,6 +163,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(c => c.DraftId).OnDelete(DeleteBehavior.Cascade);
         });
 
+
+        modelBuilder.Entity<Challenge>(e =>
+        {
+            e.HasKey(c => new { c.UserId, c.Year });
+            e.HasOne(c => c.User).WithMany(u => u.Challenges)
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 
         // (end of model configuration)
     }

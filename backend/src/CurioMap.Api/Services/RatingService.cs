@@ -38,32 +38,12 @@ public class RatingService(AppDbContext db) : IRatingService
 
     public async Task<RatingStats?> GetStatsAsync(Guid bookId, CancellationToken ct = default)
     {
-        var stats = await db.Ratings
-            .Where(r => r.BookId == bookId)
-            .Select(r => new RatingStats
-            {
-                Average = r.Value, Count = 1
-            })
-            .DefaultIfEmpty()
-            .AggregateAsync(
-                (acc, next) => new RatingStats
-                {
-                    Average = (acc!.Average * acc.Count + next!.Average * next.Count) / (acc.Count + next.Count),
-                    Count = acc.Count + next.Count
-                },
-                ct);
+        var query = db.Ratings.Where(r => r.BookId == bookId);
+        var count = await query.CountAsync(ct);
+        if (count == 0) return null;
 
-        // Fallback in case of empty aggregate (no ratings)
-        if (stats is null)
-        {
-            return null;
-        }
-
-        return new RatingStats
-        {
-            Average = stats.Average == 0 ? 0 : Math.Round(stats.Average, 2),
-            Count = stats.Count
-        };
+        var avg = await query.AverageAsync(r => r.Value, ct);
+        return new RatingStats { Average = Math.Round(avg, 2), Count = count };
     }
 }
 
@@ -72,3 +52,4 @@ public class RatingStats
     public double Average { get; set; }
     public int Count { get; set; }
 }
+

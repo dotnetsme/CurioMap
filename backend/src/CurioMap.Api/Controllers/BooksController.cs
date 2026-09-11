@@ -90,7 +90,7 @@ public class BooksController(
             .Take(limit)
             .ToListAsync();
 
-        return Ok(new SearchResponse(books.Select(b => ToDto(b, 0, 0)).ToList(), total, fromExternal));
+                return Ok(new SearchResponse(books.Select(b => ToDto(b, 0, 0, 0, 0)).ToList(), total, fromExternal));
     }
 
         [HttpGet("{id:guid}")]

@@ -21,7 +21,8 @@ public record BookDetailResult(BookDto Book, bool IsOwner);
 
 [ApiController]
 [Route("books")]
-public class RatingsController(AppDbContext db, IRatingService ratingService) : ControllerBase
+[Authorize]
+public class RatingsController(IRatingService ratingService, Auth.CurrentUser currentUser) : ControllerBase
 {
     /// <summary>
     /// Read aggregate stats for a single book.
@@ -45,7 +46,7 @@ public class RatingsController(AppDbContext db, IRatingService ratingService) : 
     [EnableRateLimiting("search")]
     public async Task<ActionResult<RatingStatsDto>> Rate(Guid id, [FromBody] RateBookRequest req)
     {
-        var userId = User.GetUserId();
+        var userId = currentUser.RequireUserId();
         await ratingService.RateAsync(userId, id, req.Value);
 
         var stats = await ratingService.GetStatsAsync(id);
