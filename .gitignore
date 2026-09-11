@@ -30,6 +30,9 @@ next-env.d.ts.bak
 .DS_Store
 Thumbs.db
 
+# Logs
+*.log
+
 # Fly / deploy artifacts
 *.flyc
 
