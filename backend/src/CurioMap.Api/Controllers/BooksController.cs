@@ -17,7 +17,6 @@ namespace CurioMap.Api.Controllers;
 [Route("books")]
 public class BooksController(
     AppDbContext db,
-    CurrentUser me,
     OpenLibraryService openLibrary,
     AffiliateLinkService affiliate,
     IOptions<OpenLibraryOptions> openLibraryOptions) : ControllerBase

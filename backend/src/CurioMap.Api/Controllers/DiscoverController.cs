@@ -222,7 +222,7 @@ public class DiscoverController(AppDbContext db, CurrentUser me, ICacheService c
 
     private static double? Avg(IEnumerable<double?> values)
     {
-        var list = values.Where(v => v.HasValue).Select(v => v.Value).ToList();
+        var list = values.Where(v => v.HasValue).Select(v => v.GetValueOrDefault()).ToList();
         return list.Count == 0 ? null : Math.Round(list.Average(), 2);
     }
 }

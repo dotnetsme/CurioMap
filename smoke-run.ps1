@@ -1,0 +1,1 @@
+$PSDefaultParameterValues = @{ "Invoke-WebRequest:UseBasicParsing" = $true }; & "d:\dev\CurioMap\scripts\smoke.ps1"

@@ -1,0 +1,25 @@
+Using launch settings from D:\dev\CurioMap\backend\src\CurioMap.Api\Properties\launchSettings.json...
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:8080
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: D:\dev\CurioMap\backend\src\CurioMap.Api
+info: System.Net.Http.HttpClient.OpenLibraryService.LogicalHandler[100]
+      Start processing HTTP request GET https://openlibrary.org/search.json?*
+info: System.Net.Http.HttpClient.OpenLibraryService.ClientHandler[100]
+      Sending HTTP request GET https://openlibrary.org/search.json?*
+info: System.Net.Http.HttpClient.OpenLibraryService.ClientHandler[101]
+      Received HTTP response headers after 450.1265ms - 200
+info: System.Net.Http.HttpClient.OpenLibraryService.LogicalHandler[101]
+      End processing HTTP request after 457.3854ms - 200
+info: System.Net.Http.HttpClient.GeoResolveService.LogicalHandler[100]
+      Start processing HTTP request GET https://geocoding-api.open-meteo.com/v1/search?*
+info: System.Net.Http.HttpClient.GeoResolveService.ClientHandler[100]
+      Sending HTTP request GET https://geocoding-api.open-meteo.com/v1/search?*
+info: System.Net.Http.HttpClient.GeoResolveService.ClientHandler[101]
+      Received HTTP response headers after 552.1178ms - 200
+info: System.Net.Http.HttpClient.GeoResolveService.LogicalHandler[101]
+      End processing HTTP request after 552.2669ms - 200
