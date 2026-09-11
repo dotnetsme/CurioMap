@@ -155,7 +155,7 @@ public class ConversationsController(
 
     [HttpGet("conversations/{id:guid}/messages")]
     [AllowAnonymous]
-    public async Task<ActionResult<MessagesPage>> Messages(
+    public async Task<ActionResult<MessagesPage<MessageDto>>> Messages(
         Guid id,
         [FromQuery] int limit = 50,
         [FromQuery] int offset = 0)
@@ -191,7 +191,7 @@ public class ConversationsController(
             m.CreatedAt,
             ReactionsFor(reactions, m.Id, mineId))).ToList();
 
-        return Ok(new MessagesPage(items, total, limit, offset));
+        return Ok(new MessagesPage<MessageDto>(items, total, limit, offset));
     }
 
     [HttpPost("conversations/{id:guid}/messages")]

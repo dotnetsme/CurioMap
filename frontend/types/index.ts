@@ -6,3 +6,4 @@ export * from "./conversation";
 export * from "./message";
 export * from "./discover";
 export * from "./feed";
+export * from "./circle";
