@@ -22,8 +22,8 @@ export function MessageInput({
 
   if (!user) {
     return (
-      <div className="glass p-4 text-sm text-slate-300">
-        <Link href="/auth/login" className="text-violet-300 underline">
+      <div className="card p-4 text-sm text-ink-2">
+        <Link href="/auth/login" className="text-accent hover:text-accent-strong underline">
           Sign in
         </Link>{" "}
         to join this conversation.
@@ -49,7 +49,7 @@ export function MessageInput({
   }
 
   return (
-    <form onSubmit={submit} className="glass flex flex-col gap-2 p-4">
+    <form onSubmit={submit} className="card flex flex-col gap-2 p-4">
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
@@ -57,9 +57,9 @@ export function MessageInput({
         maxLength={2000}
         required
       />
-      {error ? <p className="text-sm text-rose-300">{error}</p> : null}
+      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       <div className="flex items-center justify-between">
-        <span className="text-xs text-slate-500">{content.length}/2000</span>
+        <span className="text-xs text-ink-3">{content.length}/2000</span>
         <Button type="submit" disabled={busy || !content.trim()}>
           {busy ? "Posting…" : "Post"}
         </Button>

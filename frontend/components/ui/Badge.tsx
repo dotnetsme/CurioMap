@@ -1,10 +1,9 @@
 const toneClasses: Record<string, string> = {
-  violet: "bg-violet-500/15 text-violet-300 border-violet-400/30",
-  cyan: "bg-cyan-500/15 text-cyan-300 border-cyan-400/30",
-  amber: "bg-amber-500/15 text-amber-300 border-amber-400/30",
-  emerald: "bg-emerald-500/15 text-emerald-300 border-emerald-400/30",
-  rose: "bg-rose-500/15 text-rose-300 border-rose-400/30",
-  slate: "bg-white/5 text-slate-300 border-white/10",
+  accent: "bg-accent-soft text-accent-strong border-accent/30",
+  reading: "bg-reading-soft text-reading border-reading/30",
+  violet: "bg-violet/10 text-violet border-violet/30",
+  cyan: "bg-cyan/10 text-cyan border-cyan/30",
+  slate: "bg-surface-2 text-ink-2 border-line",
 };
 
 export function Badge({

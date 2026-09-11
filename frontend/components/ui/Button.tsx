@@ -2,14 +2,19 @@
 
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type Variant = "primary" | "ghost" | "danger" | "subtle";
+type Variant = "primary" | "accent" | "ghost" | "danger" | "subtle";
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-gradient-to-r from-violet-500 to-cyan-500 text-white hover:opacity-90 shadow-lg shadow-violet-500/20",
-  ghost: "border border-white/15 bg-white/5 text-slate-100 hover:bg-white/10",
-  danger: "bg-rose-500/90 text-white hover:bg-rose-500",
-  subtle: "text-slate-300 hover:text-white",
+    "bg-ink text-surface hover:bg-ink-2 active:scale-[0.98]",
+  accent:
+    "bg-accent text-white hover:bg-accent-strong active:scale-[0.98]",
+  danger:
+    "bg-rose-600 text-white hover:bg-rose-700 active:scale-[0.98]",
+  ghost:
+    "border border-line bg-transparent text-ink hover:border-ink-2 hover:bg-surface-2",
+  subtle:
+    "text-ink-2 hover:text-ink",
 };
 
 export function Button({
@@ -20,7 +25,7 @@ export function Button({
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; children: ReactNode }) {
   return (
     <button
-      className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
+      className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${variants[variant]} ${className}`}
       {...props}
     >
       {children}

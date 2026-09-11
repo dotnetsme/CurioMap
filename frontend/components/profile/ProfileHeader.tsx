@@ -22,22 +22,22 @@ export function ProfileHeader({
     : "Location hidden";
 
   return (
-    <div className="glass flex flex-col gap-4 p-6 sm:flex-row sm:items-center">
+    <div className="card flex flex-col gap-4 p-6 sm:flex-row sm:items-center">
       <Avatar avatarId={profile.avatarId} name={profile.displayName} size={72} />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-bold text-white">{profile.displayName}</h1>
+          <h1 className="text-xl font-semibold text-ink">{profile.displayName}</h1>
           <Badge tone="violet">{modeLabels[profile.displayNameMode] ?? profile.displayNameMode}</Badge>
-          {profile.isAuthor ? <Badge tone="amber">Author</Badge> : null}
+          {profile.isAuthor ? <Badge tone="accent">Author</Badge> : null}
         </div>
-        <p className="text-sm text-slate-400">@{profile.handle}</p>
-        {profile.bio ? <p className="mt-2 max-w-xl text-sm text-slate-300">{profile.bio}</p> : null}
-        <div className="mt-3 flex flex-wrap gap-4 text-xs text-slate-400">
+        <p className="text-sm text-ink-3">@{profile.handle}</p>
+        {profile.bio ? <p className="mt-2 max-w-xl text-sm text-ink-2">{profile.bio}</p> : null}
+        <div className="mt-3 flex flex-wrap gap-4 text-xs text-ink-3">
           <span>📍 {locationLabel}</span>
           <span>📚 {profile.bookshelfSummary.total} books</span>
           <span>{profile.followersCount} followers</span>
           <span>{profile.followingCount} following</span>
-          <Link href={`/users/${profile.id}/bookshelf`} className="text-violet-300 hover:text-violet-200">
+          <Link href={`/users/${profile.id}/bookshelf`} className="text-accent hover:text-accent-strong">
             View bookshelf →
           </Link>
         </div>

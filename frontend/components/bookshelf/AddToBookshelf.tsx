@@ -24,11 +24,11 @@ export function AddToBookshelf({ book }: { book: BookStub }) {
 
   if (!user) {
     return (
-      <div className="glass p-4 text-sm text-slate-300">
-        <a href="/auth/login" className="text-violet-300 underline">
+      <div className="rounded border border-ink/10 bg-white p-4 text-sm text-ink-soft">
+        <a href="/auth/login" className="font-medium text-ink underline decoration-accent decoration-2 underline-offset-2 hover:text-accent">
           Sign in
         </a>{" "}
-        to add “{book.title}” to your bookshelf.
+        to add &ldquo;{book.title}&rdquo; to your bookshelf.
       </div>
     );
   }
@@ -48,9 +48,9 @@ export function AddToBookshelf({ book }: { book: BookStub }) {
 
   if (done) {
     return (
-      <div className="glass p-4 text-sm text-emerald-300">
-        On your shelf as “{done}”.{" "}
-        <a href="/me/bookshelf" className="underline">
+      <div className="rounded border border-ink/10 bg-white p-4 text-sm text-green-700">
+        On your shelf as &ldquo;{done}&rdquo;.{" "}
+        <a href="/me/bookshelf" className="underline decoration-accent decoration-2 underline-offset-2 hover:text-accent">
           Manage
         </a>
       </div>
@@ -58,8 +58,8 @@ export function AddToBookshelf({ book }: { book: BookStub }) {
   }
 
   return (
-    <div className="glass p-4">
-      <p className="mb-2 text-xs font-semibold tracking-wide text-slate-400">ADD TO BOOKSHELF</p>
+    <div className="rounded border border-ink/10 bg-white p-4">
+      <p className="mb-2 text-xs font-semibold tracking-wide text-ink-soft">ADD TO BOOKSHELF</p>
       <div className="flex flex-wrap gap-2">
         {statuses.map((s) => (
           <Button
@@ -72,7 +72,7 @@ export function AddToBookshelf({ book }: { book: BookStub }) {
           </Button>
         ))}
       </div>
-      {error ? <p className="mt-2 text-xs text-rose-300">{error}</p> : null}
+      {error ? <p className="mt-2 text-xs text-red-700">{error}</p> : null}
     </div>
   );
 }

@@ -51,22 +51,22 @@ export function BookshelfEntryCard({
   }
 
   return (
-    <div className="glass flex items-center gap-4 p-4">
+    <div className="flex items-center gap-4 rounded border border-ink/10 bg-white p-4 transition hover:shadow-sm">
       <a href={`/books/${entry.bookId}`} className="shrink-0">
         <BookCover book={entry.book} size={48} />
       </a>
       <div className="min-w-0 flex-1">
-        <a href={`/books/${entry.bookId}`} className="font-medium text-white hover:text-violet-200">
+        <a href={`/books/${entry.bookId}`} className="font-medium text-ink hover:text-accent">
           {entry.book.title}
         </a>
-        <p className="text-sm text-slate-400">{entry.book.author}</p>
+        <p className="text-sm text-ink-soft">{entry.book.author}</p>
         <div className="mt-1 flex items-center gap-2">
-          <Badge tone={status === "reading" ? "cyan" : status === "finished" ? "emerald" : "slate"}>
+          <Badge tone={status === "reading" ? "amber" : status === "finished" ? "green" : "muted"}>
             {status}
           </Badge>
-          <Badge tone={visibility === "public" ? "violet" : "slate"}>{visibility}</Badge>
+          <Badge tone={visibility === "public" ? "amber" : "muted"}>{visibility}</Badge>
         </div>
-        {error ? <p className="mt-1 text-xs text-rose-300">{error}</p> : null}
+        {error ? <p className="mt-1 text-xs text-red-700">{error}</p> : null}
       </div>
       {editable ? (
         <div className="flex shrink-0 flex-col gap-2 sm:flex-row">

@@ -51,7 +51,7 @@ export function BookshelfList({ ownerId }: { ownerId?: string }) {
         (["reading", "finished", "wishlist"] as const).map((shelf) =>
           grouped[shelf].length > 0 ? (
             <section key={shelf}>
-              <h3 className="mb-2 text-xs font-semibold tracking-widest text-slate-400">
+              <h3 className="mono-label mb-3 text-ink-3">
                 {shelf.toUpperCase()} ({grouped[shelf].length})
               </h3>
               <div className="flex flex-col gap-3">

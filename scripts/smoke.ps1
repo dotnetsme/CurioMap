@@ -39,7 +39,7 @@ function Invoke-Http {
 }
 $h = Invoke-Http -Uri "$ApiUrl/health"
 if ($h.ok) {
-    $out.Add("HEALTH: OK ($(($h.body | ConvertTo-Json -Compress))")
+    $out.Add("HEALTH: OK ($(($h.body | ConvertTo-Json -Compress)))")
 } else {
     $out.Add("HEALTH: FAIL status=$($h.status) err=$($h.err)")
 }

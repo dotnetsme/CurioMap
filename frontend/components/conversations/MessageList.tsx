@@ -10,9 +10,9 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import type { Message, ReactionKind } from "@/types";
 
 const kinds: { kind: ReactionKind; label: string }[] = [
-  { kind: "insightful", label: "💡 Insightful" },
-  { kind: "funny", label: "😄 Funny" },
-  { kind: "helpful", label: "🧭 Helpful" },
+  { kind: "insightful", label: "Insightful" },
+  { kind: "funny", label: "Funny" },
+  { kind: "helpful", label: "Helpful" },
 ];
 
 function MessageRow({ message, onReact }: { message: Message; onReact?: (m: Message) => void }) {
@@ -24,7 +24,7 @@ function MessageRow({ message, onReact }: { message: Message; onReact?: (m: Mess
 
   if (message.status !== "visible") {
     return (
-      <div className="glass p-4 text-sm italic text-slate-500">
+      <div className="card p-4 text-sm italic text-ink-3">
         This message was {message.status} by moderation.
       </div>
     );
@@ -55,25 +55,25 @@ function MessageRow({ message, onReact }: { message: Message; onReact?: (m: Mess
   }
 
   return (
-    <div className="glass p-4">
+    <div className="card p-4">
       <div className="flex items-center gap-2">
         <Avatar avatarId={message.author.avatarId} name={message.author.displayName} size={28} />
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-white">{message.author.displayName}</p>
-          <p className="text-[11px] text-slate-500">
+          <p className="truncate text-sm font-medium text-ink">{message.author.displayName}</p>
+          <p className="text-[11px] text-ink-3">
             {new Date(message.createdAt).toLocaleString()}
           </p>
         </div>
         {user && user.id !== message.author.id ? (
           <button
             onClick={() => setReportOpen(true)}
-            className="ml-auto cursor-pointer text-xs text-slate-500 hover:text-rose-300"
+            className="ml-auto cursor-pointer text-xs text-ink-3 hover:text-rose-600"
           >
             Report
           </button>
         ) : null}
       </div>
-      <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-200">{message.content}</p>
+      <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-ink-2">{message.content}</p>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         {kinds.map(({ kind, label }) => {
           const summary = message.reactions.find((r) => r.kind === kind);
@@ -90,13 +90,13 @@ function MessageRow({ message, onReact }: { message: Message; onReact?: (m: Mess
             </button>
           );
         })}
-        {reported ? <Badge tone="emerald">reported — thank you</Badge> : null}
-        {error ? <span className="text-xs text-rose-300">{error}</span> : null}
+        {reported ? <Badge tone="reading">reported — thank you</Badge> : null}
+        {error ? <span className="text-xs text-rose-600">{error}</span> : null}
       </div>
 
       <Modal open={reportOpen} onClose={() => setReportOpen(false)} title="Report this message">
         {reported ? (
-          <p className="text-sm text-emerald-300">Thanks — a moderator will review it.</p>
+          <p className="text-sm text-reading">Thanks — a moderator will review it.</p>
         ) : (
           <>
             <textarea
@@ -113,7 +113,7 @@ function MessageRow({ message, onReact }: { message: Message; onReact?: (m: Mess
               >
                 Submit report
               </Button>
-              <Button variant="subtle" onClick={() => setReportOpen(false)}>
+              <Button variant="ghost" onClick={() => setReportOpen(false)}>
                 Cancel
               </Button>
             </div>
@@ -133,7 +133,7 @@ export function MessageList({
 }) {
   if (messages.length === 0) {
     return (
-      <div className="glass p-6 text-sm text-slate-400">
+      <div className="card p-6 text-sm text-ink-3">
         No messages yet. Be the first to share a thought.
       </div>
     );

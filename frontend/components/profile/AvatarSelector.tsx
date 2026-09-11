@@ -18,7 +18,9 @@ export function AvatarSelector({
           type="button"
           onClick={() => onChange(avatar.id)}
           className={`cursor-pointer rounded-xl p-1 transition ${
-            value === avatar.id ? "bg-violet-500/30 ring-2 ring-violet-400" : "hover:bg-white/10"
+            value === avatar.id
+              ? "bg-accent-soft ring-2 ring-accent"
+              : "hover:bg-surface-2"
           }`}
           aria-label={avatar.id}
         >

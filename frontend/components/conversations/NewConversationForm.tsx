@@ -55,7 +55,7 @@ export function NewConversationForm({
   }
 
   return (
-    <form onSubmit={submit} className="glass flex flex-col gap-3 p-4">
+    <form onSubmit={submit} className="card flex flex-col gap-3 p-4">
       <div className="flex flex-wrap gap-2">
         {PROMPTS.map((p) => (
           <button
@@ -86,12 +86,12 @@ export function NewConversationForm({
         <option value="theme">Theme</option>
         <option value="question">Question</option>
       </Select>
-      {error ? <p className="text-sm text-rose-300">{error}</p> : null}
+      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       <div className="flex gap-2">
         <Button type="submit" disabled={busy}>
           {busy ? "…" : "Create"}
         </Button>
-        <Button type="button" variant="subtle" onClick={() => setOpen(false)}>
+        <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
           Cancel
         </Button>
       </div>

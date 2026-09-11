@@ -7,7 +7,7 @@ export function Input({ className = "", ...props }: InputHTMLAttributes<HTMLInpu
 }
 
 export function Textarea({ className = "", ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea className={`field min-h-24 ${className}`} {...props} />;
+  return <textarea className={`field min-h-24 resize-y ${className}`} {...props} />;
 }
 
 export function Select({ className = "", children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
@@ -19,5 +19,9 @@ export function Select({ className = "", children, ...props }: SelectHTMLAttribu
 }
 
 export function Label({ children }: { children: React.ReactNode }) {
-  return <label className="mb-1 block text-xs font-medium tracking-wide text-slate-400">{children}</label>;
+  return <label className="mb-1.5 block text-xs font-medium tracking-wide text-ink-2">{children}</label>;
+}
+
+export function FieldError({ children }: { children: React.ReactNode }) {
+  return <p className="mt-1 text-xs text-rose-600">{children}</p>;
 }

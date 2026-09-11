@@ -18,17 +18,17 @@ export function GlobalMap({ regions }: { regions: RegionStat[] }) {
   const max = Math.max(1, ...regions.map((r) => r.activeReaders));
 
   return (
-    <div className="glass overflow-hidden p-2">
+    <div className="surface overflow-hidden p-2">
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Global curiosity heatmap">
         <defs>
           <radialGradient id="dot" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#c4b5fd" stopOpacity="0.9" />
-            <stop offset="60%" stopColor="#8b5cf6" stopOpacity="0.45" />
-            <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
+            <stop offset="0%" stopColor="#d97706" stopOpacity="0.9" />
+            <stop offset="60%" stopColor="#b45309" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="#b45309" stopOpacity="0" />
           </radialGradient>
         </defs>
 
-        <rect x="0" y="0" width={W} height={H} fill="#0a0f1f" />
+        <rect x="0" y="0" width={W} height={H} fill="#fef3c7" />
 
         {/* graticule */}
         {Array.from({ length: 11 }, (_, i) => (
@@ -38,8 +38,8 @@ export function GlobalMap({ regions }: { regions: RegionStat[] }) {
             x2={W}
             y1={(i / 10) * H}
             y2={(i / 10) * H}
-            stroke="#ffffff"
-            strokeOpacity="0.05"
+            stroke="#92400e"
+            strokeOpacity="0.08"
           />
         ))}
         {Array.from({ length: 13 }, (_, i) => (
@@ -49,8 +49,8 @@ export function GlobalMap({ regions }: { regions: RegionStat[] }) {
             y2={H}
             x1={(i / 12) * W}
             x2={(i / 12) * W}
-            stroke="#ffffff"
-            strokeOpacity="0.05"
+            stroke="#92400e"
+            strokeOpacity="0.08"
           />
         ))}
 
@@ -65,7 +65,7 @@ export function GlobalMap({ regions }: { regions: RegionStat[] }) {
                 <circle cx={x} cy={y} r={radius} fill="url(#dot)">
                   <title>{`${r.country}${r.region ? ` / ${r.region}` : ""} — ${r.activeReaders} readers`}</title>
                 </circle>
-                <circle cx={x} cy={y} r={2.5} fill="#e9d5ff" fillOpacity={0.5 + intensity * 0.5} />
+                <circle cx={x} cy={y} r={2.5} fill="#fbbf24" fillOpacity={0.5 + intensity * 0.5} />
               </g>
             );
           })}
@@ -85,9 +85,9 @@ export function StatsBar({ stats }: { stats: StatsSummary }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
       {items.map((item) => (
-        <div key={item.label} className="glass p-4 text-center">
-          <p className="text-2xl font-bold text-gradient">{item.value}</p>
-          <p className="text-xs text-slate-400">{item.label}</p>
+        <div key={item.label} className="surface p-4 text-center">
+          <p className="text-2xl font-bold text-ink">{item.value}</p>
+          <p className="text-xs text-ink-faint">{item.label}</p>
         </div>
       ))}
     </div>
@@ -99,16 +99,16 @@ export function TopReadersStrip({ regions }: { regions: RegionStat[] }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {top.map((r, i) => (
-        <div key={`${r.country}-${r.region}-${i}`} className="glass p-4">
+        <div key={`${r.country}-${r.region}-${i}`} className="surface p-4">
           <div className="flex items-baseline justify-between">
-            <p className="font-medium text-white">
+            <p className="font-medium text-ink">
               {r.region ? `${r.region}, ` : ""}
               {r.country}
             </p>
-            <span className="text-xs text-cyan-300">{r.activeReaders} reading</span>
+            <span className="text-xs text-accent-ink">{r.activeReaders} reading</span>
           </div>
           {r.topBooks.length > 0 ? (
-            <div className="mt-2 flex items-center gap-2 text-xs text-slate-400">
+            <div className="mt-2 flex items-center gap-2 text-xs text-ink-faint">
               <Avatar avatarId="curio-15" size={18} />
               <span className="truncate">
                 Top: {r.topBooks.map((b) => b.title).slice(0, 3).join(" · ")}

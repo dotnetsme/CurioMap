@@ -39,14 +39,14 @@ export function SearchPageClient({ initialQuery }: { initialQuery: string }) {
 
   return (
     <div className="flex flex-col gap-6 py-4">
-      <h1 className="text-2xl font-bold text-white">Search books</h1>
+      <h1 className="text-2xl font-bold text-ink">Search books</h1>
       <BookSearchBar initialQuery={query} />
       {fromExternal ? (
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-ink-soft">
           No exact catalog match — we imported these results from Open Library.{" "}
           <button
             type="button"
-            className="text-cyan-300 underline hover:text-cyan-200"
+            className="text-accent underline decoration-accent/50 underline-offset-2 hover:decoration-accent"
             onClick={() => setFromExternal(false)}
           >
             Acknowledge

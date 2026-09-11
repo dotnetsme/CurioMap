@@ -38,21 +38,21 @@ export function BookDetail({ bookId }: { bookId: string }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="glass flex flex-col gap-5 p-6 sm:flex-row">
+      <div className="flex flex-col gap-5 rounded border border-ink/10 bg-white p-6 sm:flex-row">
         <div className="shrink-0">
           <BookCover book={book} size={140} />
         </div>
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-bold text-white">{book.title}</h1>
-          <p className="text-slate-300">{book.author}</p>
-          <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-400">
-            {book.isbn ? <Badge tone="slate">ISBN {book.isbn}</Badge> : null}
-            <Badge tone="cyan">{book.readersCount} reading</Badge>
-            <Badge tone="violet">{book.conversationsCount} conversations</Badge>
-            {book.metadata?.year ? <Badge tone="amber">{book.metadata.year}</Badge> : null}
+          <h1 className="text-2xl font-bold text-ink">{book.title}</h1>
+          <p className="text-ink-soft">{book.author}</p>
+          <div className="mt-2 flex flex-wrap gap-2 text-xs text-ink-soft">
+            {book.isbn ? <Badge tone="muted">ISBN {book.isbn}</Badge> : null}
+            <Badge tone="amber">{book.readersCount} reading</Badge>
+            <Badge tone="amber">{book.conversationsCount} conversations</Badge>
+            {book.metadata?.year ? <Badge tone="muted">{book.metadata.year}</Badge> : null}
           </div>
           {book.description ? (
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300">{book.description}</p>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-soft">{book.description}</p>
           ) : null}
         </div>
       </div>
@@ -60,7 +60,7 @@ export function BookDetail({ bookId }: { bookId: string }) {
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <section className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-white">Conversations</h2>
+            <h2 className="text-lg font-semibold text-ink">Conversations</h2>
             <NewConversationForm
               bookId={book.id}
               onCreated={(c) => setConversations((prev) => [c, ...prev])}
@@ -72,11 +72,11 @@ export function BookDetail({ bookId }: { bookId: string }) {
         <aside className="flex flex-col gap-4">
           <AddToBookshelf book={book} />
           <BuyLinks links={book.affiliateLinks} />
-          <div className="glass p-4 text-xs text-slate-400">
-            <p className="mb-1 font-semibold text-slate-300">PRIVACY NOTE</p>
+          <div className="rounded border border-ink/10 bg-white p-4 text-xs text-ink-soft">
+            <p className="mb-1 font-semibold text-ink">PRIVACY NOTE</p>
             Your reading status is public only if you set the entry (or your whole shelf) to
             public. Manage this in{" "}
-            <Link href="/me/settings" className="underline hover:text-slate-200">
+            <Link href="/me/settings" className="underline decoration-accent decoration-2 underline-offset-2 hover:text-accent">
               settings
             </Link>
             .

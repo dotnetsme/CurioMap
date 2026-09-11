@@ -13,8 +13,8 @@ export function BuyLinks({ links }: { links: Record<string, string> }) {
   if (entries.length === 0) return null;
 
   return (
-    <div className="glass p-4">
-      <p className="mb-2 text-xs font-semibold tracking-wide text-slate-400">BUY THIS BOOK</p>
+    <div className="card p-4">
+      <p className="mono-label mb-2 text-ink-3">BUY THIS BOOK</p>
       <div className="flex flex-wrap gap-2">
         {entries.map(([store, url]) => (
           <a
@@ -22,15 +22,15 @@ export function BuyLinks({ links }: { links: Record<string, string> }) {
             href={url}
             target="_blank"
             rel="noreferrer sponsored nofollow"
-            className="rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-100 transition hover:border-violet-400/60 hover:bg-violet-500/15"
+            className="rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink-2 transition hover:border-accent hover:bg-accent-soft hover:text-accent-strong"
           >
             {labels[store] ?? store} ↗
           </a>
         ))}
       </div>
-      <p className="mt-2 text-[11px] text-slate-500">
+      <p className="mt-2 text-[11px] text-ink-3">
         Affiliate links support CurioMap at no extra cost to you.{" "}
-        <a href="/policy/affiliates" className="underline hover:text-slate-300">
+        <a href="/policy/affiliates" className="underline hover:text-ink">
           How it works
         </a>
       </p>
