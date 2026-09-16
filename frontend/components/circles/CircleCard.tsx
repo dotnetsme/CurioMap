@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { BookOpen, Users, MessageCircle, Calendar } from "lucide-react";
+import { BookOpen, Users, MessageCircle, Calendar, Flame } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/profile/Avatar";
 import { timeAgo } from "@/lib/time";
@@ -41,6 +41,15 @@ export function CircleCard({ circle }: { circle: Circle }) {
             <MessageCircle size={14} />
             {circle.messageCount}
           </span>
+          {circle.currentStreak > 0 ? (
+            <span
+              className="flex items-center gap-1 text-amber-500"
+              title={`Group streak — longest ${circle.longestStreak} days`}
+            >
+              <Flame size={14} aria-hidden />
+              {circle.currentStreak}-day
+            </span>
+          ) : null}
           {circle.nextMeetingAt ? (
             <span className="flex items-center gap-1">
               <Calendar size={14} />

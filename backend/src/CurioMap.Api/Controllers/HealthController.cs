@@ -7,7 +7,7 @@ namespace CurioMap.Api.Controllers;
 
 [ApiController]
 [Route("health")]
-public class HealthController(AppDbContext db, IConnectionMultiplexer redis) : ControllerBase
+public class HealthController(AppDbContext db, IConnectionMultiplexer? redis = null) : ControllerBase
 {
     [HttpGet]
     [AllowAnonymous]
@@ -26,8 +26,8 @@ public class HealthController(AppDbContext db, IConnectionMultiplexer redis) : C
         bool cache;
         try
         {
-            cache = redis.IsConnected;
-            if (cache)
+            cache = redis != null && redis.IsConnected;
+            if (cache && redis != null)
             {
                 await redis.GetDatabase().PingAsync();
             }

@@ -5,8 +5,13 @@ import type {
   CircleListResponse,
   CircleMessagesPage,
   CircleMessage,
+  CircleStreakStats,
   CreateCirclePayload,
 } from "@/types";
+
+export function getCircleStreak(handleOrId: string): Promise<CircleStreakStats> {
+  return api(`/circles/${handleOrId}/streak`, { auth: false });
+}
 
 export function listCircles(
   opts: { q?: string; bookId?: string; sort?: string; limit?: number; offset?: number } = {},

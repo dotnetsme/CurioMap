@@ -1,3 +1,4 @@
+using CurioMap.Api.Common;
 using CurioMap.Api.Contracts;
 using CurioMap.Api.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -24,6 +25,12 @@ public class ChallengeController(IChallengeService challengeService, Auth.Curren
     [EnableRateLimiting("search")]
     public async Task<ActionResult<ChallengeStatsDto>> Get([FromQuery] int? year = null)
     {
+        // `new DateTime(year, 1, 1)` throws for out-of-range years; validate here
+        // so a bad query string is a 400, not an unhandled 500.
+        if (year is { } y && (y < 2000 || y > 2100))
+        {
+            throw new AppException(400, "Year must be between 2000 and 2100.");
+        }
         var userId = currentUser.RequireUserId();
         var stats = await challengeService.GetStatsAsync(userId, year);
         return Ok(new ChallengeStatsDto(
@@ -40,6 +47,10 @@ public class ChallengeController(IChallengeService challengeService, Auth.Curren
         [FromQuery] int? year,
         [FromBody] SetChallengeTargetRequest request)
     {
+        if (year is { } y && (y < 2000 || y > 2100))
+        {
+            throw new AppException(400, "Year must be between 2000 and 2100.");
+        }
         var userId = currentUser.RequireUserId();
         var stats = await challengeService.SetTargetAsync(userId, request.Target, year);
         return Ok(new ChallengeStatsDto(

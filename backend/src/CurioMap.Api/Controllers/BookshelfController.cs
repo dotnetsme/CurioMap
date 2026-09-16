@@ -14,7 +14,7 @@ namespace CurioMap.Api.Controllers;
 
 [ApiController]
 [Route("bookshelf")]
-public class BookshelfController(AppDbContext db, CurrentUser me, ActivityService activity) : ControllerBase
+public class BookshelfController(AppDbContext db, CurrentUser me, ActivityService activity, IStreakService streak) : ControllerBase
 {
     [HttpGet("me")]
     [Authorize]
@@ -51,7 +51,7 @@ public class BookshelfController(AppDbContext db, CurrentUser me, ActivityServic
             query = query.Where(s => s.Visibility == ShelfVisibility.Public);
         }
 
-        var entries = await query.OrderByDescending(s => s.CreatedAt).Take(200).ToListAsync();
+        var entries = await query.OrderByDescending(s => s.CreatedAt).Take(50).ToListAsync();
         return Ok(entries.Select(ToDto).ToList());
     }
 
@@ -95,6 +95,16 @@ public class BookshelfController(AppDbContext db, CurrentUser me, ActivityServic
             var actor = await db.Users.FirstAsync(u => u.Id == userId);
             activity.RecordBookshelfAdded(actor, book, status);
             await db.SaveChangesAsync();
+
+            try
+            {
+                await streak.RecordActivityAsync(userId,
+                    status == BookStatus.Finished ? StreakActivity.BookFinished : StreakActivity.BookAdded);
+            }
+            catch
+            {
+                // Gamification is best-effort; never fail the shelf update.
+            }
         }
         else
         {
@@ -120,6 +130,8 @@ public class BookshelfController(AppDbContext db, CurrentUser me, ActivityServic
         {
             throw new AppException(403, "Not your bookshelf entry.");
         }
+
+        var previousStatus = entry.Status;
 
         if (request.Status is not null)
         {
@@ -150,6 +162,19 @@ public class BookshelfController(AppDbContext db, CurrentUser me, ActivityServic
 
         ApplyTimestamps(entry);
         await db.SaveChangesAsync();
+
+        if (previousStatus != entry.Status && entry.Status == BookStatus.Finished)
+        {
+            try
+            {
+                await streak.RecordActivityAsync(entry.UserId, StreakActivity.BookFinished);
+            }
+            catch
+            {
+                // Gamification is best-effort; never fail the shelf update.
+            }
+        }
+
         return Ok(ToDto(entry));
     }
 

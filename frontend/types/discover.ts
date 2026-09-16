@@ -29,6 +29,24 @@ export interface Nearby {
   readers: NearbyReader[];
 }
 
+/** An individual reader on the global map, at their fuzzed ~15 km grid coordinate. */
+export interface MapReader {
+  user: UserStub;
+  country: string | null;
+  region: string | null;
+  city: string | null;
+  lat: number;
+  lng: number;
+  books: BookStub[];
+}
+
+export interface MapReaders {
+  country: string | null;
+  region: string | null;
+  total: number;
+  readers: MapReader[];
+}
+
 export interface StatsSummary {
   readers: number;
   books: number;

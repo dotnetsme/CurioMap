@@ -55,9 +55,9 @@ public class FollowController(AppDbContext db, CurrentUser me) : ControllerBase
 
     [HttpGet("/users/{id:guid}/followers")]
     [AllowAnonymous]
-    public async Task<ActionResult<FollowListDto>> Followers(Guid id, [FromQuery] int limit = 50, [FromQuery] int offset = 0)
+    public async Task<ActionResult<FollowListDto>> Followers(Guid id, [FromQuery] int limit = 30, [FromQuery] int offset = 0)
     {
-        limit = Math.Clamp(limit, 1, 100);
+        limit = Math.Clamp(limit, 1, 50);
         offset = Math.Max(0, offset);
 
         if (!await db.Users.AnyAsync(u => u.Id == id))
@@ -79,9 +79,9 @@ public class FollowController(AppDbContext db, CurrentUser me) : ControllerBase
 
     [HttpGet("/users/{id:guid}/following")]
     [AllowAnonymous]
-    public async Task<ActionResult<FollowListDto>> Following(Guid id, [FromQuery] int limit = 50, [FromQuery] int offset = 0)
+    public async Task<ActionResult<FollowListDto>> Following(Guid id, [FromQuery] int limit = 30, [FromQuery] int offset = 0)
     {
-        limit = Math.Clamp(limit, 1, 100);
+        limit = Math.Clamp(limit, 1, 50);
         offset = Math.Max(0, offset);
 
         if (!await db.Users.AnyAsync(u => u.Id == id))

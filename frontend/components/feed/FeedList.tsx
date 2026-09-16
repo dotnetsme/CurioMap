@@ -1,9 +1,10 @@
-import { BookOpen, Flame, LibraryBig, MessageCircle, Sparkles } from "lucide-react";
+import { BookOpen, Flame, LibraryBig, MessageCircle, Sparkles, Trophy } from "lucide-react";
 import Link from "next/link";
 import { Avatar } from "@/components/profile/Avatar";
 import { BookCover } from "@/components/books/BookCover";
 import { EmptyState } from "@/components/ui/Feedback";
 import { Reveal } from "@/components/ui/Reveal";
+import { badgeMeta } from "@/lib/badges";
 import type { FeedEvent, BookStub } from "@/types";
 import { timeAgo } from "@/lib/time";
 
@@ -26,6 +27,12 @@ function EventIcon({ type }: { type: string }) {
       return (
         <span className={`${cls} bg-amber-500/10 text-amber-600`}>
           <Sparkles size={16} />
+        </span>
+      );
+    case "badge_earned":
+      return (
+        <span className={`${cls} bg-amber-500/15 text-amber-500`}>
+          <Trophy size={16} />
         </span>
       );
     default:
@@ -69,6 +76,8 @@ function describe(event: FeedEvent): React.ReactNode {
           {event.messageExcerpt ? <span className="text-ink-muted"> — “{event.messageExcerpt}”</span> : null}
         </>
       );
+    case "badge_earned":
+      return <>earned the <strong>{badgeMeta(event.badgeKind ?? "").name}</strong> badge</>;
     default:
       return <>{event.type}</>;
   }

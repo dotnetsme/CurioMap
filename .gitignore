@@ -1,38 +1,101 @@
-# .NET
-bin/
-obj/
-*.user
-*.suo
-artifacts/
-TestResults/
-*.DotSettings
+# =============================================================================
+# CurioMap .gitignore
+# Comprehensive rules for .NET 10, Next.js 16, Postgres/Redis, secrets, and IDEs
+# =============================================================================
 
-# Node / Next.js
+# -----------------------------------------------------------------------------
+# Secrets, Environment & Credentials (NEVER COMMIT)
+# -----------------------------------------------------------------------------
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+*.token
+secrets.json
+appsettings.*.local.json
+
+# -----------------------------------------------------------------------------
+# .NET / C# Build Outputs
+# -----------------------------------------------------------------------------
+[Bb]in/
+[Oo]bj/
+[Aa]rtifacts/
+[Tt]est[Rr]esults/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.DotSettings
+*.DotSettings.user
+*.pidb
+*.booproj
+*.svclog
+*.crash
+project.lock.json
+project.fragment.lock.json
+*.nuget.props
+*.nuget.targets
+
+# -----------------------------------------------------------------------------
+# Node.js / Next.js / Frontend
+# -----------------------------------------------------------------------------
 node_modules/
 .next/
 out/
-next-env.d.ts.bak
-*.tsbuildinfo
+build/
+dist/
 .eslintcache
+.tsbuildinfo
+*.tsbuildinfo
+next-env.d.ts.bak
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Environment & secrets
-.env
-.env.*
-!.env.example
-
-# IDE
+# -----------------------------------------------------------------------------
+# IDEs, Editors & Developer Tooling
+# -----------------------------------------------------------------------------
 .vs/
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
 .idea/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*~
 
-# OS
+# -----------------------------------------------------------------------------
+# Operating System Files
+# -----------------------------------------------------------------------------
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+[Dd]esktop.ini
 
-# Logs
+# -----------------------------------------------------------------------------
+# Logs, Diagnostic Dumps & Smoke Test Artifacts
+# -----------------------------------------------------------------------------
 *.log
 *.log.*
+*.err
+*.out
 frontend/lint*.txt
 frontend/*-err.txt
 frontend/build-log*.txt
@@ -41,12 +104,28 @@ frontend/tail-*.txt
 frontend/pre-err.txt
 smoke-*.txt
 smoke-*.log
+.api-pid
 .cookies.txt
 cookies.txt
 
-# Fly / deploy artifacts
+# -----------------------------------------------------------------------------
+# Docker & Local Infrastructure Data
+# -----------------------------------------------------------------------------
+.docker/
+docker-compose.override.yml
+*.pgdata
+*.redisdata
+
+# -----------------------------------------------------------------------------
+# Fly.io & Deployment Artifacts
+# -----------------------------------------------------------------------------
 *.flyc
 
-# Environment-specific (IDE memory stores)
-.codebase-memory/
-
+# -----------------------------------------------------------------------------
+# Agent & Codebase Memory Graph Stores (Local DBs)
+# Note: Persisted artifact .codebase-memory/graph.db.zst is tracked if shared
+# -----------------------------------------------------------------------------
+.codebase-memory/*.db
+.codebase-memory/*.db-wal
+.codebase-memory/*.db-shm
+.codebase-memory/*.stage.*

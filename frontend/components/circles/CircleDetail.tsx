@@ -17,6 +17,7 @@ import { AvatarStack } from "@/components/ui/AvatarStack";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/Feedback";
 import { getCircle, joinCircle, leaveCircle } from "@/lib/api/circles";
+import { CircleStreakChip } from "./CircleStreakChip";
 import { CircleMessageList } from "./CircleMessageList";
 import { useAuth } from "@/components/providers/AuthProvider";
 import type { CircleDetail as CircleDetailType, CircleMember } from "@/types";
@@ -120,6 +121,7 @@ export function CircleDetail({ handle }: { handle: Promise<string> | string }) {
             <MessageCircle size={16} />
             {circle.messageCount} messages
           </span>
+          <CircleStreakChip handle={circle.handle} />
           {circle.book ? (
             <span className="flex items-center gap-1">
               <BookOpen size={16} />

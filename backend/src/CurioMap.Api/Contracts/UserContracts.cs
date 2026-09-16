@@ -6,8 +6,8 @@ public record UpdateProfileRequest(
     string? Handle,
     string? AvatarId,
     string? DisplayNameMode,
-    [ MaxLength(120)] string? RealName,
-    [ MaxLength(1000)] string? Bio);
+    [MaxLength(120)] string? RealName,
+    [MaxLength(1000)] string? Bio);
 
 public record SettingsDto(
     string LocationVisibility,

@@ -8,7 +8,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<User> Users => Set<User>();
     public DbSet<Location> Locations => Set<Location>();
     public DbSet<Book> Books => Set<Book>();
-        public DbSet<BookshelfEntry> BookshelfEntries => Set<BookshelfEntry>();
+    public DbSet<BookshelfEntry> BookshelfEntries => Set<BookshelfEntry>();
     public DbSet<Rating> Ratings => Set<Rating>();
     public DbSet<Conversation> Conversations => Set<Conversation>();
     public DbSet<Message> Messages => Set<Message>();
@@ -24,6 +24,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<CircleMembership> CircleMemberships => Set<CircleMembership>();
     public DbSet<CircleMessage> CircleMessages => Set<CircleMessage>();
     public DbSet<CircleReaction> CircleReactions => Set<CircleReaction>();
+    public DbSet<ReadingStreak> ReadingStreaks => Set<ReadingStreak>();
+    public DbSet<UserBadge> UserBadges => Set<UserBadge>();
+    public DbSet<CircleStreak> CircleStreaks => Set<CircleStreak>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -60,8 +63,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(b => b.Isbn).HasMaxLength(20);
             e.Property(b => b.CoverUrl).HasMaxLength(1000);
             e.Property(b => b.Description).HasMaxLength(4000);
-            e.Property(b => b.Metadata).HasColumnType("jsonb");
-            e.OwnsOne(b => b.AffiliateLinks, json => json.ToJson());
+            if (Database.IsNpgsql())
+            {
+                e.Property(b => b.Metadata).HasColumnType("jsonb");
+                e.OwnsOne(b => b.AffiliateLinks, json => json.ToJson());
+            }
+            else
+            {
+                e.Ignore(b => b.Metadata);
+                e.Ignore(b => b.AffiliateLinks);
+            }
         });
 
         modelBuilder.Entity<BookshelfEntry>(e =>
@@ -70,13 +81,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(x => x.Visibility).HasConversion<string>().HasMaxLength(20);
             e.HasOne(x => x.User).WithMany(u => u.BookshelfEntries)
                 .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
-                        e.HasOne(x => x.Book).WithMany(b => b.Entries)
-                .HasForeignKey(x => x.BookId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Book).WithMany(b => b.Entries)
+    .HasForeignKey(x => x.BookId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Rating>(e =>
         {
-            e.Property(r => r.Value).HasColumnType("smallint");
+            e.HasKey(r => new { r.UserId, r.BookId });
+            if (Database.IsNpgsql())
+            {
+                e.Property(r => r.Value).HasColumnType("smallint");
+            }
             e.HasIndex(r => r.BookId);
             e.HasOne(r => r.User).WithMany().HasForeignKey(r => r.UserId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(r => r.Book).WithMany().HasForeignKey(r => r.BookId).OnDelete(DeleteBehavior.Cascade);
@@ -135,7 +150,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<ActivityEvent>(e =>
         {
             e.Property(a => a.Type).HasMaxLength(40).IsRequired();
-            e.Property(a => a.Payload).HasColumnType("jsonb");
+            if (Database.IsNpgsql())
+            {
+                e.Property(a => a.Payload).HasColumnType("jsonb");
+            }
+            else
+            {
+                e.Ignore(a => a.Payload);
+            }
             e.HasOne(a => a.Actor).WithMany()
                 .HasForeignKey(a => a.ActorId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(a => a.Book).WithMany()
@@ -222,6 +244,31 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(r => r.MessageId);
             e.HasOne(r => r.User).WithMany()
                 .HasForeignKey(r => r.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ReadingStreak>(e =>
+        {
+            e.HasKey(s => s.UserId);
+            e.HasOne(s => s.User).WithOne(u => u.Streak)
+                .HasForeignKey<ReadingStreak>(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CircleStreak>(e =>
+        {
+            e.HasKey(s => s.CircleId);
+            e.HasOne(s => s.Circle).WithOne(c => c.Streak)
+                .HasForeignKey<CircleStreak>(s => s.CircleId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<UserBadge>(e =>
+        {
+            e.Property(b => b.Kind).HasConversion<string>().HasMaxLength(20);
+            e.HasIndex(b => new { b.UserId, b.Kind }).IsUnique();
+            e.HasOne(b => b.User).WithMany(u => u.Badges)
+                .HasForeignKey(b => b.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 

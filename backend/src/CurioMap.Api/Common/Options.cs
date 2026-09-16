@@ -2,7 +2,7 @@ namespace CurioMap.Api.Common;
 
 public class JwtOptions
 {
-    public string Secret { get; set; } = "dev-only-secret-change-me-0123456789abcdef0123456789abcdef";
+    public string Secret { get; set; } = string.Empty;
     public string Issuer { get; set; } = "curiomap-api";
     public string Audience { get; set; } = "curiomap-web";
     public int AccessTokenMinutes { get; set; } = 15;

@@ -41,10 +41,20 @@ REST + JWT. Live machine-readable spec: **`/openapi/v1.json`**; human reference:
 
 | method | path | notes |
 |---|---|---|
-| GET | `/discover/nearby` | readers near you (city → region → country fallback); auth + location required |
-| GET | `/discover/global` | region heatmap + top books (Redis-cached 5 min) |
+| GET | `/discover/nearby` | readers near you (city → region → country fallback); auth + location required. Excludes private shelves; per-reader location redaction applies (country-only readers lose region/city) |
+| GET | `/discover/global` | region heatmap + top books (Redis-cached 5 min). Hidden and private-shelf readers are excluded; country-only readers are bucketed under an empty region |
+| GET | `/discover/map-readers?country=&region=&limit=` | anonymous drill-down of individual readers at fuzzed coords with their currently-read books (Redis-cached 2 min). `limit` clamped to ≤ 50; handles of anonymous readers return `"anonymous"`, country-only readers return `region: null, city: null` |
 | GET | `/discover/top-books?country=&region=` | top books, optionally scoped |
 | GET | `/stats/summary` | global counters + top books (Redis-cached 5 min) |
+
+### Identity redaction
+
+Every public user projection (feed, circles, messages, leaderboard, map, public
+profiles) resolves `display_name_mode` through `DisplayName.Resolve` and, when
+the mode is `anonymous`, replaces the generated handle with the literal string
+`"anonymous"`. Profiles remain addressable by id (`/users/{id}`). Moderation
+surfaces (`/admin/*`) are the exception: they keep the generated handle because
+moderators need it to identify a report author.
 
 ## Conversations & messages
 
@@ -66,6 +76,34 @@ REST + JWT. Live machine-readable spec: **`/openapi/v1.json`**; human reference:
 | GET | `/feed?limit=&offset=` | activity feed from followed users + self |
 | GET | `/admin/reports?status=` | admin moderation queue |
 | POST | `/admin/reports/:reportId/resolve` | `dismiss` / `mute_message` / `remove_message` |
+
+## Gamification — streaks & badges
+
+| method | path | notes |
+|---|---|---|
+| GET | `/me/streak` | my streak (current/longest, active-today, freezes) + earned badges; auth |
+| GET | `/me/streak/calendar?days=` | my active-day calendar (UTC dates, 7–366 window); auth |
+| GET | `/users/:id/streak` | a reader's public streak + badges; `403` when their bookshelf is private |
+| GET | `/users/:id/streak/calendar?days=` | a reader's public active-day calendar; same visibility gate |
+| GET | `/streaks/leaderboard` | top readers by current streak (public shelves only; Redis-cached 5 min) |
+| GET | `/circles/:id/streak` | a circle's group streak (current/longest, freezes, active-today) |
+| GET | `/circles?sort=streak` | circles ordered by current group streak (list items carry `currentStreak`/`longestStreak`) |
+| POST | `/admin/gamification/backfill` | admin-only, idempotent: award badges readers already qualify for from historical data |
+
+Streaks advance automatically when a reader adds/finishes a book, rates, or posts a
+message (thread or circle). A circle's **group streak** advances when any member
+posts a message; the same UTC-day gap and freeze rules apply, and hitting a 7- or
+30-day group streak awards every current member the group badge. Days are UTC.
+Every full 7-day streak week earns a
+**freeze** (max 2 held); a freeze is consumed automatically for a single missed day,
+preserving the streak — larger gaps still reset it. Badges: book milestones
+(1/5/10/25/50/100 finished), streak milestones (3/7/30/100 days), first circle /
+review / message, Night Owl + Early Bird (UTC-hour windows), Globetrotter (books
+from 5+ authors), plus group badges earned with your circle (Book Club Captain at
+a 7-day circle streak, Marathon Circle at 30).
+
+Earning a badge (public-shelf readers only) also emits a `badge_earned` activity
+event, rendered in followers' feeds with the badge name in the payload.
 
 ## Auth
 

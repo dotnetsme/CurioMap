@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ProfileHeader } from "./ProfileHeader";
 import { FollowButton } from "./FollowButton";
 import { ChallengeCard } from "./ChallengeCard";
+import { StreakCard } from "./StreakCard";
 import { ErrorState, PageLoading } from "@/components/ui/Feedback";
 import { getProfile } from "@/lib/api/users";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -57,6 +58,7 @@ export function ProfilePageView({ userId }: { userId: string }) {
         }
       />
       <ChallengeCard />
+      <StreakCard userId={profile.id} />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
           { label: "Reading", value: profile.bookshelfSummary.reading },

@@ -129,11 +129,45 @@ if ($reg.ok -and $reg.body) {
         $out.Add("DISCOVER_GLOBAL: FAIL status=$($gl.status) err=$($gl.err)")
     }
 
+    $mr = Invoke-Http -Uri "$ApiUrl/discover/map-readers"
+    if ($mr.ok -and $mr.body.readers) {
+        $out.Add("DISCOVER_MAP_READERS: OK readers=$($mr.body.readers.Count) total=$($mr.body.total)")
+    } elseif ($mr.ok) {
+        $out.Add("DISCOVER_MAP_READERS: OK")
+    } else {
+        $out.Add("DISCOVER_MAP_READERS: FAIL status=$($mr.status) err=$($mr.err)")
+    }
+
     $feed = Invoke-Http -Uri "$ApiUrl/feed" -Headers @{ Authorization = "Bearer $t" }
     if ($feed.ok) {
         $out.Add("FEED: OK")
     } else {
         $out.Add("FEED: FAIL status=$($feed.status) err=$($feed.err)")
+    }
+
+    # Reading Circles E2E check
+    $circleName = "Smoke Circle $rand"
+    $crc = Invoke-Http -Uri "$ApiUrl/circles" -Method Post -Body @{ name = $circleName; description = 'E2E smoke test circle' } -Headers @{ Authorization = "Bearer $t" }
+    if ($crc.ok -and $crc.body.handle) {
+        $out.Add("CIRCLE_CREATE: OK handle=$($crc.body.handle)")
+        $cHandle = $crc.body.handle
+
+        $cMsg = Invoke-Http -Uri "$ApiUrl/circles/$cHandle/messages" -Method Post -Body @{ content = 'Hello from circle smoke test' } -Headers @{ Authorization = "Bearer $t" }
+        if ($cMsg.ok) {
+            $out.Add("CIRCLE_MSG_POST: OK")
+        } else {
+            $out.Add("CIRCLE_MSG_POST: FAIL status=$($cMsg.status) err=$($cMsg.err)")
+        }
+    } else {
+        $out.Add("CIRCLE_CREATE: FAIL status=$($crc.status) err=$($crc.err)")
+    }
+
+    # Reading Streak E2E check
+    $stk = Invoke-Http -Uri "$ApiUrl/me/streak" -Headers @{ Authorization = "Bearer $t" }
+    if ($stk.ok) {
+        $out.Add("STREAK_GET: OK current=$($stk.body.currentStreak) longest=$($stk.body.longestStreak)")
+    } else {
+        $out.Add("STREAK_GET: FAIL status=$($stk.status) err=$($stk.err)")
     }
 }
 
@@ -158,6 +192,20 @@ if ($bid -and $cid) {
     } else {
         $out.Add("FRONT_CONV: FAIL status=$($front_conv.status) err=$($front_conv.err)")
     }
+}
+
+$front_circles = Invoke-Http -Uri "$FrontendUrl/circles" -Method Get
+if ($front_circles.ok) {
+    $out.Add("FRONT_CIRCLES: OK status=$($front_circles.status)")
+} else {
+    $out.Add("FRONT_CIRCLES: FAIL status=$($front_circles.status) err=$($front_circles.err)")
+}
+
+$front_map = Invoke-Http -Uri "$FrontendUrl/discover/global" -Method Get
+if ($front_map.ok) {
+    $out.Add("FRONT_MAP: OK status=$($front_map.status)")
+} else {
+    $out.Add("FRONT_MAP: FAIL status=$($front_map.status) err=$($front_map.err)")
 }
 
 $out -join [System.Environment]::NewLine

@@ -14,17 +14,25 @@ using StackExchange.Redis;
 var builder = WebApplication.CreateBuilder(args);
 
 // ---------------------------------------------------------------------------
-// Configuration: environment first (12-factor / Fly.io), appsettings as fallback.
+// Configuration: Load local .env if present, then environment first (12-factor / Fly.io).
 // ---------------------------------------------------------------------------
+DotEnv.Load();
+
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+var configuredDb = builder.Configuration.GetConnectionString("Database");
 var connectionString = !string.IsNullOrWhiteSpace(databaseUrl)
     ? DbUrl.ToNpgsql(databaseUrl)
-    : builder.Configuration.GetConnectionString("Database")
-      ?? "Host=localhost;Port=5433;Database=curiomap;Username=curiomap;Password=curiomap";
+    : !string.IsNullOrWhiteSpace(configuredDb)
+        ? configuredDb
+        : "Host=localhost;Port=5433;Database=curiomap;Username=curiomap;Password=curiomap";
 
-var redisUrl = Environment.GetEnvironmentVariable("REDIS_URL")
-    ?? builder.Configuration.GetConnectionString("Redis")
-    ?? "localhost:6380";
+var redisEnv = Environment.GetEnvironmentVariable("REDIS_URL");
+var configuredRedis = builder.Configuration.GetConnectionString("Redis");
+var redisUrl = !string.IsNullOrWhiteSpace(redisEnv)
+    ? redisEnv
+    : !string.IsNullOrWhiteSpace(configuredRedis)
+        ? configuredRedis
+        : "localhost:6380";
 
 // ---------------------------------------------------------------------------
 // Services
@@ -69,16 +77,18 @@ builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddScoped<IRedisRateLimiter, RedisRateLimiter>();
 builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<IChallengeService, ChallengeService>();
+builder.Services.AddScoped<IStreakService, StreakService>();
+builder.Services.AddScoped<ICircleStreakService, CircleStreakService>();
 
 builder.Services.AddHttpClient<OpenLibraryService>(client =>
 {
     client.BaseAddress = new Uri("https://openlibrary.org/");
-    client.Timeout = TimeSpan.FromSeconds(10);
+    client.Timeout = TimeSpan.FromSeconds(5);
 });
 builder.Services.AddHttpClient<GeoResolveService>(client =>
 {
     client.BaseAddress = new Uri("https://geocoding-api.open-meteo.com/");
-    client.Timeout = TimeSpan.FromSeconds(10);
+    client.Timeout = TimeSpan.FromSeconds(4);
 });
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
@@ -101,15 +111,25 @@ builder.Services.AddHttpContextAccessor();
 // Auth
 // ---------------------------------------------------------------------------
 var jwtSection = builder.Configuration.GetSection("Jwt");
-var jwtSecret = Environment.GetEnvironmentVariable("JWT__SECRET") ?? jwtSection["Secret"];
+var jwtSecret = Environment.GetEnvironmentVariable("JWT__SECRET")
+    ?? Environment.GetEnvironmentVariable("JWT_SECRET")
+    ?? jwtSection["Secret"];
+
+if (string.IsNullOrWhiteSpace(jwtSecret) && builder.Environment.IsDevelopment())
+{
+    // Local development fallback only when no environment secret is provided
+    jwtSecret = "dev-only-secret-change-me-0123456789abcdef0123456789abcdef";
+}
+
 if (!string.IsNullOrWhiteSpace(jwtSecret))
 {
     jwtSection["Secret"] = jwtSecret;
 }
+
 var jwt = jwtSection.Get<JwtOptions>() ?? new JwtOptions();
-if (jwt.Secret.Length < 32 && !builder.Environment.IsDevelopment())
+if (string.IsNullOrWhiteSpace(jwt.Secret) || jwt.Secret.Length < 32)
 {
-    throw new InvalidOperationException("JWT secret must be at least 32 characters. Set JWT__SECRET.");
+    throw new InvalidOperationException("JWT secret must be at least 32 characters. Set JWT__SECRET in .env or environment.");
 }
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -198,3 +218,4 @@ static string PartitionKey(HttpContext context) =>
 
 app.Run();
 
+public partial class Program { }

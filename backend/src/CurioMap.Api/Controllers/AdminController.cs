@@ -2,6 +2,7 @@ using CurioMap.Api.Common;
 using CurioMap.Api.Contracts;
 using CurioMap.Api.Data;
 using CurioMap.Api.Domain;
+using CurioMap.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,8 +12,21 @@ namespace CurioMap.Api.Controllers;
 /// <summary>MVP moderation console endpoints (wired to /admin in the web app).</summary>
 [ApiController]
 [Route("admin")]
-public class AdminController(AppDbContext db) : ControllerBase
+public class AdminController(AppDbContext db, IStreakService streaks) : ControllerBase
 {
+    /// <summary>
+    /// One-shot gamification catch-up: awards every badge readers already
+    /// qualify for from historical data (NightOwl/EarlyBird are live-earn
+    /// only). Idempotent — safe to re-run.
+    /// </summary>
+    [HttpPost("gamification/backfill")]
+    [Authorize(Policy = "Admin")]
+    public async Task<ActionResult<BackfillResultDto>> BackfillBadges()
+    {
+        var (usersScanned, badgesAwarded) = await streaks.BackfillBadgesAsync();
+        return Ok(new BackfillResultDto(usersScanned, badgesAwarded));
+    }
+
     [HttpGet("reports")]
     [Authorize(Policy = "Admin")]
     public async Task<ActionResult<IReadOnlyList<AdminReportDto>>> Reports([FromQuery] string status = "open")
@@ -26,7 +40,7 @@ public class AdminController(AppDbContext db) : ControllerBase
         List<MessageReport> reports;
         if (status.Equals("all", StringComparison.OrdinalIgnoreCase))
         {
-            reports = await query.OrderByDescending(r => r.CreatedAt).Take(100).ToListAsync();
+            reports = await query.OrderByDescending(r => r.CreatedAt).Take(50).ToListAsync();
         }
         else
         {
@@ -37,7 +51,7 @@ public class AdminController(AppDbContext db) : ControllerBase
             reports = await query
                 .Where(r => r.Status == parsed)
                 .OrderByDescending(r => r.CreatedAt)
-                .Take(100)
+                .Take(50)
                 .ToListAsync();
         }
 
@@ -49,10 +63,10 @@ public class AdminController(AppDbContext db) : ControllerBase
             r.Message is null ? "deleted" : r.Message.Status.ToApi(),
             r.Message?.Author is null
                 ? new UserStubDto(r.Message?.AuthorId ?? Guid.Empty, "unknown", "curio-01", "Reader", false)
-                : Mapping.ToStub(r.Message.Author),
+                : Mapping.ToAdminStub(r.Message.Author),
             r.Reporter is null
                 ? new UserStubDto(r.ReporterId, "unknown", "curio-01", "Reader", false)
-                : Mapping.ToStub(r.Reporter),
+                : Mapping.ToAdminStub(r.Reporter),
             r.Reason,
             r.Status.ToApi(),
             r.CreatedAt)).ToList();

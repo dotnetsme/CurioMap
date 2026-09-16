@@ -56,6 +56,80 @@ public static class DisplayName
     public static string InProjection(DisplayMode mode, string? realName, string handle) => Resolve(mode, realName, handle);
 }
 
+/// <summary>Escapes %, _, and \ for EF.Functions.Like/ILike patterns.</summary>
+public static class Like
+{
+    public static string Escape(string value) =>
+        value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("%", "\\%", StringComparison.Ordinal).Replace("_", "\\_", StringComparison.Ordinal);
+}
+
+/// <summary>Lightweight .env loader that populates process environment variables for local dev.</summary>
+public static class DotEnv
+{
+    public static void Load(string? path = null)
+    {
+        var candidates = new List<string>();
+        if (!string.IsNullOrWhiteSpace(path))
+        {
+            candidates.Add(path);
+        }
+        else
+        {
+            // Check current directory, upward directories up to 4 levels, or AppDomain base.
+            var dir = new DirectoryInfo(Directory.GetCurrentDirectory());
+            for (var i = 0; i < 4 && dir != null; i++)
+            {
+                candidates.Add(Path.Combine(dir.FullName, ".env"));
+                dir = dir.Parent;
+            }
+            var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            var bDir = new DirectoryInfo(baseDir);
+            for (var i = 0; i < 5 && bDir != null; i++)
+            {
+                candidates.Add(Path.Combine(bDir.FullName, ".env"));
+                bDir = bDir.Parent;
+            }
+        }
+
+        foreach (var file in candidates.Distinct())
+        {
+            if (File.Exists(file))
+            {
+                foreach (var line in File.ReadAllLines(file))
+                {
+                    var trimmed = line.Trim();
+                    if (string.IsNullOrWhiteSpace(trimmed) || trimmed.StartsWith('#'))
+                    {
+                        continue;
+                    }
+
+                    var eqIdx = trimmed.IndexOf('=');
+                    if (eqIdx <= 0)
+                    {
+                        continue;
+                    }
+
+                    var key = trimmed[..eqIdx].Trim();
+                    var val = trimmed[(eqIdx + 1)..].Trim();
+
+                    // Strip optional enclosing quotes
+                    if ((val.StartsWith('"') && val.EndsWith('"')) || (val.StartsWith('\'') && val.EndsWith('\'')))
+                    {
+                        val = val[1..^1];
+                    }
+
+                    // Only set if not already present in environment
+                    if (Environment.GetEnvironmentVariable(key) == null)
+                    {
+                        Environment.SetEnvironmentVariable(key, val);
+                    }
+                }
+                break;
+            }
+        }
+    }
+}
+
 /// <summary>Converts DATABASE_URL style URLs to Npgsql connection strings (Neon/Fly convention).</summary>
 public static class DbUrl
 {

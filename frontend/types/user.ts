@@ -72,3 +72,32 @@ export interface UpdateProfilePayload {
   realName?: string | null;
   bio?: string | null;
 }
+
+export interface BadgeInfo {
+  kind: string;
+  awardedAt: string;
+}
+
+export interface StreakStats {
+  currentStreak: number;
+  longestStreak: number;
+  lastActivityAt: string | null;
+  activeToday: boolean;
+  freezeCount: number;
+  badges: BadgeInfo[];
+}
+
+export interface StreakCalendar {
+  days: number;
+  activeDays: string[];
+}
+
+export interface StreakLeaderboardEntry {
+  userId: string;
+  handle: string;
+  avatarId: string;
+  displayName: string;
+  currentStreak: number;
+  longestStreak: number;
+  badgeCount: number;
+}

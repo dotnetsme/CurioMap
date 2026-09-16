@@ -26,6 +26,11 @@ public static class DbInitializer
             .ToList();
 
         await db.Database.OpenConnectionAsync();
+        if (!db.Database.IsNpgsql())
+        {
+            await db.Database.EnsureCreatedAsync();
+            return;
+        }
         var connection = (NpgsqlConnection)db.Database.GetDbConnection();
 
         await using (var cmd = connection.CreateCommand())

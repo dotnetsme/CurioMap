@@ -16,10 +16,13 @@ import {
 } from "@/lib/api/circles";
 import type { CircleMessage, ReactionSummary } from "@/types";
 
+// Reaction chips are plain-text labels, mirroring conversations/MessageList.
+// Icons here would imply emoji reactions, which the domain forbids
+// (ReactionKind is strictly insightful | funny | helpful).
 const REACTIONS: { kind: string; label: string }[] = [
-  { kind: "insightful", label: "💡 Insightful" },
-  { kind: "funny", label: "😂 Funny" },
-  { kind: "helpful", label: "🙌 Helpful" },
+  { kind: "insightful", label: "Insightful" },
+  { kind: "funny", label: "Funny" },
+  { kind: "helpful", label: "Helpful" },
 ];
 
 export function CircleMessageList({

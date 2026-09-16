@@ -39,8 +39,8 @@ public class BooksController(
         offset = Math.Max(0, offset);
 
         var baseQuery = db.Books.AsNoTracking().Where(b =>
-            EF.Functions.ILike(b.Title, $"%{query}%")
-            || EF.Functions.ILike(b.Author, $"%{query}%")
+            EF.Functions.ILike(b.Title, $"%{Like.Escape(query)}%")
+            || EF.Functions.ILike(b.Author, $"%{Like.Escape(query)}%")
             || (b.Isbn != null && b.Isbn == query));
 
         var total = await baseQuery.CountAsync();
@@ -90,10 +90,10 @@ public class BooksController(
             .Take(limit)
             .ToListAsync();
 
-                return Ok(new SearchResponse(books.Select(b => ToDto(b, 0, 0, 0, 0)).ToList(), total, fromExternal));
+        return Ok(new SearchResponse(books.Select(b => ToDto(b, 0, 0, 0, 0)).ToList(), total, fromExternal));
     }
 
-        [HttpGet("{id:guid}")]
+    [HttpGet("{id:guid}")]
     [AllowAnonymous]
     public async Task<ActionResult<BookDto>> Detail(Guid id)
     {

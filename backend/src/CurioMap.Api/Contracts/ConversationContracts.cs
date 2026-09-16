@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations;
 namespace CurioMap.Api.Contracts;
 
 public record CreateConversationRequest(
-    [ Required, MinLength(3), MaxLength(200)] string Title,
-    [ Required, MaxLength(20)] string TopicType,
-    [ MaxLength(60)] string? PromptKey);
+    [Required, MinLength(3), MaxLength(200)] string Title,
+    [Required, MaxLength(20)] string TopicType,
+    [MaxLength(60)] string? PromptKey);
 
 public record ConversationDto(
     Guid Id,
@@ -22,7 +22,7 @@ public record ConversationDto(
     BookStubDto? Book);
 
 public record CreateMessageRequest(
-    [ Required, MinLength(1), MaxLength(2000)] string Content);
+    [Required, MinLength(1), MaxLength(2000)] string Content);
 
 public record ReactionSummaryDto(string Kind, int Count, bool ReactedByMe);
 
@@ -38,13 +38,13 @@ public record MessageDto(
 public record MessagesPage<T>(IReadOnlyList<T> Items, int Total, int Limit, int Offset);
 
 public record ReportRequest(
-    [ Required, MinLength(3), MaxLength(500)] string Reason);
+    [Required, MinLength(3), MaxLength(500)] string Reason);
 
 public record ReportCreatedDto(Guid Id, string Status);
 
-public record SetMessageStatusRequest([ Required, MaxLength(20)] string Status);
+public record SetMessageStatusRequest([Required, MaxLength(20)] string Status);
 
-public record ReactRequest([ Required, MaxLength(20)] string Kind);
+public record ReactRequest([Required, MaxLength(20)] string Kind);
 
 public record ReactionResult(IReadOnlyList<ReactionSummaryDto> Reactions);
 

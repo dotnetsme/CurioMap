@@ -37,6 +37,14 @@ public class User : IAuditable
     /// One per user per year; lazily created on first read.
     /// </summary>
     public ICollection<Challenge> Challenges { get; set; } = [];
+
+    // ── Reading streaks + badges ──────────────────────────────────────────
+
+    /// <summary>Current consecutive-day reading streak. One row per user.</summary>
+    public ReadingStreak? Streak { get; set; }
+
+    /// <summary>Badges earned by this user (one row per badge kind).</summary>
+    public ICollection<UserBadge> Badges { get; set; } = [];
 }
 
 /// <summary>
@@ -53,7 +61,7 @@ public class Location
     public double? LngFuzzed { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public ICollection<User> Users { get; set; } = [];
+    public ICollection<User> Users { get; set; } = [];
 }
 
 /// <summary>
@@ -94,4 +102,40 @@ public class RefreshToken
     public DateTime ExpiresAt { get; set; }
     public DateTime? RevokedAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>
+/// Consecutive-day reading streak for one user.
+/// Activity = adding a book, finishing a book, rating, or posting a message.
+/// Keyed by (user_id); recomputed lazily on qualifying activity.
+/// </summary>
+public class ReadingStreak
+{
+    public Guid UserId { get; set; }
+    public User? User { get; set; }
+
+    public int CurrentStreak { get; set; }
+    public int LongestStreak { get; set; }
+
+    /// <summary>
+    /// Freeze tokens (max 2). One freeze is consumed automatically when a
+    /// single day is missed, preserving the streak instead of resetting it.
+    /// Earned for every full 7-day streak week.
+    /// </summary>
+    public int FreezeCount { get; set; }
+
+    /// <summary>Date (UTC) of the last qualifying activity. Drives gap detection.</summary>
+    public DateTime LastActivityAt { get; set; } = DateTime.UtcNow;
+
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>One row per (user, badge_kind). Unique constraint prevents duplicates.</summary>
+public class UserBadge
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid UserId { get; set; }
+    public User? User { get; set; }
+    public BadgeKind Kind { get; set; }
+    public DateTime AwardedAt { get; set; } = DateTime.UtcNow;
 }

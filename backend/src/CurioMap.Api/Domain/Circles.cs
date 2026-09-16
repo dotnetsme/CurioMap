@@ -22,6 +22,28 @@ public class ReadingCircle
 
     public ICollection<CircleMembership> Members { get; set; } = [];
     public ICollection<CircleMessage> Messages { get; set; } = [];
+
+    /// <summary>Consecutive-day group streak. One row per circle; lazily created on first message.</summary>
+    public CircleStreak? Streak { get; set; }
+}
+
+/// <summary>
+/// Consecutive-day activity streak for one reading circle.
+/// Activity = any member posting a message. Same freeze rules as personal streaks.
+/// </summary>
+public class CircleStreak
+{
+    public Guid CircleId { get; set; }
+    public ReadingCircle? Circle { get; set; }
+
+    public int CurrentStreak { get; set; }
+    public int LongestStreak { get; set; }
+    public int FreezeCount { get; set; }
+
+    /// <summary>Date (UTC) of the circle's last qualifying activity.</summary>
+    public DateTime LastActivityAt { get; set; } = DateTime.UtcNow;
+
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
 
 public class CircleMembership

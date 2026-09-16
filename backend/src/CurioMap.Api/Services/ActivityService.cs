@@ -13,6 +13,20 @@ public class ActivityService(AppDbContext db)
     public const string BookshelfAdded = "bookshelf_added";
     public const string ConversationCreated = "conversation_created";
     public const string MessagePosted = "message_posted";
+    public const string BadgeEarned = "badge_earned";
+
+    public void RecordBadgeEarned(Guid actorId, BadgeKind kind)
+    {
+        db.ActivityEvents.Add(new ActivityEvent
+        {
+            ActorId = actorId,
+            Type = BadgeEarned,
+            Payload = new Dictionary<string, string>
+            {
+                ["badge_kind"] = kind.ToString(),
+            },
+        });
+    }
 
     public void RecordBookshelfAdded(User actor, Book book, BookStatus status)
     {

@@ -18,7 +18,8 @@ public record FeedEventDto(
     FeedConversationDto? Conversation,
     string? MessageExcerpt,
     string? ShelfStatus,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    string? BadgeKind = null);
 
 public record FeedPage(IReadOnlyList<FeedEventDto> Items, int? NextOffset);
 
@@ -34,6 +35,6 @@ public record AdminReportDto(
     string Status,
     DateTime CreatedAt);
 
-public record ResolveReportRequest([ Required, MaxLength(40)] string Action);
+public record ResolveReportRequest([Required, MaxLength(40)] string Action);
 
 public record ResolveReportResult(bool Success, string Status);

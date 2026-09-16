@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
+import { StreakCard } from "@/components/profile/StreakCard";
+import { StreakLeaderboard } from "@/components/profile/StreakLeaderboard";
 import { BookshelfEntryCard } from "@/components/bookshelf/BookshelfEntryCard";
 import { ErrorState, PageLoading } from "@/components/ui/Feedback";
 import { getProfile } from "@/lib/api/users";
@@ -56,6 +58,7 @@ export default function MyProfilePage() {
           </Link>
         }
       />
+      <StreakCard />
       <section>
         <div className="mb-3 flex items-baseline justify-between">
           <h2 className="text-lg font-semibold text-white">Currently reading</h2>
@@ -79,6 +82,7 @@ export default function MyProfilePage() {
           </div>
         )}
       </section>
+      <StreakLeaderboard />
     </div>
   );
 }

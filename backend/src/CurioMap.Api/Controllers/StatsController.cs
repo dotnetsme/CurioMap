@@ -33,7 +33,8 @@ public class StatsController(AppDbContext db, ICacheService cache) : ControllerB
         var topRows = await db.BookshelfEntries.AsNoTracking()
             .Where(s => s.Status == BookStatus.Reading
                         && s.Visibility == ShelfVisibility.Public
-                        && s.User!.BookshelfVisibility == ShelfVisibility.Public)
+                        && s.User!.BookshelfVisibility == ShelfVisibility.Public
+                        && s.User!.LocationVisibility != LocationVisibility.Hidden)
             .GroupBy(s => new { s.BookId, s.Book!.Title, s.Book!.Author, s.Book!.Isbn, s.Book!.CoverUrl })
             .Select(g => new { g.Key.BookId, g.Key.Title, g.Key.Author, g.Key.Isbn, g.Key.CoverUrl, ReaderCount = g.Count() })
             .ToListAsync();

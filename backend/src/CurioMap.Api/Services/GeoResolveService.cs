@@ -9,8 +9,22 @@ namespace CurioMap.Api.Services;
 /// </summary>
 public class GeoResolveService(HttpClient http, ICacheService cache, ILogger<GeoResolveService> logger)
 {
-    public async Task<(double Lat, double Lng)?> ResolveCityAsync(string? country, string? region, string city)
+    public async Task<(double Lat, double Lng)?> ResolveCityAsync(string? country, string? region, string city, CancellationToken ct = default)
     {
+        if (string.IsNullOrWhiteSpace(city) || city.Trim().Length > 120)
+        {
+            return null;
+        }
+        city = city.Trim();
+
+        // SSRF guard: pinned geocoding host only.
+        if (http.BaseAddress is null
+            || !http.BaseAddress.Host.Equals("geocoding-api.open-meteo.com", StringComparison.OrdinalIgnoreCase))
+        {
+            logger.LogWarning("GeoResolveService misconfigured: unexpected BaseAddress {Base}", http.BaseAddress);
+            return null;
+        }
+
         var key = $"geo:city:{Slug(country)}:{Slug(region)}:{Slug(city)}";
         var cached = await cache.GetAsync<double[]>(key);
         if (cached is { Length: 2 })
@@ -20,7 +34,8 @@ public class GeoResolveService(HttpClient http, ICacheService cache, ILogger<Geo
 
         try
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(TimeSpan.FromSeconds(4));
             var url = $"/v1/search?name={Uri.EscapeDataString(city)}&count=5&language=en&format=json";
             using var doc = JsonDocument.Parse(await http.GetStringAsync(url, cts.Token));
             if (!doc.RootElement.TryGetProperty("results", out var results)

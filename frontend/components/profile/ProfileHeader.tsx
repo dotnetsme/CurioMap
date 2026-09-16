@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LibraryBig, MapPin } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { Badge } from "@/components/ui/Badge";
 import type { PublicProfile } from "@/types";
@@ -30,11 +31,17 @@ export function ProfileHeader({
           <Badge tone="violet">{modeLabels[profile.displayNameMode] ?? profile.displayNameMode}</Badge>
           {profile.isAuthor ? <Badge tone="accent">Author</Badge> : null}
         </div>
-        <p className="text-sm text-ink-3">@{profile.handle}</p>
+        {profile.handle !== "anonymous" ? (
+          <p className="text-sm text-ink-3">@{profile.handle}</p>
+        ) : null}
         {profile.bio ? <p className="mt-2 max-w-xl text-sm text-ink-2">{profile.bio}</p> : null}
-        <div className="mt-3 flex flex-wrap gap-4 text-xs text-ink-3">
-          <span>📍 {locationLabel}</span>
-          <span>📚 {profile.bookshelfSummary.total} books</span>
+        <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-ink-3">
+          <span className="inline-flex items-center gap-1.5">
+            <MapPin size={13} /> {locationLabel}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <LibraryBig size={13} /> {profile.bookshelfSummary.total} books
+          </span>
           <span>{profile.followersCount} followers</span>
           <span>{profile.followingCount} following</span>
           <Link href={`/users/${profile.id}/bookshelf`} className="text-accent hover:text-accent-strong">

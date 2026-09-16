@@ -70,3 +70,26 @@ public enum CircleRole
     Member,
     Moderator
 }
+
+/// <summary>Milestone badges a reader can earn.</summary>
+public enum BadgeKind
+{
+    FirstBook,
+    FiveBooks,
+    TenBooks,
+    TwentyFiveBooks,
+    FiftyBooks,
+    HundredBooks,
+    Streak3,
+    Streak7,
+    Streak30,
+    Streak100,
+    FirstCircle,
+    FirstReview,
+    FirstMessage,
+    NightOwl,       // activity after midnight local
+    EarlyBird,      // activity before 6am local
+    Globetrotter,   // books from 5+ distinct authors
+    CircleStreak7,  // member of a circle that reached a 7-day group streak
+    CircleStreak30  // member of a circle that reached a 30-day group streak
+}

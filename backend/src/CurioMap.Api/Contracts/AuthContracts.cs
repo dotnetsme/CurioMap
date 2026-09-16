@@ -3,12 +3,12 @@ using System.ComponentModel.DataAnnotations;
 namespace CurioMap.Api.Contracts;
 
 public record RegisterRequest(
-    [ Required, EmailAddress, MaxLength(320)] string Email,
-    [ Required, MinLength(8), MaxLength(128)] string Password);
+    [Required, EmailAddress, MaxLength(320)] string Email,
+    [Required, MinLength(8), MaxLength(128)] string Password);
 
 public record LoginRequest(
-    [ Required, EmailAddress, MaxLength(320)] string Email,
-    [ Required, MaxLength(128)] string Password);
+    [Required, EmailAddress, MaxLength(320)] string Email,
+    [Required, MaxLength(128)] string Password);
 
 public record RefreshRequest(string? RefreshToken);
 

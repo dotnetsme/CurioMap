@@ -5,6 +5,7 @@ using CurioMap.Api.Common;
 using CurioMap.Api.Contracts;
 using CurioMap.Api.Data;
 using CurioMap.Api.Domain;
+using CurioMap.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,7 @@ namespace CurioMap.Api.Controllers;
 
 [ApiController]
 [Route("users")]
-public class UsersController(AppDbContext db, CurrentUser me) : ControllerBase
+public class UsersController(AppDbContext db, CurrentUser me, ProfanityFilter profanity) : ControllerBase
 {
     private static readonly Regex HandlePattern = new("^[a-z0-9][a-z0-9_]{2,39}$", RegexOptions.Compiled);
 
@@ -53,7 +54,7 @@ public class UsersController(AppDbContext db, CurrentUser me) : ControllerBase
 
         return Ok(new PublicProfileDto(
             user.Id,
-            user.Handle,
+            Mapping.ToPublicHandle(user, isSelf),
             user.AvatarId,
             user.DisplayNameMode.ToApi(),
             DisplayName.Resolve(user.DisplayNameMode, user.RealName, user.Handle),
@@ -109,7 +110,12 @@ public class UsersController(AppDbContext db, CurrentUser me) : ControllerBase
 
         if (request.RealName is not null)
         {
-            user.RealName = string.IsNullOrWhiteSpace(request.RealName) ? null : request.RealName.Trim();
+            var realName = string.IsNullOrWhiteSpace(request.RealName) ? null : request.RealName.Trim();
+            if (realName is not null && profanity.ContainsProfanity(realName))
+            {
+                throw new AppException(400, "That name was flagged by the auto-filter. Please choose another.");
+            }
+            user.RealName = realName;
         }
 
         if (request.Bio is not null)
@@ -118,7 +124,12 @@ public class UsersController(AppDbContext db, CurrentUser me) : ControllerBase
             {
                 throw new AppException(400, "Bio must be 1000 characters or fewer.");
             }
-            user.Bio = string.IsNullOrWhiteSpace(request.Bio) ? null : request.Bio.Trim();
+            var bio = string.IsNullOrWhiteSpace(request.Bio) ? null : request.Bio.Trim();
+            if (bio is not null && profanity.ContainsProfanity(bio))
+            {
+                throw new AppException(400, "Your bio was flagged by the auto-filter. Please rephrase.");
+            }
+            user.Bio = bio;
         }
 
         await db.SaveChangesAsync();

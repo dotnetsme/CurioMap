@@ -1,5 +1,6 @@
 namespace CurioMap.Api.Services;
 
+using CurioMap.Api.Common;
 using CurioMap.Api.Data;
 using CurioMap.Api.Domain;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +19,9 @@ public class RatingService(AppDbContext db) : IRatingService
 {
     public async Task RateAsync(Guid userId, Guid bookId, int value, CancellationToken ct = default)
     {
-        if (value < 1 || value > 5) throw new ArgumentOutOfRangeException(nameof(value));
+        // Defense in depth: the DTO carries [Range(1, 5)], but any other caller
+        // must surface a 400, not an unhandled 500 from the DB CHECK constraint.
+        if (value is < 1 or > 5) throw new AppException(400, "Rating must be between 1 and 5.");
 
         var existing = await db.Ratings
             .FirstOrDefaultAsync(r => r.UserId == userId && r.BookId == bookId, ct);

@@ -1,4 +1,4 @@
-﻿using CurioMap.Api.Auth;
+using CurioMap.Api.Auth;
 using CurioMap.Api.Common;
 using CurioMap.Api.Contracts;
 using CurioMap.Api.Data;
@@ -16,7 +16,9 @@ public class ReadingCirclesController(
     AppDbContext db,
     CurrentUser me,
     ProfanityFilter profanity,
-    IRedisRateLimiter limiter) : ControllerBase
+    IRedisRateLimiter limiter,
+    IStreakService streak,
+    ICircleStreakService circleStreaks) : ControllerBase
 {
     private async Task<ReadingCircle?> LoadCircleAsync(string id)
     {
@@ -34,22 +36,33 @@ public class ReadingCirclesController(
         [FromQuery] string sort = "recent",
         [FromQuery] int limit = 30, [FromQuery] int offset = 0)
     {
-        limit = Math.Clamp(limit, 1, 100);
+        limit = Math.Clamp(limit, 1, 50);
         offset = Math.Max(0, offset);
         var query = db.ReadingCircles.AsNoTracking().Include(c => c.Creator).Include(c => c.Book).Where(c => !c.IsArchived);
         if (!string.IsNullOrWhiteSpace(q))
         {
-            var needle = $"%{q.Trim().ToLower()}%";
+            var needle = $"%{Like.Escape(q.Trim().ToLower())}%";
             query = query.Where(c => EF.Functions.ILike(c.Name, needle) || EF.Functions.ILike(c.Handle, needle));
         }
         if (bookId.HasValue) query = query.Where(c => c.BookId == bookId.Value);
-        query = sort.ToLowerInvariant() switch { "members" => query.OrderByDescending(c => c.Members.Count), _ => query.OrderByDescending(c => c.LastActivityAt) };
+        query = sort.ToLowerInvariant() switch
+        {
+            "members" => query.OrderByDescending(c => c.Members.Count),
+            "streak" => query
+                .OrderByDescending(c => c.Streak == null ? 0 : c.Streak.CurrentStreak)
+                .ThenByDescending(c => c.LastActivityAt),
+            _ => query.OrderByDescending(c => c.LastActivityAt),
+        };
         var total = await query.CountAsync();
         var circles = await query.Skip(offset).Take(limit).ToListAsync();
         var ids = circles.Select(c => c.Id).ToList();
         var mc = await db.CircleMemberships.AsNoTracking().Where(m => ids.Contains(m.CircleId)).GroupBy(m => m.CircleId).Select(g => new { g.Key, C = g.Count() }).ToDictionaryAsync(x => x.Key, x => x.C);
         var msgc = await db.CircleMessages.AsNoTracking().Where(m => ids.Contains(m.CircleId) && m.Status == MessageStatus.Visible).GroupBy(m => m.CircleId).Select(g => new { g.Key, C = g.Count() }).ToDictionaryAsync(x => x.Key, x => x.C);
-        var items = circles.Select(c => new CircleDto(c.Id, c.Handle, c.Name, c.Description, c.Book is null ? null : Mapping.ToStub(c.Book), c.MaxMembers, c.NextMeetingAt, Mapping.ToStub(c.Creator!), mc.GetValueOrDefault(c.Id), msgc.GetValueOrDefault(c.Id), c.CreatedAt, c.LastActivityAt)).ToList();
+        var streaks = await db.CircleStreaks.AsNoTracking()
+            .Where(s => ids.Contains(s.CircleId))
+            .Select(s => new { s.CircleId, s.CurrentStreak, s.LongestStreak })
+            .ToDictionaryAsync(s => s.CircleId, s => (s.CurrentStreak, s.LongestStreak));
+        var items = circles.Select(c => new CircleDto(c.Id, c.Handle, c.Name, c.Description, c.Book is null ? null : Mapping.ToStub(c.Book), c.MaxMembers, c.NextMeetingAt, Mapping.ToStub(c.Creator!), mc.GetValueOrDefault(c.Id), msgc.GetValueOrDefault(c.Id), c.CreatedAt, c.LastActivityAt, streaks.GetValueOrDefault(c.Id).CurrentStreak, streaks.GetValueOrDefault(c.Id).LongestStreak)).ToList();
         return Ok(new PagedResult<CircleDto>(items, total, limit, offset));
     }
 
@@ -60,7 +73,7 @@ public class ReadingCirclesController(
         var circle = await LoadCircleAsync(id) ?? throw new AppException(404, "Circle not found.");
         if (circle.IsArchived) throw new AppException(404, "Circle not found.");
         var members = await db.CircleMemberships.AsNoTracking().Include(m => m.User).Where(m => m.CircleId == circle.Id).OrderBy(m => m.JoinedAt).ToListAsync();
-        var md = members.Select(m => new CircleMemberDto(m.UserId, m.User!.Handle, m.User.AvatarId, DisplayName.Resolve(m.User.DisplayNameMode, m.User.RealName, m.User.Handle), m.User.IsAuthor, m.Role.ToString(), m.JoinedAt)).ToList();
+        var md = members.Select(m => new CircleMemberDto(m.UserId, Mapping.ToStub(m.User!).Handle, m.User!.AvatarId, DisplayName.Resolve(m.User.DisplayNameMode, m.User.RealName, m.User.Handle), m.User.IsAuthor, m.Role.ToString(), m.JoinedAt)).ToList();
         var recent = await db.CircleMessages.AsNoTracking().Include(m => m.Author).Where(m => m.CircleId == circle.Id && m.Status == MessageStatus.Visible).OrderByDescending(m => m.CreatedAt).Take(20).ToListAsync();
         var rids = recent.Select(m => m.Id).ToList();
         var reactions = rids.Count == 0 ? new List<CircleReaction>() : await db.CircleReactions.AsNoTracking().Where(r => rids.Contains(r.MessageId)).ToListAsync();
@@ -75,11 +88,25 @@ public class ReadingCirclesController(
     public async Task<ActionResult<CircleDto>> Create(CreateCircleRequest request)
     {
         var userId = me.RequireUserId();
+        if (profanity.ContainsProfanity(request.Name) || (request.Description is not null && profanity.ContainsProfanity(request.Description)))
+        {
+            throw new AppException(400, "Circle name or description was flagged by the auto-filter. Please rephrase.");
+        }
         if (request.BookId.HasValue && !await db.Books.AnyAsync(b => b.Id == request.BookId.Value)) throw new AppException(404, "Book not found.");
         var circle = new ReadingCircle { Handle = await GenerateHandleAsync(request.Name), Name = request.Name.Trim(), Description = request.Description?.Trim(), BookId = request.BookId, MaxMembers = request.MaxMembers, NextMeetingAt = request.NextMeetingAt, CreatedBy = userId };
         db.ReadingCircles.Add(circle);
         db.CircleMemberships.Add(new CircleMembership { CircleId = circle.Id, UserId = userId, Role = CircleRole.Moderator });
         await db.SaveChangesAsync();
+
+        try
+        {
+            await streak.RecordActivityAsync(userId, StreakActivity.CircleCreated);
+        }
+        catch
+        {
+            // Gamification is best-effort; never fail circle creation.
+        }
+
         await db.Entry(circle).Reference(c => c.Creator).LoadAsync();
         if (circle.BookId.HasValue) await db.Entry(circle).Reference(c => c.Book).LoadAsync();
         var cs = circle.Creator is null ? new UserStubDto(userId, "unknown", "curio-01", "Reader", false) : Mapping.ToStub(circle.Creator);
@@ -126,7 +153,7 @@ public class ReadingCirclesController(
     [AllowAnonymous]
     public async Task<ActionResult<MessagesPage<CircleMessageDto>>> ListMessages(string id, [FromQuery] int limit = 50, [FromQuery] int offset = 0)
     {
-        limit = Math.Clamp(limit, 1, 200);
+        limit = Math.Clamp(limit, 1, 50);
         offset = Math.Max(0, offset);
         var circle = await LoadCircleAsync(id) ?? throw new AppException(404, "Circle not found.");
         var query = db.CircleMessages.AsNoTracking().Where(m => m.CircleId == circle.Id && m.Status == MessageStatus.Visible);
@@ -155,7 +182,38 @@ public class ReadingCirclesController(
         db.CircleMessages.Add(message);
         circle.LastActivityAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
+
+        try
+        {
+            await streak.RecordActivityAsync(userId, StreakActivity.CircleMessage);
+        }
+        catch
+        {
+            // Gamification is best-effort; never fail the message post.
+        }
+
+        try
+        {
+            await circleStreaks.RecordActivityAsync(circle.Id);
+        }
+        catch
+        {
+            // Gamification is best-effort; never fail the message post.
+        }
+
         return Ok(new CircleMessageDto(message.Id, circle.Id, Mapping.ToStub(author), content, message.Status.ToApi(), message.CreatedAt, []));
+    }
+
+    [HttpGet("/circles/{id}/streak")]
+    [AllowAnonymous]
+    [EnableRateLimiting("search")]
+    public async Task<ActionResult<CircleStreakStatsDto>> Streak(string id)
+    {
+        var circle = await LoadCircleAsync(id) ?? throw new AppException(404, "Circle not found.");
+        if (circle.IsArchived) throw new AppException(404, "Circle not found.");
+        var stats = await circleStreaks.GetStatsAsync(circle.Id);
+        return Ok(new CircleStreakStatsDto(
+            stats.CurrentStreak, stats.LongestStreak, stats.FreezeCount, stats.LastActivityAt, stats.ActiveToday));
     }
 
     [HttpPost("/circles/{id}/messages/{mid:guid}/react")]

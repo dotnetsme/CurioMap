@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useEffect } from "react";
+import { X } from "lucide-react";
 
 export function Modal({
   open,
@@ -40,10 +41,10 @@ export function Modal({
           <h3 className="text-lg font-semibold text-white">{title}</h3>
           <button
             onClick={onClose}
-            className="cursor-pointer rounded-lg px-2 py-1 text-slate-400 hover:bg-white/10 hover:text-white"
+            className="inline-flex cursor-pointer items-center justify-center rounded-lg p-1.5 text-slate-400 transition hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-indigo-500"
             aria-label="Close"
           >
-            ✕
+            <X size={18} />
           </button>
         </div>
         {children}

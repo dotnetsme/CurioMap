@@ -19,4 +19,4 @@ public record BookDto(
 
 public record SearchResponse(IReadOnlyList<BookDto> Items, int Total, bool FromExternal);
 
-public record ImportBookRequest([ Required, MaxLength(20)] string Isbn);
+public record ImportBookRequest([Required, MaxLength(20)] string Isbn);

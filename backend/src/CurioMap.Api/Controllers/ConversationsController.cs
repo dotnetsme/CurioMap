@@ -20,6 +20,7 @@ public class ConversationsController(
     ProfanityFilter profanity,
     IRedisRateLimiter limiter,
     ActivityService activity,
+    IStreakService streak,
     IOptions<ConversationOptions> conversationOptions) : ControllerBase
 {
     private DateTime Cutoff => DateTime.UtcNow.AddDays(-conversationOptions.Value.AutoArchiveDays);
@@ -32,7 +33,7 @@ public class ConversationsController(
         [FromQuery] int limit = 30,
         [FromQuery] int offset = 0)
     {
-        limit = Math.Clamp(limit, 1, 100);
+        limit = Math.Clamp(limit, 1, 50);
         offset = Math.Max(0, offset);
 
         // Ephemeral threads: lazily archive inactive conversations.
@@ -97,6 +98,10 @@ public class ConversationsController(
         {
             throw new AppException(400, "Title must be 3–200 characters.");
         }
+        if (profanity.ContainsProfanity(title))
+        {
+            throw new AppException(400, "Conversation title was flagged by the auto-filter. Please rephrase.");
+        }
 
         var userId = me.RequireUserId();
         var author = await db.Users.FirstAsync(u => u.Id == userId);
@@ -160,7 +165,7 @@ public class ConversationsController(
         [FromQuery] int limit = 50,
         [FromQuery] int offset = 0)
     {
-        limit = Math.Clamp(limit, 1, 100);
+        limit = Math.Clamp(limit, 1, 50);
         offset = Math.Max(0, offset);
 
         if (!await db.Conversations.AnyAsync(c => c.Id == id))
@@ -168,7 +173,10 @@ public class ConversationsController(
             throw new AppException(404, "Conversation not found.");
         }
 
-        var query = db.Messages.AsNoTracking().Where(m => m.ConversationId == id);
+        // Moderation audit state: muted/deleted messages are excluded from the
+        // public thread (AGENTS §2.4.2) — not merely blanked out.
+        var query = db.Messages.AsNoTracking()
+            .Where(m => m.ConversationId == id && m.Status == MessageStatus.Visible);
         var total = await query.CountAsync();
         var page = await query
             .OrderBy(m => m.CreatedAt)
@@ -186,7 +194,7 @@ public class ConversationsController(
             m.Id,
             m.ConversationId,
             m.Author is null ? new UserStubDto(m.AuthorId, "unknown", "curio-01", "Reader", false) : Mapping.ToStub(m.Author),
-            m.Status == MessageStatus.Visible ? m.Content : "",
+            m.Content,
             m.Status.ToApi(),
             m.CreatedAt,
             ReactionsFor(reactions, m.Id, mineId))).ToList();
@@ -238,6 +246,15 @@ public class ConversationsController(
         conversation.LastActivityAt = DateTime.UtcNow;
         activity.RecordMessagePosted(author, conversation, conversation.Book, message);
         await db.SaveChangesAsync();
+
+        try
+        {
+            await streak.RecordActivityAsync(userId, StreakActivity.DirectMessage);
+        }
+        catch
+        {
+            // Gamification is best-effort; never fail the message send.
+        }
 
         return Ok(new MessageDto(
             message.Id, id, Mapping.ToStub(author), content, message.Status.ToApi(), message.CreatedAt, []));

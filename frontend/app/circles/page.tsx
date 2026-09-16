@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Search, Users } from "lucide-react";
+import { Flame, Search, Users } from "lucide-react";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CircleList } from "@/components/circles/CircleList";
 import { NewCircleForm } from "@/components/circles/NewCircleForm";
@@ -64,6 +64,14 @@ export default function CirclesPage() {
             }`}
           >
             Most members
+          </button>
+          <button
+            onClick={() => setSort("streak")}
+            className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm transition focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+              sort === "streak" ? "bg-accent text-white" : "bg-surface text-ink-2 hover:bg-accent/10"
+            }`}
+          >
+            <Flame size={14} /> Hottest streaks
           </button>
         </div>
       </div>

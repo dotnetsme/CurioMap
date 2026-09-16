@@ -38,12 +38,36 @@ public static class Mapping
         ToSelfLocation(user),
         user.CreatedAt);
 
-    public static UserStubDto ToStub(User user) => new(
+    public static UserStubDto ToStub(User user)
+    {
+        // Identity separation: anonymous mode never leaks handle or real name.
+        if (user.DisplayNameMode == DisplayMode.Anonymous)
+        {
+            return new UserStubDto(user.Id, "anonymous", user.AvatarId, DisplayName.Resolve(user.DisplayNameMode, user.RealName, user.Handle), user.IsAuthor);
+        }
+        return new(
         user.Id,
         user.Handle,
         user.AvatarId,
         DisplayName.Resolve(user.DisplayNameMode, user.RealName, user.Handle),
         user.IsAuthor);
+    }
+
+    /// <summary>
+    /// Moderation surface only (`/admin`, Admin policy). The generated handle is
+    /// operationally required to identify a report author and is not a public
+    /// surface, so it is never redacted here.
+    /// </summary>
+    public static UserStubDto ToAdminStub(User user) => new(
+        user.Id,
+        user.Handle,
+        user.AvatarId,
+        DisplayName.Resolve(user.DisplayNameMode, user.RealName, user.Handle),
+        user.IsAuthor);
+
+    /// <summary>Public profile handle: self sees own handle, others see redacted value in anonymous mode.</summary>
+    public static string ToPublicHandle(User user, bool isSelf) =>
+        isSelf || user.DisplayNameMode != DisplayMode.Anonymous ? user.Handle : "anonymous";
 
     public static BookStubDto ToStub(Book book) => new(book.Id, book.Title, book.Author, book.Isbn, book.CoverUrl);
 }

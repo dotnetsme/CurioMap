@@ -27,7 +27,7 @@ public class AffiliateLinkService(IOptions<AffiliateOptions> options)
 
         links["kobo"] = !string.IsNullOrWhiteSpace(stored.Kobo)
             ? stored.Kobo
-            : book.Isbn is null ? "" : $"https://www.kobo.com/search?query={Uri.EscapeDataString(book.Isbn)}";
+            : isbn is null ? "" : $"https://www.kobo.com/search?query={Uri.EscapeDataString(isbn)}";
 
         if (!string.IsNullOrWhiteSpace(stored.Indiebound))
         {

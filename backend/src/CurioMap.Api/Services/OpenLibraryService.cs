@@ -10,15 +10,30 @@ public record OpenLibraryBook(string Title, string Author, string? Isbn, string?
 /// </summary>
 public class OpenLibraryService(HttpClient http, ILogger<OpenLibraryService> logger)
 {
-    public async Task<List<OpenLibraryBook>> SearchAsync(string query, int limit)
+    public async Task<List<OpenLibraryBook>> SearchAsync(string query, int limit, CancellationToken ct = default)
     {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return [];
+        }
+
+        // SSRF guard: HttpClient has a pinned BaseAddress; only same-host relative paths allowed.
+        if (http.BaseAddress is null
+            || !http.BaseAddress.Host.Equals("openlibrary.org", StringComparison.OrdinalIgnoreCase))
+        {
+            logger.LogWarning("OpenLibraryService misconfigured: unexpected BaseAddress {Base}", http.BaseAddress);
+            return [];
+        }
+
         try
         {
-            var url = "/search.json?q=" + Uri.EscapeDataString(query)
+            var url = "/search.json?q=" + Uri.EscapeDataString(query.Trim())
                       + $"&limit={Math.Clamp(limit, 1, 25)}"
                       + "&fields=title,author_name,cover_i,isbn,first_publish_year";
 
-            using var doc = JsonDocument.Parse(await http.GetStringAsync(url));
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(TimeSpan.FromSeconds(5));
+            using var doc = JsonDocument.Parse(await http.GetStringAsync(url, cts.Token));
             if (!doc.RootElement.TryGetProperty("docs", out var docs))
             {
                 return [];

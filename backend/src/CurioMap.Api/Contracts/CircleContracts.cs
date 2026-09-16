@@ -23,7 +23,9 @@ public record CircleDto(
     int MemberCount,
     int MessageCount,
     DateTime CreatedAt,
-    DateTime LastActivityAt);
+    DateTime LastActivityAt,
+    int CurrentStreak = 0,
+    int LongestStreak = 0);
 
 public record CircleDetailDto(
     CircleDto Circle,

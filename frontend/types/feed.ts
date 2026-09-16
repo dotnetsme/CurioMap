@@ -13,12 +13,13 @@ export interface FeedConversation {
 
 export interface FeedEvent {
   id: string;
-  type: "bookshelf_added" | "conversation_created" | "message_posted" | string;
+  type: "bookshelf_added" | "conversation_created" | "message_posted" | "badge_earned" | string;
   actor: UserStub;
   book: FeedBook | null;
   conversation: FeedConversation | null;
   messageExcerpt: string | null;
   shelfStatus: string | null;
+  badgeKind: string | null;
   createdAt: string;
 }
 

@@ -17,7 +17,7 @@ public class FeedController(AppDbContext db, CurrentUser me) : ControllerBase
     [Authorize]
     public async Task<ActionResult<FeedPage>> Feed([FromQuery] int limit = 30, [FromQuery] int offset = 0)
     {
-        limit = Math.Clamp(limit, 1, 100);
+        limit = Math.Clamp(limit, 1, 50);
         offset = Math.Max(0, offset);
         var mineId = me.RequireUserId();
 
@@ -49,19 +49,22 @@ public class FeedController(AppDbContext db, CurrentUser me) : ControllerBase
     {
         var bookId = e.BookId;
         var conversationId = e.ConversationId;
+        // Payload is best-effort under SQLite tests (ignored) and jsonb in Postgres.
+        var payload = e.Payload ?? new Dictionary<string, string>();
         return new FeedEventDto(
             e.Id,
             e.Type,
             e.Actor is null ? new UserStubDto(e.ActorId, "unknown", "curio-01", "Reader", false) : Mapping.ToStub(e.Actor),
             bookId is null
                 ? null
-                : new FeedBookDto(bookId.Value, e.Payload.GetValueOrDefault("book_title", ""), NullIfEmpty(e.Payload.GetValueOrDefault("book_cover"))),
+                : new FeedBookDto(bookId.Value, payload.GetValueOrDefault("book_title", ""), NullIfEmpty(payload.GetValueOrDefault("book_cover"))),
             conversationId is null
                 ? null
-                : new FeedConversationDto(conversationId.Value, e.Payload.GetValueOrDefault("conversation_title", "")),
-            NullIfEmpty(e.Payload.GetValueOrDefault("message_excerpt")),
-            NullIfEmpty(e.Payload.GetValueOrDefault("status")),
-            e.CreatedAt);
+                : new FeedConversationDto(conversationId.Value, payload.GetValueOrDefault("conversation_title", "")),
+            NullIfEmpty(payload.GetValueOrDefault("message_excerpt")),
+            NullIfEmpty(payload.GetValueOrDefault("status")),
+            e.CreatedAt,
+            NullIfEmpty(payload.GetValueOrDefault("badge_kind")));
     }
 
     private static string? NullIfEmpty(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;

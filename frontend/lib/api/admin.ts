@@ -14,3 +14,7 @@ export function resolve(
     body: JSON.stringify({ action }),
   });
 }
+
+export function backfillBadges(): Promise<{ usersScanned: number; badgesAwarded: number }> {
+  return api("/admin/gamification/backfill", { method: "POST" });
+}

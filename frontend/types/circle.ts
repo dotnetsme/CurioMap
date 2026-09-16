@@ -4,6 +4,14 @@ import type { ReactionSummary } from "./message";
 
 export type CircleRole = "member" | "moderator";
 
+export interface CircleStreakStats {
+  currentStreak: number;
+  longestStreak: number;
+  freezeCount: number;
+  lastActivityAt: string | null;
+  activeToday: boolean;
+}
+
 export interface Circle {
   id: string;
   handle: string;
@@ -17,6 +25,8 @@ export interface Circle {
   messageCount: number;
   createdAt: string;
   lastActivityAt: string;
+  currentStreak: number;
+  longestStreak: number;
 }
 
 export interface CircleMember {

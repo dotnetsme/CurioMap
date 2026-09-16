@@ -8,15 +8,15 @@ import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/Feedback";
 import { Reveal } from "@/components/ui/Reveal";
 import { useAuth } from "@/components/providers/AuthProvider";
-import type { NearbyReader } from "@/types";
+import type { Nearby, NearbyReader } from "@/types";
 
-const scopeLabels: Record<string, string> = {
+const scopeLabels = {
   city: "your city",
   region: "your region",
   country: "your country",
-};
+} as const;
 
-export function NearbyReadersList({ scope, readers }: { scope: string; readers: NearbyReader[] }) {
+export function NearbyReadersList({ scope, readers }: { scope: Nearby["scope"]; readers: NearbyReader[] }) {
   const { user } = useAuth();
 
   if (readers.length === 0) {

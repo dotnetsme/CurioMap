@@ -45,11 +45,33 @@ public class DiscoverController(AppDbContext db, CurrentUser me, ICacheService c
         return Ok(new TopBooksDto(country, region, books));
     }
 
+    /// <summary>
+    /// Anonymous drill-down layer: individual readers at fuzzed (~15 km grid)
+    /// coordinates for the on-map heat map. Honors location + shelf privacy and
+    /// only ever returns users with a public "currently reading" book.
+    /// </summary>
+    [HttpGet("map-readers")]
+    [AllowAnonymous]
+    public Task<MapReadersDto> MapReaders(
+        [FromQuery] string? country,
+        [FromQuery] string? region,
+        [FromQuery] int limit = 50)
+    {
+        limit = Math.Clamp(limit, 1, 50);
+        country = country?.Trim();
+        region = region?.Trim();
+
+        var key = $"discover:map-readers:{(country ?? "-").ToLowerInvariant()}:"
+                  + $"{(region ?? "-").ToLowerInvariant()}:{limit}";
+        return cache.GetOrSetAsync(key, TimeSpan.FromMinutes(2),
+            () => ComputeMapReadersAsync(country, region, limit));
+    }
+
     [HttpGet("nearby")]
     [Authorize]
-    public async Task<ActionResult<NearbyDto>> Nearby([FromQuery] int limit = 50)
+    public async Task<ActionResult<NearbyDto>> Nearby([FromQuery] int limit = 30)
     {
-        limit = Math.Clamp(limit, 1, 100);
+        limit = Math.Clamp(limit, 1, 50);
         var mine = await db.Users.AsNoTracking().Include(u => u.Location)
             .FirstOrDefaultAsync(u => u.Id == me.RequireUserId());
 
@@ -69,7 +91,8 @@ public class DiscoverController(AppDbContext db, CurrentUser me, ICacheService c
             .Include(u => u.Location)
             .Where(u => u.Id != mine.Id
                         && u.LocationId != null
-                        && u.LocationVisibility != LocationVisibility.Hidden);
+                        && u.LocationVisibility != LocationVisibility.Hidden
+                        && u.BookshelfVisibility == ShelfVisibility.Public);
 
         List<User> found = [];
         if (loc.City != null)
@@ -116,23 +139,106 @@ public class DiscoverController(AppDbContext db, CurrentUser me, ICacheService c
                         && s.User!.BookshelfVisibility == ShelfVisibility.Public)
             .ToListAsync();
 
-        var readers = found.Select(u => new NearbyReaderDto(
-            Mapping.ToStub(u),
-            new LocationDto(u.Location!.Country, u.Location.Region, u.Location.City, null, null),
-            shelves.Where(s => s.UserId == u.Id && s.Book != null).Select(s => Mapping.ToStub(s.Book!)).ToList()
+        var readers = found
+            .Select(u => (User: u, Location: Mapping.ToPublicLocation(u)))
+            .Where(x => x.Location is not null)
+            .Select(x => new NearbyReaderDto(
+            Mapping.ToStub(x.User),
+            x.Location!,
+            shelves.Where(s => s.UserId == x.User.Id && s.Book != null).Select(s => Mapping.ToStub(s.Book!)).ToList()
         )).ToList();
 
         return Ok(new NearbyDto(scope, readers));
     }
 
 
+    private async Task<MapReadersDto> ComputeMapReadersAsync(string? country, string? region, int limit)
+    {
+        var readersQuery = db.Users.AsNoTracking()
+            .Where(u => u.LocationId != null
+                        && u.LocationVisibility != LocationVisibility.Hidden
+                        && u.BookshelfVisibility == ShelfVisibility.Public
+                        && u.Location!.LatFuzzed != null
+                        && u.Location!.LngFuzzed != null
+                        && u.BookshelfEntries.Any(s => s.Status == BookStatus.Reading
+                                                       && s.Visibility == ShelfVisibility.Public));
+
+        if (!string.IsNullOrEmpty(country))
+        {
+            readersQuery = readersQuery.Where(u => u.Location!.Country == country);
+        }
+        if (!string.IsNullOrEmpty(region))
+        {
+            readersQuery = readersQuery.Where(u => u.Location!.Region == region);
+        }
+
+        var rows = await readersQuery
+            .OrderBy(u => u.Handle)
+            .Take(limit)
+            .Select(u => new
+            {
+                u.Id,
+                u.Handle,
+                u.AvatarId,
+                u.DisplayNameMode,
+                u.RealName,
+                u.IsAuthor,
+                u.LocationVisibility,
+                Country = u.Location!.Country,
+                Region = u.Location!.Region,
+                City = u.Location!.City,
+                Lat = u.Location!.LatFuzzed!.Value,
+                Lng = u.Location!.LngFuzzed!.Value,
+            })
+            .ToListAsync();
+
+        var ids = rows.Select(r => r.Id).ToList();
+        var shelves = await db.BookshelfEntries.AsNoTracking()
+            .Include(s => s.Book)
+            .Where(s => ids.Contains(s.UserId)
+                        && s.Status == BookStatus.Reading
+                        && s.Visibility == ShelfVisibility.Public
+                        && s.User!.BookshelfVisibility == ShelfVisibility.Public)
+            .ToListAsync();
+
+        var bookGroups = shelves
+            .Where(s => s.Book != null)
+            .GroupBy(s => s.UserId)
+            .ToDictionary(g => g.Key, g => g.Select(s => Mapping.ToStub(s.Book!)).ToList());
+
+        var readers = rows
+            .Where(r => bookGroups.ContainsKey(r.Id))
+            .Select(r =>
+            {
+                var handle = r.DisplayNameMode == DisplayMode.Anonymous ? "anonymous" : r.Handle;
+                var region = r.LocationVisibility == LocationVisibility.Country ? null : r.Region;
+                var city = r.LocationVisibility == LocationVisibility.Country ? null : r.City;
+                return new MapReaderDto(
+                new UserStubDto(r.Id, handle, r.AvatarId,
+                    DisplayName.Resolve(r.DisplayNameMode, r.RealName, r.Handle), r.IsAuthor),
+                r.Country,
+                region,
+                city,
+                r.Lat,
+                r.Lng,
+                bookGroups.GetValueOrDefault(r.Id, []));
+            })
+            .ToList();
+
+        return new MapReadersDto(country, region, readers.Count, readers);
+    }
+
+
     private async Task<GlobalDiscoveryDto> ComputeGlobalAsync()
     {
         var readerRows = await db.Users.AsNoTracking()
-            .Where(u => u.LocationId != null && u.LocationVisibility != LocationVisibility.Hidden)
+            .Where(u => u.LocationId != null
+                        && u.LocationVisibility != LocationVisibility.Hidden
+                        && u.BookshelfVisibility == ShelfVisibility.Public)
             .Select(u => new
             {
                 Country = u.Location!.Country ?? "",
+                u.LocationVisibility,
                 Region = u.Location!.Region ?? "",
                 u.Location!.LatFuzzed,
                 u.Location!.LngFuzzed,
@@ -153,12 +259,18 @@ public class DiscoverController(AppDbContext db, CurrentUser me, ICacheService c
                 s.Book!.Isbn,
                 s.Book!.CoverUrl,
                 Country = s.User!.Location!.Country ?? "",
+                s.User!.LocationVisibility,
                 Region = s.User!.Location!.Region ?? "",
             })
             .ToListAsync();
 
+        // Country-only visibility must never surface a region name: bucket those
+        // readers under an empty region so aggregation cannot leak it.
+        static string Redact(string region, LocationVisibility visibility) =>
+            visibility == LocationVisibility.Country ? "" : region;
+
         var topBooksByRegion = shelfRows
-            .GroupBy(r => (r.Country, r.Region))
+            .GroupBy(r => (r.Country, Region: Redact(r.Region, r.LocationVisibility)))
             .ToDictionary(
                 g => g.Key,
                 g => g.GroupBy(x => x.BookId)
@@ -176,7 +288,7 @@ public class DiscoverController(AppDbContext db, CurrentUser me, ICacheService c
                     .ToList());
 
         var regions = readerRows
-            .GroupBy(r => (r.Country, r.Region))
+            .GroupBy(r => (r.Country, Region: Redact(r.Region, r.LocationVisibility)))
             .Select(g => new RegionStatDto(
                 g.Key.Country,
                 g.Key.Region,
@@ -193,10 +305,12 @@ public class DiscoverController(AppDbContext db, CurrentUser me, ICacheService c
 
     private async Task<List<TopBookDto>> ComputeTopBooksAsync(string? country, string? region, int take)
     {
+        take = Math.Clamp(take, 1, 50);
         var query = db.BookshelfEntries.AsNoTracking()
             .Where(s => s.Status == BookStatus.Reading
                         && s.Visibility == ShelfVisibility.Public
-                        && s.User!.BookshelfVisibility == ShelfVisibility.Public);
+                        && s.User!.BookshelfVisibility == ShelfVisibility.Public
+                        && s.User!.LocationVisibility != LocationVisibility.Hidden);
 
         if (!string.IsNullOrEmpty(country))
         {

@@ -21,8 +21,7 @@ public record BookDetailResult(BookDto Book, bool IsOwner);
 
 [ApiController]
 [Route("books")]
-[Authorize]
-public class RatingsController(IRatingService ratingService, Auth.CurrentUser currentUser) : ControllerBase
+public class RatingsController(IRatingService ratingService, IStreakService streak, Auth.CurrentUser currentUser) : ControllerBase
 {
     /// <summary>
     /// Read aggregate stats for a single book.
@@ -43,16 +42,26 @@ public class RatingsController(IRatingService ratingService, Auth.CurrentUser cu
     /// Upsert the signed-in user's rating for a book (1–5).
     /// </summary>
     [HttpPut("{id:guid}/rating")]
-    [EnableRateLimiting("search")]
+    [Authorize]
+    [EnableRateLimiting("write")]
     public async Task<ActionResult<RatingStatsDto>> Rate(Guid id, [FromBody] RateBookRequest req)
     {
         var userId = currentUser.RequireUserId();
         await ratingService.RateAsync(userId, id, req.Value);
+
+        try
+        {
+            await streak.RecordActivityAsync(userId, StreakActivity.Rating);
+        }
+        catch
+        {
+            // Gamification is best-effort; never fail the rating.
+        }
 
         var stats = await ratingService.GetStatsAsync(id);
         return Ok(new RatingStatsDto(stats?.Average ?? 0, stats?.Count ?? 0, true));
     }
 }
 
-public record RateBookRequest([Required] int Value);
+public record RateBookRequest([Required, Range(1, 5)] int Value);
 public record RatingStatsDto(double Average, int Count, bool RatedByCurrentUser);
