@@ -6,7 +6,7 @@ public record ChallengeStatsDto(
     int Year,
     int Target,
     int Finished,
-    int Average,
+    double Average,
     bool AheadOfPace,
     int Pct
 );

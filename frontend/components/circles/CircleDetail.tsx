@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import {
   Users,
   MessageCircle,
-  BookOpen /* used in JSX:125 */,
+  BookOpen,
   Calendar,
   LogIn,
   LogOut,
@@ -54,9 +54,14 @@ export function CircleDetail({ handle }: { handle: Promise<string> | string }) {
     try {
       if (membership) {
         await leaveCircle(circle.handle);
+        const leftId = user?.id;
         setCircle((prev) =>
           prev
-            ? { ...prev, members: prev.members.filter((m) => m.userId !== user?.id), memberCount: prev.memberCount - 1 }
+            ? {
+                ...prev,
+                memberCount: Math.max(0, prev.memberCount - 1),
+                members: prev.members.filter((m) => m.userId !== leftId),
+              }
             : prev);
       } else {
         await joinCircle(circle.handle);

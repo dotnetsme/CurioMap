@@ -19,19 +19,25 @@ export function getAccessToken(): string | null {
 }
 
 async function extractError(res: Response): Promise<string> {
+  const fallback = res.statusText || "Request failed";
   try {
-    const data = await res.clone().json();
+    const text = await res.clone().text();
+    if (!text) return fallback;
+    const data = JSON.parse(text) as unknown;
     if (typeof data === "string") return data;
-    if (data?.detail) return String(data.detail);
-    if (data?.title) return String(data.title);
-    if (data?.errors) {
-      const first = Object.values(data.errors as Record<string, string[]>)[0];
-      if (Array.isArray(first) && first.length > 0) return String(first[0]);
+    if (data && typeof data === "object") {
+      const obj = data as Record<string, unknown>;
+      if (typeof obj.detail === "string") return obj.detail;
+      if (typeof obj.title === "string") return obj.title;
+      if (obj.errors && typeof obj.errors === "object") {
+        const first = Object.values(obj.errors as Record<string, string[]>)[0];
+        if (Array.isArray(first) && first.length > 0) return String(first[0]);
+      }
     }
   } catch {
     // not JSON
   }
-  return res.statusText || "Request failed";
+  return fallback;
 }
 
 let refreshPromise: Promise<boolean> | null = null;
@@ -63,7 +69,9 @@ export async function api<T>(
   init: RequestInit & { auth?: boolean; timeoutMs?: number } = {},
 ): Promise<T> {
   const { auth = true, timeoutMs = 15_000, ...rest } = init;
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const headers: Record<string, string> = {};
+  const hasBody = rest.body !== undefined && rest.body !== null;
+  if (hasBody) headers["Content-Type"] = "application/json";
   Object.assign(headers, rest.headers);
 
   if (auth && accessToken) {

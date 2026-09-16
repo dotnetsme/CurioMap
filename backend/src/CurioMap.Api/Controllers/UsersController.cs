@@ -83,7 +83,7 @@ public class UsersController(AppDbContext db, CurrentUser me, ProfanityFilter pr
             {
                 throw new AppException(400, "Handles must be 3–40 characters: lowercase letters, digits and underscores.");
             }
-            if (await db.Users.AnyAsync(u => u.Handle == handle && u.Id != user.Id))
+            if (await db.Users.AnyAsync(u => u.Handle.ToLower() == handle && u.Id != user.Id))
             {
                 throw new AppException(409, "That handle is already taken.");
             }

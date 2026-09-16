@@ -22,7 +22,10 @@ public class RatingService(AppDbContext db) : IRatingService
         // Defense in depth: the DTO carries [Range(1, 5)], but any other caller
         // must surface a 400, not an unhandled 500 from the DB CHECK constraint.
         if (value is < 1 or > 5) throw new AppException(400, "Rating must be between 1 and 5.");
-
+        if (!await db.Books.AnyAsync(b => b.Id == bookId, ct))
+        {
+            throw new AppException(404, "Book not found.");
+        }
         var existing = await db.Ratings
             .FirstOrDefaultAsync(r => r.UserId == userId && r.BookId == bookId, ct);
 
@@ -36,7 +39,15 @@ public class RatingService(AppDbContext db) : IRatingService
             existing.UpdatedAt = DateTime.UtcNow;
         }
 
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException)
+        {
+            // FK race: book deleted between the existence check and the insert.
+            throw new AppException(404, "Book not found.");
+        }
     }
 
     public async Task<RatingStats?> GetStatsAsync(Guid bookId, CancellationToken ct = default)

@@ -37,16 +37,41 @@ public class RefreshTokenService(AppDbContext db, IOptions<JwtOptions> options)
         }
 
         var hash = Hash(raw);
-        var token = await db.RefreshTokens.Include(t => t.User)
-            .FirstOrDefaultAsync(t => t.TokenHash == hash, ct);
 
-        if (token?.User is null || token.RevokedAt is not null || token.ExpiresAt < DateTime.UtcNow)
+        // Rotation must be atomic: lock the token row so concurrent use of the
+        // same token cannot mint two sessions. A reused (already revoked) token
+        // indicates theft: wipe the whole family (all live tokens for the user).
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        RefreshToken? token;
+        if (db.Database.IsNpgsql())
         {
+            token = await db.RefreshTokens.FromSqlRaw<RefreshToken>(
+                    "SELECT * FROM refresh_tokens WHERE token_hash = {0} FOR UPDATE", hash)
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(ct);
+        }
+        else
+        {
+            // SQLite/test providers have no FOR UPDATE: the tx serializes writers.
+            token = await db.RefreshTokens.Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.TokenHash == hash, ct);
+        }
+
+        if (token?.User is null || token.ExpiresAt < DateTime.UtcNow)
+        {
+            await tx.RollbackAsync(ct);
             return null;
         }
 
-        // Rotation must be atomic: concurrent use of the same token must not mint two sessions.
-        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        if (token.RevokedAt is not null)
+        {
+            await db.RefreshTokens
+                .Where(t => t.UserId == token.UserId && t.RevokedAt == null)
+                .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, DateTime.UtcNow), ct);
+            await tx.CommitAsync(ct);
+            return null;
+        }
+
         token.RevokedAt = DateTime.UtcNow;
         var (fresh, newRaw) = Issue(token.User);
         db.RefreshTokens.Add(fresh);

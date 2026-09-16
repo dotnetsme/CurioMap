@@ -11,7 +11,6 @@ namespace CurioMap.Api.Data;
 /// </summary>
 public static class DbInitializer
 {
-    private const string LockKey = "742019"; // arbitrary curiomap lock id
     private const string ResourcePrefix = "CurioMap.Api.Data.Migrations.";
 
     public static async Task InitializeAsync(IServiceProvider services, ILogger logger)
@@ -29,70 +28,80 @@ public static class DbInitializer
         if (!db.Database.IsNpgsql())
         {
             await db.Database.EnsureCreatedAsync();
+            await db.Database.CloseConnectionAsync();
             return;
         }
         var connection = (NpgsqlConnection)db.Database.GetDbConnection();
 
         await using (var cmd = connection.CreateCommand())
         {
-            cmd.CommandText = $"""
+            cmd.CommandText = """
                 CREATE TABLE IF NOT EXISTS schema_migrations (
                     id text PRIMARY KEY,
                     applied_at timestamptz NOT NULL DEFAULT now()
                 );
-                SELECT pg_advisory_lock({LockKey});
+                SELECT pg_advisory_xact_lock(742019);
                 """;
             await cmd.ExecuteNonQueryAsync();
         }
 
-        try
+        foreach (var script in scripts)
         {
-            foreach (var script in scripts)
-            {
-                var id = script[ResourcePrefix.Length..].Replace(".sql", "", StringComparison.Ordinal);
+            var id = script[ResourcePrefix.Length..].Replace(".sql", "", StringComparison.Ordinal);
 
+            // Each migration runs in its own transaction that also holds the
+            // transaction-scoped advisory lock, so concurrent Fly machines
+            // serialize on the lock and the lock is always released on commit.
+            await using var tx = await connection.BeginTransactionAsync();
+            try
+            {
                 bool applied;
+                await using (var lockCmd = connection.CreateCommand())
+                {
+                    // Re-acquire inside the tx: blocks until any concurrent applier commits.
+                    lockCmd.Transaction = (NpgsqlTransaction)tx;
+                    lockCmd.CommandText = "SELECT pg_advisory_xact_lock(742019)";
+                    await lockCmd.ExecuteNonQueryAsync();
+                }
                 await using (var check = connection.CreateCommand())
                 {
+                    check.Transaction = (NpgsqlTransaction)tx;
                     check.CommandText = "SELECT 1 FROM schema_migrations WHERE id = @id";
                     check.Parameters.AddWithValue("id", id);
                     applied = await check.ExecuteScalarAsync() is not null;
                 }
 
-                if (applied)
+                if (!applied)
                 {
-                    continue;
-                }
+                    var sql = await new StreamReader(assembly.GetManifestResourceStream(script)!).ReadToEndAsync();
 
-                var sql = await new StreamReader(assembly.GetManifestResourceStream(script)!).ReadToEndAsync();
+                    await using (var apply = connection.CreateCommand())
+                    {
+                        apply.Transaction = (NpgsqlTransaction)tx;
+                        apply.CommandText = sql;
+                        await apply.ExecuteNonQueryAsync();
+                    }
 
-                await using var tx = await connection.BeginTransactionAsync();
-                await using (var apply = connection.CreateCommand())
-                {
-                    apply.Transaction = (NpgsqlTransaction)tx;
-                    apply.CommandText = sql;
-                    await apply.ExecuteNonQueryAsync();
-                }
+                    await using (var record = connection.CreateCommand())
+                    {
+                        record.Transaction = (NpgsqlTransaction)tx;
+                        record.CommandText = "INSERT INTO schema_migrations (id) VALUES (@id)";
+                        record.Parameters.AddWithValue("id", id);
+                        await record.ExecuteNonQueryAsync();
+                    }
 
-                await using (var record = connection.CreateCommand())
-                {
-                    record.Transaction = (NpgsqlTransaction)tx;
-                    record.CommandText = "INSERT INTO schema_migrations (id) VALUES (@id)";
-                    record.Parameters.AddWithValue("id", id);
-                    await record.ExecuteNonQueryAsync();
+                    logger.LogInformation("Applied migration {Migration}", id);
                 }
 
                 await tx.CommitAsync();
-                logger.LogInformation("Applied migration {Migration}", id);
             }
-        }
-        finally
-        {
-            await using (var unlock = connection.CreateCommand())
+            catch
             {
-                unlock.CommandText = $"SELECT pg_advisory_unlock({LockKey});";
-                await unlock.ExecuteNonQueryAsync();
+                await tx.RollbackAsync();
+                throw;
             }
         }
+
+        await db.Database.CloseConnectionAsync();
     }
 }

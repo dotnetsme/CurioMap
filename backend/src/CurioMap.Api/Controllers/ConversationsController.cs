@@ -36,14 +36,11 @@ public class ConversationsController(
         limit = Math.Clamp(limit, 1, 50);
         offset = Math.Max(0, offset);
 
-        // Ephemeral threads: lazily archive inactive conversations.
-        await db.Conversations
-            .Where(c => c.BookId == bookId && !c.IsArchived && c.LastActivityAt < Cutoff)
-            .ExecuteUpdateAsync(s => s.SetProperty(c => c.IsArchived, true));
-
         var book = await db.Books.AsNoTracking().FirstOrDefaultAsync(b => b.Id == bookId)
             ?? throw new AppException(404, "Book not found.");
 
+        // Read-only: staleness is derived in memory (archived flag or past the
+        // cutoff). Persistence happens on write paths + the hourly archiver.
         var query = db.Conversations.AsNoTracking()
             .Include(c => c.Creator)
             .Where(c => c.BookId == bookId && (includeArchived || !c.IsArchived));
@@ -61,13 +58,14 @@ public class ConversationsController(
             .Select(g => new { ConversationId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.ConversationId, x => x.Count);
 
+        var cutoff = Cutoff;
         var items = conversations.Select(c => new ConversationDto(
             c.Id, c.BookId, c.DraftId,
             c.TopicType.ToApi(),
             c.Title,
             c.PromptKey,
             c.Creator is null ? new UserStubDto(c.CreatedBy, "unknown", "curio-01", "Reader", false) : Mapping.ToStub(c.Creator),
-            c.IsArchived,
+            c.IsArchived || c.LastActivityAt < cutoff,
             counts.GetValueOrDefault(c.Id),
             c.CreatedAt,
             c.LastActivityAt,
@@ -79,11 +77,15 @@ public class ConversationsController(
     [HttpPost("/books/{bookId:guid}/conversations")]
     [Authorize]
     [EnableRateLimiting("write")]
-    public async Task<ActionResult<ConversationDto>> CreateForBook(Guid bookId, CreateConversationRequest request)
+    public async Task<ActionResult<ConversationDto>> CreateForBook(Guid bookId, CreateConversationRequest? request)
     {
         var book = await db.Books.FirstOrDefaultAsync(b => b.Id == bookId)
             ?? throw new AppException(404, "Book not found.");
 
+        if (request is null)
+        {
+            throw new AppException(400, "A title and topic type are required.");
+        }
         if (!EnumStrings.TryParseEnum<TopicType>(request.TopicType, out var topicType))
         {
             throw new AppException(400, "Unknown topic type. Use general, chapter, theme or question.");
@@ -134,13 +136,8 @@ public class ConversationsController(
             .FirstOrDefaultAsync(c => c.Id == id)
             ?? throw new AppException(404, "Conversation not found.");
 
-        if (!conversation.IsArchived && conversation.LastActivityAt < Cutoff)
-        {
-            await db.Conversations
-                .Where(c => c.Id == id && !c.IsArchived && c.LastActivityAt < Cutoff)
-                .ExecuteUpdateAsync(s => s.SetProperty(c => c.IsArchived, true));
-            conversation.IsArchived = true;
-        }
+        // Read-only: never persist here — staleness is derived for display.
+        var archived = conversation.IsArchived || conversation.LastActivityAt < Cutoff;
 
         var count = await db.Messages.AsNoTracking()
             .CountAsync(m => m.ConversationId == id && m.Status == MessageStatus.Visible);
@@ -151,7 +148,7 @@ public class ConversationsController(
             conversation.Title,
             conversation.PromptKey,
             conversation.Creator is null ? new UserStubDto(conversation.CreatedBy, "unknown", "curio-01", "Reader", false) : Mapping.ToStub(conversation.Creator),
-            true == conversation.IsArchived,
+            archived,
             count,
             conversation.CreatedAt,
             conversation.LastActivityAt,
@@ -205,23 +202,24 @@ public class ConversationsController(
     [HttpPost("conversations/{id:guid}/messages")]
     [Authorize]
     [EnableRateLimiting("write")]
-    public async Task<ActionResult<MessageDto>> PostMessage(Guid id, CreateMessageRequest request)
+    public async Task<ActionResult<MessageDto>> PostMessage(Guid id, CreateMessageRequest? request)
     {
         var conversation = await db.Conversations
             .Include(c => c.Book)
             .FirstOrDefaultAsync(c => c.Id == id)
             ?? throw new AppException(404, "Conversation not found.");
 
-        if (conversation.IsArchived)
+        var cutoff = Cutoff;
+        if (conversation.IsArchived || conversation.LastActivityAt < cutoff)
         {
             throw new AppException(400, "This conversation is archived.");
         }
 
-        var content = request.Content.Trim();
-        if (content.Length == 0)
+        if (request is null || string.IsNullOrWhiteSpace(request.Content))
         {
             throw new AppException(400, "Message cannot be empty.");
         }
+        var content = request.Content.Trim();
 
         var userId = me.RequireUserId();
         if (!await limiter.IsAllowedAsync("messages", userId.ToString(), 15, TimeSpan.FromMinutes(1)))
@@ -243,6 +241,10 @@ public class ConversationsController(
             Status = MessageStatus.Visible,
         };
         db.Messages.Add(message);
+        // Opportunistic persistence: posting revives the thread, and a stale-but-unflagged
+        // thread that receives a post must not stay archived (covers the window before
+        // the hourly archiver runs). Posting to a stale thread is already rejected above.
+        conversation.IsArchived = false;
         conversation.LastActivityAt = DateTime.UtcNow;
         activity.RecordMessagePosted(author, conversation, conversation.Book, message);
         await db.SaveChangesAsync();

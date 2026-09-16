@@ -18,11 +18,16 @@ public class MessagesController(AppDbContext db, CurrentUser me) : ControllerBas
     [HttpPost("{id:guid}/report")]
     [Authorize]
     [EnableRateLimiting("write")]
-    public async Task<ActionResult<ReportCreatedDto>> Report(Guid id, ReportRequest request)
+    public async Task<ActionResult<ReportCreatedDto>> Report(Guid id, ReportRequest? request)
     {
         if (!await db.Messages.AnyAsync(m => m.Id == id))
         {
             throw new AppException(404, "Message not found.");
+        }
+
+        if (request is null || string.IsNullOrWhiteSpace(request.Reason) || request.Reason.Trim().Length < 3)
+        {
+            throw new AppException(400, "A reason of at least 3 characters is required.");
         }
 
         var reporterId = me.RequireUserId();
@@ -46,9 +51,9 @@ public class MessagesController(AppDbContext db, CurrentUser me) : ControllerBas
 
     [HttpPatch("{id:guid}")]
     [Authorize(Policy = "Admin")]
-    public async Task<ActionResult<MessageDto>> SetStatus(Guid id, SetMessageStatusRequest request)
+    public async Task<ActionResult<MessageDto>> SetStatus(Guid id, SetMessageStatusRequest? request)
     {
-        if (!EnumStrings.TryParseEnum<MessageStatus>(request.Status, out var status))
+        if (request is null || !EnumStrings.TryParseEnum<MessageStatus>(request.Status, out var status))
         {
             throw new AppException(400, "Unknown status. Use visible, muted or deleted.");
         }
@@ -74,16 +79,18 @@ public class MessagesController(AppDbContext db, CurrentUser me) : ControllerBas
     [HttpPost("{id:guid}/reactions")]
     [Authorize]
     [EnableRateLimiting("write")]
-    public async Task<ActionResult<ReactionResult>> React(Guid id, ReactRequest request)
+    public async Task<ActionResult<ReactionResult>> React(Guid id, ReactRequest? request)
     {
-        if (!EnumStrings.TryParseEnum<ReactionKind>(request.Kind, out var kind))
+        if (request is null || !EnumStrings.TryParseEnum<ReactionKind>(request.Kind, out var kind))
         {
             throw new AppException(400, "Unknown reaction. Use insightful, funny or helpful.");
         }
 
-        if (!await db.Messages.AnyAsync(m => m.Id == id))
+        var message = await db.Messages.FirstOrDefaultAsync(m => m.Id == id)
+            ?? throw new AppException(404, "Message not found.");
+        if (message.Status != MessageStatus.Visible)
         {
-            throw new AppException(404, "Message not found.");
+            throw new AppException(410, "This message is no longer available.");
         }
 
         var userId = me.RequireUserId();

@@ -52,7 +52,7 @@ public class CircleStreakService(AppDbContext db, ActivityService activity) : IC
 
         return new CircleStreakStats
         {
-            CurrentStreak = streak?.CurrentStreak ?? 0,
+            CurrentStreak = StreakMath.EffectiveCurrentStreak(streak?.CurrentStreak ?? 0, lastDay, today),
             LongestStreak = streak?.LongestStreak ?? 0,
             FreezeCount = streak?.FreezeCount ?? 0,
             LastActivityAt = streak?.LastActivityAt,

@@ -41,8 +41,9 @@ public class ReadingCirclesController(
         var query = db.ReadingCircles.AsNoTracking().Include(c => c.Creator).Include(c => c.Book).Where(c => !c.IsArchived);
         if (!string.IsNullOrWhiteSpace(q))
         {
-            var needle = $"%{Like.Escape(q.Trim().ToLower())}%";
-            query = query.Where(c => EF.Functions.ILike(c.Name, needle) || EF.Functions.ILike(c.Handle, needle));
+            // Portable case-insensitive substring (see Like.Needle).
+            var lowered = q.Trim().ToLowerInvariant();
+            query = query.Where(c => c.Name.ToLower().Contains(lowered) || c.Handle.ToLower().Contains(lowered));
         }
         if (bookId.HasValue) query = query.Where(c => c.BookId == bookId.Value);
         query = sort.ToLowerInvariant() switch
@@ -73,7 +74,7 @@ public class ReadingCirclesController(
         var circle = await LoadCircleAsync(id) ?? throw new AppException(404, "Circle not found.");
         if (circle.IsArchived) throw new AppException(404, "Circle not found.");
         var members = await db.CircleMemberships.AsNoTracking().Include(m => m.User).Where(m => m.CircleId == circle.Id).OrderBy(m => m.JoinedAt).ToListAsync();
-        var md = members.Select(m => new CircleMemberDto(m.UserId, Mapping.ToStub(m.User!).Handle, m.User!.AvatarId, DisplayName.Resolve(m.User.DisplayNameMode, m.User.RealName, m.User.Handle), m.User.IsAuthor, m.Role.ToString(), m.JoinedAt)).ToList();
+        var md = members.Select(m => new CircleMemberDto(m.UserId, Mapping.ToStub(m.User!).Handle, m.User!.AvatarId, DisplayName.Resolve(m.User.DisplayNameMode, m.User.RealName, m.User.Handle), m.User.IsAuthor, m.Role.ToApi(), m.JoinedAt)).ToList();
         var recent = await db.CircleMessages.AsNoTracking().Include(m => m.Author).Where(m => m.CircleId == circle.Id && m.Status == MessageStatus.Visible).OrderByDescending(m => m.CreatedAt).Take(20).ToListAsync();
         var rids = recent.Select(m => m.Id).ToList();
         var reactions = rids.Count == 0 ? new List<CircleReaction>() : await db.CircleReactions.AsNoTracking().Where(r => rids.Contains(r.MessageId)).ToListAsync();
@@ -85,8 +86,12 @@ public class ReadingCirclesController(
     [HttpPost("/circles")]
     [Authorize]
     [EnableRateLimiting("write")]
-    public async Task<ActionResult<CircleDto>> Create(CreateCircleRequest request)
+    public async Task<ActionResult<CircleDto>> Create(CreateCircleRequest? request)
     {
+        if (request is null || string.IsNullOrWhiteSpace(request.Name))
+        {
+            throw new AppException(400, "Circle name is required.");
+        }
         var userId = me.RequireUserId();
         if (profanity.ContainsProfanity(request.Name) || (request.Description is not null && profanity.ContainsProfanity(request.Description)))
         {
@@ -96,7 +101,20 @@ public class ReadingCirclesController(
         var circle = new ReadingCircle { Handle = await GenerateHandleAsync(request.Name), Name = request.Name.Trim(), Description = request.Description?.Trim(), BookId = request.BookId, MaxMembers = request.MaxMembers, NextMeetingAt = request.NextMeetingAt, CreatedBy = userId };
         db.ReadingCircles.Add(circle);
         db.CircleMemberships.Add(new CircleMembership { CircleId = circle.Id, UserId = userId, Role = CircleRole.Moderator });
-        await db.SaveChangesAsync();
+        try
+        {
+            await db.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            // Two readers created a same-named circle concurrently: the loser
+            // retries once with a suffixed handle instead of a 500.
+            db.ChangeTracker.Clear();
+            circle = new ReadingCircle { Handle = await GenerateHandleAsync($"{request.Name} {Guid.NewGuid():N}"[..Math.Min(request.Name.Length + 9, 80)]), Name = request.Name.Trim(), Description = request.Description?.Trim(), BookId = request.BookId, MaxMembers = request.MaxMembers, NextMeetingAt = request.NextMeetingAt, CreatedBy = userId };
+            db.ReadingCircles.Add(circle);
+            db.CircleMemberships.Add(new CircleMembership { CircleId = circle.Id, UserId = userId, Role = CircleRole.Moderator });
+            await db.SaveChangesAsync();
+        }
 
         try
         {
@@ -122,11 +140,32 @@ public class ReadingCirclesController(
         var userId = me.RequireUserId();
         var circle = await LoadCircleAsync(id) ?? throw new AppException(404, "Circle not found.");
         if (circle.IsArchived) throw new AppException(410, "This circle is archived.");
-        if (await db.CircleMemberships.AnyAsync(m => m.CircleId == circle.Id && m.UserId == userId)) return Ok();
+
+        // Join is a count-then-insert: serialize per-circle on Postgres (SQLite
+        // serializes writers itself, so tests need no lock) to stop two readers
+        // racing past the MaxMembers gate.
+        await using var tx = await db.Database.BeginTransactionAsync();
+        if (db.Database.IsNpgsql())
+        {
+            await db.Database.ExecuteSqlRawAsync("SELECT 1 FROM reading_circles WHERE id = {0} FOR UPDATE", circle.Id);
+        }
+
+        if (await db.CircleMemberships.AnyAsync(m => m.CircleId == circle.Id && m.UserId == userId))
+        {
+            await tx.RollbackAsync();
+            return Ok();
+        }
+
         var count = await db.CircleMemberships.CountAsync(m => m.CircleId == circle.Id);
-        if (circle.MaxMembers.HasValue && count >= circle.MaxMembers.Value) throw new AppException(409, "This circle is full.");
+        if (circle.MaxMembers.HasValue && count >= circle.MaxMembers.Value)
+        {
+            await tx.RollbackAsync();
+            throw new AppException(409, "This circle is full.");
+        }
+
         db.CircleMemberships.Add(new CircleMembership { CircleId = circle.Id, UserId = userId });
         await db.SaveChangesAsync();
+        await tx.CommitAsync();
         return Ok();
     }
 
@@ -168,13 +207,14 @@ public class ReadingCirclesController(
     [HttpPost("/circles/{id}/messages")]
     [Authorize]
     [EnableRateLimiting("write")]
-    public async Task<ActionResult<CircleMessageDto>> PostMessage(string id, CreateCircleMessageRequest request)
+    public async Task<ActionResult<CircleMessageDto>> PostMessage(string id, CreateCircleMessageRequest? request)
     {
         var circle = await db.ReadingCircles.Include(c => c.Members).FirstOrDefaultAsync(c => c.Handle == id || c.Id.ToString() == id) ?? throw new AppException(404, "Circle not found.");
         if (circle.IsArchived) throw new AppException(410, "This circle is archived.");
         var userId = me.RequireUserId();
         if (!circle.Members.Any(m => m.UserId == userId)) throw new AppException(403, "Join the circle before posting.");
         if (!await limiter.IsAllowedAsync("circle-messages", userId.ToString(), 15, TimeSpan.FromMinutes(1))) throw new AppException(429, "You're posting too fast. Take a breath.");
+        if (request is null || string.IsNullOrWhiteSpace(request.Content)) throw new AppException(400, "Message cannot be empty.");
         var content = request.Content.Trim();
         if (profanity.ContainsProfanity(content)) throw new AppException(400, "Your message was flagged by the auto-filter. Please rephrase.");
         var author = await db.Users.FirstAsync(u => u.Id == userId);
@@ -219,11 +259,12 @@ public class ReadingCirclesController(
     [HttpPost("/circles/{id}/messages/{mid:guid}/react")]
     [Authorize]
     [EnableRateLimiting("write")]
-    public async Task<ActionResult<ReactionResult>> React(string id, Guid mid, ReactRequest request)
+    public async Task<ActionResult<ReactionResult>> React(string id, Guid mid, ReactRequest? request)
     {
         var circle = await LoadCircleAsync(id) ?? throw new AppException(404, "Circle not found.");
         var message = await db.CircleMessages.FirstOrDefaultAsync(m => m.Id == mid && m.CircleId == circle.Id) ?? throw new AppException(404, "Message not found.");
-        if (!EnumStrings.TryParseEnum<ReactionKind>(request.Kind, out var kind)) throw new AppException(400, $"Unknown reaction: {request.Kind}");
+        if (message.Status != MessageStatus.Visible) throw new AppException(410, "This message is no longer available.");
+        if (request is null || !EnumStrings.TryParseEnum<ReactionKind>(request.Kind, out var kind)) throw new AppException(400, $"Unknown reaction: {request?.Kind}");
         var userId = me.RequireUserId();
         var existing = await db.CircleReactions.FirstOrDefaultAsync(r => r.MessageId == mid && r.UserId == userId && r.Kind == kind);
         if (existing is not null) db.CircleReactions.Remove(existing);
@@ -249,11 +290,18 @@ public class ReadingCirclesController(
 
     private async Task<string> GenerateHandleAsync(string name)
     {
-        var slug = string.Join("-", name.ToLowerInvariant().Replace("'", "").Replace("'", "").Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(w => string.Concat(w.Where(char.IsLetterOrDigit))).Where(w => w.Length > 0).Take(4));
+        var slug = string.Join("-", name.ToLowerInvariant().Replace("'", "").Replace("\u2019", "").Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(w => string.Concat(w.Where(char.IsLetterOrDigit))).Where(w => w.Length > 0).Take(4));
         if (slug.Length < 3) slug = "circle";
         var handle = slug;
         var i = 1;
-        while (await db.ReadingCircles.AnyAsync(c => c.Handle == handle)) { i++; handle = $"{slug}-{i}"; }
+        // Case-insensitive to match the DB's unique index on lower(handle):
+        // a case-sensitive check would let "SciFi" slip past "scifi" and 500
+        // on the unique violation at save time.
+        while (await db.ReadingCircles.AnyAsync(c => c.Handle.ToLower() == handle))
+        {
+            i++;
+            handle = $"{slug}-{i}";
+        }
         return handle;
     }
 

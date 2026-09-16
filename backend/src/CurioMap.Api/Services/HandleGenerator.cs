@@ -1,4 +1,5 @@
 using CurioMap.Api.Data;
+using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 
 namespace CurioMap.Api.Services;
@@ -30,12 +31,15 @@ public class HandleGenerator(AppDbContext db)
             }
         }
 
-        return $"curious_reader_{Guid.NewGuid().ToString("N")[..8]}";
+        return FallbackHandle();
     }
 
-    /// <summary>Pure candidate composer (unit-testable).</summary>
     public static string NextCandidate() =>
         $"{Adjectives[Random.Shared.Next(Adjectives.Length)]}" +
         $"_{Nouns[Random.Shared.Next(Nouns.Length)]}" +
-        $"_{Random.Shared.Next(100, 1000)}";
+        $"_{RandomNumberGenerator.GetInt32(100, 1000)}";
+
+    /// <summary>Crypto-backed fallback handle (matches the ^[a-z]+_[a-z]+_\d{3,4}$ contract).</summary>
+    public static string FallbackHandle() =>
+        $"curious_reader_{RandomNumberGenerator.GetInt32(100, 1000)}";
 }

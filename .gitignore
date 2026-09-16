@@ -108,6 +108,9 @@ smoke-*.log
 .cookies.txt
 cookies.txt
 
+# Stray editor/agent temp files (e.g. page.tsx.new left by an interrupted edit)
+*.new
+
 # -----------------------------------------------------------------------------
 # Docker & Local Infrastructure Data
 # -----------------------------------------------------------------------------

@@ -58,8 +58,12 @@ public class BookshelfController(AppDbContext db, CurrentUser me, ActivityServic
     [HttpPost]
     [Authorize]
     [EnableRateLimiting("write")]
-    public async Task<ActionResult<BookshelfEntryDto>> Add(AddBookshelfRequest request)
+    public async Task<ActionResult<BookshelfEntryDto>> Add(AddBookshelfRequest? request)
     {
+        if (request is null)
+        {
+            throw new AppException(400, "A book and status are required.");
+        }
         if (!EnumStrings.TryParseEnum<BookStatus>(request.Status, out var status))
         {
             throw new AppException(400, "Unknown status. Use reading, finished or wishlist.");

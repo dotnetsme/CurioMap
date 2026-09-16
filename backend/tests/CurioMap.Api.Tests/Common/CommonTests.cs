@@ -66,6 +66,21 @@ public class CommonTests
     }
 
     [Fact]
+    public void DbUrl_Does_Not_Force_Ssl_For_Loopback_Postgres()
+    {
+        // The documented .env.example URL points at the local docker-compose
+        // Postgres, which has no TLS. Forcing SSL there crashed every fresh
+        // clone on first boot ("No SSL enabled connection from this host").
+        var config = DbUrl.ToNpgsql("postgres://curiomap:curiomap@localhost:5433/curiomap");
+        Assert.Contains("Host=localhost", config);
+        Assert.Contains("Port=5433", config);
+        Assert.DoesNotContain("SSL Mode", config);
+
+        var ipConfig = DbUrl.ToNpgsql("postgres://curiomap:curiomap@127.0.0.1:5433/curiomap");
+        Assert.DoesNotContain("SSL Mode", ipConfig);
+    }
+
+    [Fact]
     public void DbUrl_Passes_Through_KeyValue_Connection_Strings()
     {
         var config = "Host=localhost;Database=curiomap";

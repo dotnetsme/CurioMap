@@ -6,6 +6,7 @@ using CurioMap.Api.Controllers;
 using CurioMap.Api.Data;
 using CurioMap.Api.Domain;
 using CurioMap.Api.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CurioMap.Api.Tests;
@@ -176,6 +177,13 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         var listRes = await client.GetAsync("/circles");
         Assert.Equal(HttpStatusCode.OK, listRes.StatusCode);
 
+        // 2b. Search filters circles case-insensitively (portable LIKE path).
+        var searchRes = await client.GetAsync("/circles?q=sci-fi");
+        Assert.Equal(HttpStatusCode.OK, searchRes.StatusCode);
+        var search = await searchRes.Content.ReadFromJsonAsync<PagedResult<CircleDto>>();
+        Assert.NotNull(search);
+        Assert.Contains(search.Items, c => c.Id == createdCircle.Id);
+
         // 3. Post a message to the circle
         var msgRes = await client.PostAsJsonAsync($"/circles/{createdCircle.Handle}/messages", new CreateCircleMessageRequest("Welcome to the circle!"));
         Assert.Equal(HttpStatusCode.OK, msgRes.StatusCode);
@@ -193,6 +201,44 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         memberClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", memberAuth.AccessToken);
         var joinRes = await memberClient.PostAsync($"/circles/{createdCircle.Handle}/join", null);
         Assert.Equal(HttpStatusCode.OK, joinRes.StatusCode);
+    }
+
+    [Fact]
+    public async Task Reading_Circles_Enforce_Max_Members()
+    {
+        // The count-then-insert join path must reject the reader that would
+        // exceed MaxMembers (the gate is what the per-circle lock protects).
+        var client = _factory.CreateClient();
+        var reg = await client.PostAsJsonAsync("/auth/register",
+            new RegisterRequest($"cap_lead_{Guid.NewGuid():N}@curiomap.local", "Password123!"));
+        var auth = await reg.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.NotNull(auth);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
+
+        // Creator occupies slot 1 of 2.
+        var createRes = await client.PostAsJsonAsync("/circles",
+            new CreateCircleRequest($"Capped Circle {Guid.NewGuid():N}"[..24], null, null, 2, null));
+        Assert.Equal(HttpStatusCode.Created, createRes.StatusCode);
+        var circle = await createRes.Content.ReadFromJsonAsync<CircleDto>();
+        Assert.NotNull(circle);
+
+        async Task<HttpStatusCode> JoinAsNewReader()
+        {
+            var c = _factory.CreateClient();
+            var r = await c.PostAsJsonAsync("/auth/register",
+                new RegisterRequest($"cap_{Guid.NewGuid():N}@curiomap.local", "Password123!"));
+            var a = await r.Content.ReadFromJsonAsync<AuthResponse>();
+            Assert.NotNull(a);
+            c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", a.AccessToken);
+            var join = await c.PostAsync($"/circles/{circle.Handle}/join", null);
+            return join.StatusCode;
+        }
+
+        // Slot 2 fills.
+        Assert.Equal(HttpStatusCode.OK, await JoinAsNewReader());
+
+        // Slot 3 is refused.
+        Assert.Equal(HttpStatusCode.Conflict, await JoinAsNewReader());
     }
 
     // ── Discovery privacy redaction (AGENTS §2.2.2 / §2.2.3 / §2.2.6) ───────
@@ -509,5 +555,187 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
 
         var future = await client.GetAsync("/me/challenge?year=99999");
         Assert.Equal(HttpStatusCode.BadRequest, future.StatusCode);
+    }
+
+    [Fact]
+    public async Task Challenge_Average_Is_Fractional_Not_Integer_Division()
+    {
+        // Regression: `finished / monthsElapsed` truncated to 0 whenever the
+        // reader had finished fewer books than whole months elapsed. The DTO
+        // must carry a double so 1 book in month 9 renders as ~0.11, not 0.
+        var client = _factory.CreateClient();
+        var email = $"challenge_avg_{Guid.NewGuid():N}@curiomap.local";
+        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!"));
+        var auth = await reg.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.NotNull(auth);
+
+        var (_, bookId) = SeedReader(
+            $"Avgland{Guid.NewGuid():N}"[..20], null, null,
+            LocationVisibility.RegionCity, withReadingBook: true);
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
+
+        // Finish one book so the challenge numerator is 1.
+        var add = await client.PostAsJsonAsync("/bookshelf", new AddBookshelfRequest(bookId, "finished", "public"));
+        Assert.Equal(HttpStatusCode.OK, add.StatusCode);
+
+        var res = await client.GetAsync("/me/challenge");
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var stats = await res.Content.ReadFromJsonAsync<ChallengeStatsDto>();
+        Assert.NotNull(stats);
+
+        Assert.Equal(1, stats.Finished);
+        // Months elapsed is at least 1, so a single finished book must never
+        // read as a truncated 0 (the old integer-division bug).
+        Assert.True(stats.Average > 0, $"Average was {stats.Average}; integer division regression.");
+        Assert.Equal(1.0 / Math.Max(1, DateTime.UtcNow.Month), stats.Average, precision: 4);
+    }
+
+    [Fact]
+    public async Task Conversation_Read_Does_Not_Persist_Archive_Flag()
+    {
+        // Regression: GET /conversations/{id} used to run ExecuteUpdateAsync,
+        // mutating state on a read. Reads must be side-effect free — staleness
+        // is derived for the response instead.
+        Guid conversationId;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var author = new User
+            {
+                Email = $"archiver_{Guid.NewGuid():N}@curiomap.local",
+                PasswordHash = "not-a-real-hash",
+                Handle = $"archiver_{Guid.NewGuid():N}"[..24],
+            };
+            db.Users.Add(author);
+            var conversation = new Conversation
+            {
+                Title = "Stale thread",
+                CreatedBy = author.Id,
+                LastActivityAt = DateTime.UtcNow.AddDays(-400),
+            };
+            db.Conversations.Add(conversation);
+            db.SaveChanges();
+            conversationId = conversation.Id;
+        }
+
+        var client = _factory.CreateClient();
+        var res = await client.GetAsync($"/conversations/{conversationId}");
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var dto = await res.Content.ReadFromJsonAsync<ConversationDto>();
+        Assert.NotNull(dto);
+
+        // The response reports the derived (stale) state...
+        Assert.True(dto.IsArchived);
+
+        // ...but the row itself was never mutated by the read.
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var stored = await db.Conversations.AsNoTracking().FirstAsync(c => c.Id == conversationId);
+            Assert.False(stored.IsArchived);
+        }
+    }
+
+    [Fact]
+    public async Task Streak_Read_Decays_For_Idle_Readers()
+    {
+        // Regression: a stored streak with no activity today/yesterday used to be
+        // returned verbatim, so long-idle readers kept ranking forever.
+        Guid userId;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var user = new User
+            {
+                Email = $"idle_{Guid.NewGuid():N}@curiomap.local",
+                PasswordHash = "not-a-real-hash",
+                Handle = $"idle_{Guid.NewGuid():N}"[..24],
+            };
+            db.Users.Add(user);
+            db.ReadingStreaks.Add(new ReadingStreak
+            {
+                UserId = user.Id,
+                CurrentStreak = 12,
+                LongestStreak = 12,
+                LastActivityAt = DateTime.UtcNow.AddDays(-9),
+            });
+            db.SaveChanges();
+            userId = user.Id;
+        }
+
+        var anon = _factory.CreateClient();
+        var res = await anon.GetAsync($"/users/{userId}/streak");
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var streak = await res.Content.ReadFromJsonAsync<StreakStatsDto>();
+        Assert.NotNull(streak);
+
+        Assert.Equal(0, streak.CurrentStreak);
+        Assert.False(streak.ActiveToday);
+        // Longest is a historical fact and must survive the decay.
+        Assert.Equal(12, streak.LongestStreak);
+    }
+
+    [Fact]
+    public async Task Book_Search_Is_Case_Insensitive_And_Treats_Wildcards_As_Literals()
+    {
+        // Portable search path: replaces Postgres-only ILike (no SQLite
+        // translation), so the tested path now matches production behavior.
+        var title = $"Zephyrx{Guid.NewGuid():N}"[..20];
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Books.Add(new Book { Title = title, Author = "Casey Insensitive" });
+            db.SaveChanges();
+        }
+
+        var client = _factory.CreateClient();
+
+        var upper = await client.GetAsync($"/books/search?q={Uri.EscapeDataString(title.ToUpperInvariant())}");
+        Assert.Equal(HttpStatusCode.OK, upper.StatusCode);
+        var upperPage = await upper.Content.ReadFromJsonAsync<SearchResponse>();
+        Assert.NotNull(upperPage);
+        Assert.Contains(upperPage.Items, b => b.Title == title);
+
+        var lower = await client.GetAsync($"/books/search?q={Uri.EscapeDataString(title.ToLowerInvariant())}");
+        Assert.Equal(HttpStatusCode.OK, lower.StatusCode);
+        var lowerPage = await lower.Content.ReadFromJsonAsync<SearchResponse>();
+        Assert.NotNull(lowerPage);
+        Assert.Contains(lowerPage.Items, b => b.Title == title);
+
+        // `%` is a literal here, not a wildcard: it must not match everything.
+        var wildcard = await client.GetAsync("/books/search?q=%25%25");
+        Assert.Equal(HttpStatusCode.OK, wildcard.StatusCode);
+        var wildcardPage = await wildcard.Content.ReadFromJsonAsync<SearchResponse>();
+        Assert.NotNull(wildcardPage);
+        Assert.DoesNotContain(wildcardPage.Items, b => b.Title == title);
+    }
+
+    [Fact]
+    public async Task Auth_Register_And_Login_Are_Case_Insensitive_On_Email()
+    {
+        // Regression: the unique index is lower(email) while the pre-check compared
+        // raw values, so mixed-case duplicates bypassed the 409 and mixed-case
+        // logins missed existing lowercased rows.
+        var local = $"cased_{Guid.NewGuid():N}".ToLowerInvariant();
+        var email = $"{local}@curiomap.local";
+        const string password = "Password123!";
+
+        var client = _factory.CreateClient();
+        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, password));
+        Assert.Equal(HttpStatusCode.OK, reg.StatusCode);
+
+        var upperEmail = $"{local.ToUpperInvariant()}@CURIOMAP.LOCAL";
+
+        // Same address, different casing → conflict, not a second account.
+        var duplicate = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(upperEmail, password));
+        Assert.Equal(HttpStatusCode.Conflict, duplicate.StatusCode);
+
+        // Login with the upper-cased form still resolves the same account.
+        var login = await client.PostAsJsonAsync("/auth/login", new LoginRequest(upperEmail, password));
+        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+        var loginData = await login.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.NotNull(loginData);
+        Assert.Equal(email, loginData.User.Email);
     }
 }

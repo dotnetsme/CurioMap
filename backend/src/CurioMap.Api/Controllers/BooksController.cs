@@ -38,9 +38,12 @@ public class BooksController(
         limit = Math.Clamp(limit, 1, 50);
         offset = Math.Max(0, offset);
 
+        // Portable case-insensitive substring (see Like.Needle): EF.Functions.ILike
+        // has no SQLite translation, so tests would diverge from Postgres.
+        var lowered = query.ToLowerInvariant();
         var baseQuery = db.Books.AsNoTracking().Where(b =>
-            EF.Functions.ILike(b.Title, $"%{Like.Escape(query)}%")
-            || EF.Functions.ILike(b.Author, $"%{Like.Escape(query)}%")
+            b.Title.ToLower().Contains(lowered)
+            || b.Author.ToLower().Contains(lowered)
             || (b.Isbn != null && b.Isbn == query));
 
         var total = await baseQuery.CountAsync();
@@ -52,35 +55,44 @@ public class BooksController(
             var external = await openLibrary.SearchAsync(query, Math.Min(limit, 12));
             if (external.Count > 0)
             {
-                var isbns = external.Where(r => r.Isbn != null).Select(r => r.Isbn!).ToList();
-                var known = isbns.Count == 0
-                    ? new HashSet<string>()
-                    : (await db.Books.AsNoTracking().Where(b => b.Isbn != null && isbns.Contains(b.Isbn!))
-                        .Select(b => b.Isbn!).ToListAsync()).ToHashSet(StringComparer.OrdinalIgnoreCase);
-                foreach (var result in external)
+                try
                 {
-                    if (result.Isbn != null && known.Contains(result.Isbn))
+                    var isbns = external.Where(r => r.Isbn != null).Select(r => r.Isbn!).ToList();
+                    var known = isbns.Count == 0
+                        ? new HashSet<string>()
+                        : (await db.Books.AsNoTracking().Where(b => b.Isbn != null && isbns.Contains(b.Isbn!))
+                            .Select(b => b.Isbn!).ToListAsync()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                    foreach (var result in external)
                     {
-                        continue;
-                    }
+                        if (result.Isbn != null && known.Contains(result.Isbn))
+                        {
+                            continue;
+                        }
 
-                    var metadata = new Dictionary<string, string> { ["source"] = "openlibrary" };
-                    if (result.Year is not null)
-                    {
-                        metadata["year"] = result.Year.Value.ToString();
+                        var metadata = new Dictionary<string, string> { ["source"] = "openlibrary" };
+                        if (result.Year is not null)
+                        {
+                            metadata["year"] = result.Year.Value.ToString();
+                        }
+                        db.Books.Add(new Book
+                        {
+                            Title = result.Title,
+                            Author = result.Author,
+                            Isbn = result.Isbn,
+                            CoverUrl = result.CoverUrl,
+                            Metadata = metadata,
+                        });
                     }
-                    db.Books.Add(new Book
-                    {
-                        Title = result.Title,
-                        Author = result.Author,
-                        Isbn = result.Isbn,
-                        CoverUrl = result.CoverUrl,
-                        Metadata = metadata,
-                    });
+                    await db.SaveChangesAsync();
+                    fromExternal = true;
+                    total = await baseQuery.CountAsync();
                 }
-                await db.SaveChangesAsync();
-                fromExternal = true;
-                total = await baseQuery.CountAsync();
+                catch (DbUpdateException)
+                {
+                    // Concurrent import race: another request won — re-read local rows.
+                    db.ChangeTracker.Clear();
+                    total = await baseQuery.CountAsync();
+                }
             }
         }
 
@@ -101,7 +113,8 @@ public class BooksController(
             ?? throw new AppException(404, "Book not found.");
 
         var readers = await db.BookshelfEntries.CountAsync(s =>
-            s.BookId == id && s.Status == BookStatus.Reading && s.Visibility == ShelfVisibility.Public);
+            s.BookId == id && s.Status == BookStatus.Reading && s.Visibility == ShelfVisibility.Public
+            && s.User!.BookshelfVisibility == ShelfVisibility.Public);
         var conversations = await db.Conversations.CountAsync(c => c.BookId == id && !c.IsArchived);
         var ratingStats = await db.Ratings
             .Where(r => r.BookId == id)
@@ -115,9 +128,17 @@ public class BooksController(
     [HttpPost("import")]
     [Authorize(Policy = "Admin")]
     [EnableRateLimiting("write")]
-    public async Task<ActionResult<BookDto>> Import(ImportBookRequest request)
+    public async Task<ActionResult<BookDto>> Import(ImportBookRequest? request)
     {
+        if (request is null || string.IsNullOrWhiteSpace(request.Isbn))
+        {
+            throw new AppException(400, "An ISBN is required.");
+        }
         var isbn = new string(request.Isbn.Where(char.IsAsciiLetterOrDigit).ToArray());
+        if (isbn.Length is not (10 or 13))
+        {
+            throw new AppException(400, "ISBN must be 10 or 13 characters.");
+        }
 
         var existing = await db.Books.AsNoTracking().FirstOrDefaultAsync(b => b.Isbn == isbn);
         if (existing is not null)

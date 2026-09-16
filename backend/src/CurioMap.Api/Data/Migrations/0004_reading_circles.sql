@@ -54,4 +54,4 @@ CREATE INDEX IF NOT EXISTS ix_circle_reactions_message ON circle_reactions (mess
 INSERT INTO reading_circles (handle, name, description, max_members, created_by)
 SELECT 'starter-circle', 'The Welcome Circle', 'A friendly place to meet fellow readers. Say hello!', 50, id
 FROM users ORDER BY created_at ASC LIMIT 1
-ON CONFLICT (lower(handle)) DO NOTHING;
+ON CONFLICT DO NOTHING;

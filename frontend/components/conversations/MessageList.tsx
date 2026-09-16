@@ -23,14 +23,6 @@ function MessageRow({ message, onReact }: { message: Message; onReact?: (m: Mess
   const [reported, setReported] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (message.status !== "visible") {
-    return (
-      <div className="card p-4 text-sm italic text-ink-3">
-        This message was {message.status} by moderation.
-      </div>
-    );
-  }
-
   async function toggle(kind: ReactionKind, reactedByMe: boolean) {
     try {
       if (reactedByMe) {

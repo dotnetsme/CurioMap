@@ -79,6 +79,7 @@ builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<IChallengeService, ChallengeService>();
 builder.Services.AddScoped<IStreakService, StreakService>();
 builder.Services.AddScoped<ICircleStreakService, CircleStreakService>();
+builder.Services.AddHostedService<ConversationArchiver>();
 
 builder.Services.AddHttpClient<OpenLibraryService>(client =>
 {
@@ -115,10 +116,13 @@ var jwtSecret = Environment.GetEnvironmentVariable("JWT__SECRET")
     ?? Environment.GetEnvironmentVariable("JWT_SECRET")
     ?? jwtSection["Secret"];
 
+var usingDevJwtFallback = false;
 if (string.IsNullOrWhiteSpace(jwtSecret) && builder.Environment.IsDevelopment())
 {
-    // Local development fallback only when no environment secret is provided
+    // Local development fallback only when no environment secret is provided.
+    // Public constant on purpose: it must be obvious in logs and unusable in prod.
     jwtSecret = "dev-only-secret-change-me-0123456789abcdef0123456789abcdef";
+    usingDevJwtFallback = true;
 }
 
 if (!string.IsNullOrWhiteSpace(jwtSecret))
@@ -185,6 +189,13 @@ builder.Services.AddExceptionHandler<AppExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
+
+if (usingDevJwtFallback)
+{
+    app.Logger.LogWarning(
+        "JWT secret is the built-in DEVELOPMENT fallback. Every token is forgeable. " +
+        "Set JWT__SECRET before exposing this instance to any network.");
+}
 
 // ---------------------------------------------------------------------------
 // Database: apply ordered SQL migrations + seed at startup (advisory-locked).

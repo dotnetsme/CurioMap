@@ -54,19 +54,23 @@ public class ChallengeService(AppDbContext db) : IChallengeService
             .AsNoTracking()
             .CountAsync(e => e.UserId == userId
                 && e.Status == BookStatus.Finished
-                && e.CreatedAt >= yearStart
-                && e.CreatedAt < yearEnd, ct);
+                && (e.FinishedAt ?? e.CreatedAt) >= yearStart
+                && (e.FinishedAt ?? e.CreatedAt) < yearEnd, ct);
 
         var target = challenge?.Target ?? 50;
-        var daysElapsed = (DateTime.UtcNow - yearStart).TotalDays;
-        var monthsElapsed = Math.Max(1, DateTime.UtcNow.Month);
+        var daysElapsed = targetYear == DateTime.UtcNow.Year
+            ? Math.Max(0, (DateTime.UtcNow - yearStart).TotalDays)
+            : targetYear < DateTime.UtcNow.Year ? 365.0 : 0.0;
+        var monthsElapsed = targetYear == DateTime.UtcNow.Year
+            ? Math.Max(1, DateTime.UtcNow.Month)
+            : 12;
 
         return new ChallengeStats
         {
             Year = targetYear,
             Target = target,
             Finished = finishedThisYear,
-            Average = finishedThisYear / monthsElapsed,
+            Average = (double)finishedThisYear / monthsElapsed,
             Pct = ChallengeMath.Pct(finishedThisYear, target),
             AheadOfPace = ChallengeMath.AheadOfPace(finishedThisYear, target, daysElapsed)
         };
@@ -102,7 +106,7 @@ public class ChallengeStats
     public int Year { get; set; }
     public int Target { get; set; }
     public int Finished { get; set; }
-    public int Average { get; set; }
+    public double Average { get; set; }
     public bool AheadOfPace { get; set; }
     public int Pct { get; set; }
 }

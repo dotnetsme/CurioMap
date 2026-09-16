@@ -44,8 +44,12 @@ public class RatingsController(IRatingService ratingService, IStreakService stre
     [HttpPut("{id:guid}/rating")]
     [Authorize]
     [EnableRateLimiting("write")]
-    public async Task<ActionResult<RatingStatsDto>> Rate(Guid id, [FromBody] RateBookRequest req)
+    public async Task<ActionResult<RatingStatsDto>> Rate(Guid id, [FromBody] RateBookRequest? req)
     {
+        if (req is null)
+        {
+            throw new AppException(400, "A rating value is required.");
+        }
         var userId = currentUser.RequireUserId();
         await ratingService.RateAsync(userId, id, req.Value);
 

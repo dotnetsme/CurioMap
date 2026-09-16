@@ -45,11 +45,15 @@ public class ChallengeController(IChallengeService challengeService, Auth.Curren
     [EnableRateLimiting("write")]
     public async Task<ActionResult<ChallengeStatsDto>> SetTarget(
         [FromQuery] int? year,
-        [FromBody] SetChallengeTargetRequest request)
+        [FromBody] SetChallengeTargetRequest? request)
     {
         if (year is { } y && (y < 2000 || y > 2100))
         {
             throw new AppException(400, "Year must be between 2000 and 2100.");
+        }
+        if (request is null)
+        {
+            throw new AppException(400, "A target is required.");
         }
         var userId = currentUser.RequireUserId();
         var stats = await challengeService.SetTargetAsync(userId, request.Target, year);

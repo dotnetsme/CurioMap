@@ -1,6 +1,5 @@
 -- Curated starter catalog (0002). Upsert by ISBN so re-runs are idempotent.
 -- affiliate_links stays empty: links are computed at read time from ISBN + configured tags.
-
 INSERT INTO books (title, author, isbn, cover_url, description, affiliate_links, metadata) VALUES
 ('Meditations', 'Marcus Aurelius', '9780140449334',
  'https://covers.openlibrary.org/b/isbn/9780140449334-L.jpg',

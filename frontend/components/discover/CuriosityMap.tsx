@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { BookOpen, LogIn, MapPin, Sparkles, TrendingUp, Users } from "lucide-react";
+import { BookOpen, LogIn, MapPin, TrendingUp, Users } from "lucide-react";
 import type { MapReader, RegionStat, TopBook } from "@/types";
 import { isoCountryName } from "@/lib/country-names";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -144,6 +144,8 @@ type Dot = { reader: MapReader; x: number; y: number };
 function MapSvg(props: {
   regions: Bubble[];
   dots: Dot[];
+  // readers/loading are not consumed here, but must stay in the type: they are
+  // forwarded wholesale to <MapOverlays {...props} />, which does use them.
   readers: MapReader[];
   loading: boolean;
   max: number;
@@ -159,7 +161,7 @@ function MapSvg(props: {
   setSpotlight: (b: TopBook | null) => void;
   user: { id: string } | null;
 }) {
-  const { regions, dots, readers, loading, max, total, mode, dark } = props;
+  const { regions, dots, max, total, mode, dark } = props;
   return (
     <div className={cn("map-dark-frame relative", props.height <= 0 && "map-fullbleed")}>
       <svg

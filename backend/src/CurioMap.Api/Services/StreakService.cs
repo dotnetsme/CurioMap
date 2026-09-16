@@ -38,6 +38,19 @@ public static class StreakMath
     /// <summary>True when the reader already has activity logged today (UTC).</summary>
     public static bool IsActiveOn(DateOnly? lastActivityDay, DateOnly today) => lastActivityDay == today;
 
+    /// <summary>
+    /// Effective current streak: a stored streak whose last activity is neither
+    /// today nor yesterday has lapsed (no freeze can bridge a 2+ day hole) and
+    /// reads as 0 until the next activity resets it to 1. Called by stats,
+    /// calendars and leaderboards so idle readers decay instead of ranking forever.
+    /// </summary>
+    public static int EffectiveCurrentStreak(int storedStreak, DateOnly? lastActivityDay, DateOnly today)
+    {
+        if (lastActivityDay is null) return 0;
+        var gap = today.DayNumber - lastActivityDay.Value.DayNumber;
+        return gap is 0 or 1 ? storedStreak : 0;
+    }
+
     /// <summary>Freezes a reader can hold at once; one freeze shields one missed day.</summary>
     public const int MaxFreezesHeld = 2;
 
@@ -158,7 +171,8 @@ public class StreakService(AppDbContext db, ActivityService activity) : IStreakS
 
         return new StreakStats
         {
-            CurrentStreak = streak?.CurrentStreak ?? 0,
+            // Decayed view: idle readers read 0, not their stale stored count.
+            CurrentStreak = StreakMath.EffectiveCurrentStreak(streak?.CurrentStreak ?? 0, lastDay, today),
             LongestStreak = streak?.LongestStreak ?? 0,
             LastActivityAt = streak?.LastActivityAt,
             ActiveToday = StreakMath.IsActiveOn(lastDay, today),
@@ -309,8 +323,11 @@ public class StreakService(AppDbContext db, ActivityService activity) : IStreakS
 
         // Public-shelf readers only: a private shelf keeps streaks and badges
         // out of public rankings (mirrors the /users/:id/streak visibility gate).
+        // Idle readers (no activity today or yesterday) decay to 0 and never rank:
+        // evaluate EffectiveCurrentStreak in memory since it is pure date math.
+        var cutoff = DateTime.UtcNow.Date.AddDays(-1);
         var rows = await db.ReadingStreaks.AsNoTracking()
-            .Where(s => s.CurrentStreak >= 2)
+            .Where(s => s.CurrentStreak >= 2 && s.LastActivityAt >= cutoff)
             .Join(db.Users.AsNoTracking(), s => s.UserId, u => u.Id, (s, u) => new { s, u })
             .Where(x => x.u.BookshelfVisibility == ShelfVisibility.Public)
             .OrderByDescending(x => x.s.CurrentStreak)
@@ -379,17 +396,23 @@ public class StreakService(AppDbContext db, ActivityService activity) : IStreakS
             .ToDictionaryAsync(x => x.UserId, x => x.Authors, ct);
         var circleUsers = (await db.CircleMemberships.AsNoTracking()
                 .Select(m => m.UserId)
+                .Distinct()
                 .ToListAsync(ct))
             .ToHashSet();
         var reviewUsers = (await db.Ratings.AsNoTracking()
                 .Select(r => r.UserId)
+                .Distinct()
                 .ToListAsync(ct))
             .ToHashSet();
+        // Select DISTINCT in SQL rather than materializing every message row:
+        // this is an admin one-shot over the whole table and was O(all messages).
         var messageUsers = (await db.Messages.AsNoTracking()
                 .Select(m => m.AuthorId)
+                .Distinct()
                 .ToListAsync(ct))
             .Concat(await db.CircleMessages.AsNoTracking()
                 .Select(m => m.AuthorId)
+                .Distinct()
                 .ToListAsync(ct))
             .ToHashSet();
 

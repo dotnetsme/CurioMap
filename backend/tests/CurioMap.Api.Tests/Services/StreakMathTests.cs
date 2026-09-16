@@ -175,6 +175,23 @@ public class StreakMathTests
     }
 
     [Fact]
+    public void EffectiveCurrentStreak_Today_And_Yesterday_Keep_Count()
+    {
+        var today = new DateOnly(2026, 9, 12);
+        Assert.Equal(5, StreakMath.EffectiveCurrentStreak(5, today, today));
+        Assert.Equal(5, StreakMath.EffectiveCurrentStreak(5, new DateOnly(2026, 9, 11), today));
+    }
+
+    [Fact]
+    public void EffectiveCurrentStreak_Idle_Readers_Decay_To_Zero()
+    {
+        var today = new DateOnly(2026, 9, 12);
+        Assert.Equal(0, StreakMath.EffectiveCurrentStreak(9, new DateOnly(2026, 9, 10), today));
+        Assert.Equal(0, StreakMath.EffectiveCurrentStreak(9, new DateOnly(2026, 8, 1), today));
+        Assert.Equal(0, StreakMath.EffectiveCurrentStreak(9, null, today));
+    }
+
+    [Fact]
     public void TryConsumeFreeze_Single_Missed_Day_Consumes_One()
     {
         var last = new DateOnly(2026, 9, 10);

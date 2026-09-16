@@ -76,14 +76,14 @@ public class AdminController(AppDbContext db, IStreakService streaks) : Controll
 
     [HttpPost("reports/{reportId:guid}/resolve")]
     [Authorize(Policy = "Admin")]
-    public async Task<ActionResult<ResolveReportResult>> Resolve(Guid reportId, ResolveReportRequest request)
+    public async Task<ActionResult<ResolveReportResult>> Resolve(Guid reportId, ResolveReportRequest? request)
     {
         var report = await db.MessageReports
             .Include(r => r.Message)
             .FirstOrDefaultAsync(r => r.Id == reportId)
             ?? throw new AppException(404, "Report not found.");
 
-        switch (request.Action.Trim().ToLowerInvariant())
+        switch (request?.Action.Trim().ToLowerInvariant())
         {
             case "dismiss":
                 report.Status = ReportStatus.ResolvedDismissed;

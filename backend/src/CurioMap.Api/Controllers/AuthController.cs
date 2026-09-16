@@ -35,7 +35,8 @@ public class AuthController(
     {
         var email = request.Email.Trim().ToLowerInvariant();
 
-        if (await db.Users.AnyAsync(u => u.Email == email))
+        var normalized = email.ToLowerInvariant();
+        if (await db.Users.AnyAsync(u => u.Email.ToLower() == normalized))
         {
             throw new AppException(409, "An account with this email already exists.");
         }
@@ -73,7 +74,7 @@ public class AuthController(
     public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
     {
         var email = request.Email.Trim().ToLowerInvariant();
-        var user = await db.Users.Include(u => u.Location).FirstOrDefaultAsync(u => u.Email == email);
+        var user = await db.Users.Include(u => u.Location).FirstOrDefaultAsync(u => u.Email.ToLower() == email);
 
         if (user is null || !hasher.Verify(request.Password, user.PasswordHash))
         {

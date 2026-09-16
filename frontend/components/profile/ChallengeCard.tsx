@@ -89,7 +89,7 @@ export function ChallengeCard() {
           ) : (
             "On track"
           )}{" "}
-          · {stats.pct}% complete · ~{stats.average}/mo
+          · {stats.pct}% complete · ~{Number(stats.average).toFixed(1)}/mo
         </p>
 
         {editing ? (

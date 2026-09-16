@@ -61,6 +61,14 @@ public static class Like
 {
     public static string Escape(string value) =>
         value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("%", "\\%", StringComparison.Ordinal).Replace("_", "\\_", StringComparison.Ordinal);
+
+    /// <summary>
+    /// Provider-portable case-insensitive substring predicate: EF.Functions.ILike
+    /// is Postgres-only (SQLite tests have no translation), so use ToLower+Contains
+    /// which translates on Npgsql (lower()) and SQLite (lower()) alike.
+    /// The needle must already be lower-cased via <see cref="Needle"/>.
+    /// </summary>
+    public static string Needle(string query) => Escape(query.Trim().ToLowerInvariant());
 }
 
 /// <summary>Lightweight .env loader that populates process environment variables for local dev.</summary>
@@ -146,8 +154,21 @@ public static class DbUrl
         var pass = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
         var database = uri.AbsolutePath.TrimStart('/');
         var port = uri.Port > 0 ? uri.Port : 5432;
-        return $"Host={uri.Host};Port={port};Database={database};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
+
+        // Loopback Postgres (the documented docker-compose dev setup) has no TLS
+        // configured: forcing `SSL Mode=Require` there made the .env.example URL
+        // crash on first boot with "No SSL enabled connection from this host".
+        // Npgsql's default (Prefer) upgrades when the server supports it and
+        // proceeds in the clear on loopback. Remote hosts (Neon/Fly) keep Require.
+        var ssl = IsLoopback(uri.Host) ? "" : ";SSL Mode=Require;Trust Server Certificate=true";
+
+        return $"Host={uri.Host};Port={port};Database={database};Username={user};Password={pass}{ssl}";
     }
+
+    private static bool IsLoopback(string host) =>
+        host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+        || host.Equals("127.0.0.1", StringComparison.Ordinal)
+        || host.Equals("::1", StringComparison.Ordinal);
 }
 
 /// <summary>Curated avatar id registry — no uploads at launch (moderation-free by design).</summary>

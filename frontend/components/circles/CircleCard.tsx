@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { BookOpen, Users, MessageCircle, Calendar, Flame } from "lucide-react";
+import { Users, MessageCircle, Calendar, Flame } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/profile/Avatar";
 import { timeAgo } from "@/lib/time";
