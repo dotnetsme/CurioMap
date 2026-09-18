@@ -4,14 +4,14 @@ import { BackfillButton } from "@/components/admin/BackfillButton";
 export default function AdminPage() {
   return (
     <div className="mx-auto max-w-3xl py-4">
-      <h1 className="text-2xl font-bold text-white">Moderation</h1>
-      <p className="mt-1 text-sm text-slate-400">Reported messages — review and action.</p>
+      <h1 className="font-display text-3xl font-bold tracking-tight text-ink">Moderation</h1>
+      <p className="mt-1 text-sm text-ink-muted">Reported messages — review and action.</p>
       <div className="mt-6">
         <ReportsBoard />
       </div>
 
-      <h2 className="mt-10 text-lg font-semibold text-white">Gamification</h2>
-      <p className="mt-1 text-sm text-slate-400">
+      <h2 className="mt-10 font-display text-lg font-semibold text-ink">Gamification</h2>
+      <p className="mt-1 text-sm text-ink-muted">
         Award badges readers already qualify for from their historical data
         (night-owl / early-bird badges are earned live only).
       </p>

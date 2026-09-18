@@ -1,0 +1,194 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import {
+  BookMarked,
+  Compass,
+  Globe2,
+  MapPin,
+  MessagesSquare,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
+import { CuriosityMapShell } from "@/components/discover/CuriosityMapShell";
+import { NearbyReadersList } from "@/components/discover/NearbyReadersList";
+import { DashboardPanel } from "@/components/home/DashboardPanel";
+import { DiscussionPanel } from "@/components/home/DiscussionPanel";
+import { GenreChips } from "@/components/home/GenreChips";
+import { HomeSearchBar } from "@/components/home/HomeSearchBar";
+import { HomeStatsStrip } from "@/components/home/HomeStatsStrip";
+import { ShelfGlance } from "@/components/home/ShelfGlance";
+import { TrendingPanel } from "@/components/home/TrendingPanel";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { StreakCard } from "@/components/profile/StreakCard";
+import { ErrorState } from "@/components/ui/Feedback";
+import { Reveal } from "@/components/ui/Reveal";
+import { globalDiscovery, nearby, stats } from "@/lib/api/discover";
+import type { GlobalDiscovery, Nearby, StatsSummary } from "@/types";
+
+/**
+ * The signed-in dashboard body. Rendered only behind <AuthGate>, so every call
+ * below is authorised by construction.
+ */
+export function HomeDashboard() {
+  const { user } = useAuth();
+  const [summary, setSummary] = useState<StatsSummary | null>(null);
+  const [map, setMap] = useState<GlobalDiscovery | null>(null);
+  const [near, setNear] = useState<Nearby | null>(null);
+  const [settled, setSettled] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      // Each call degrades on its own: a hidden location or a cold cache must
+      // never blank the whole dashboard.
+      const [s, g, n] = await Promise.all([
+        stats().catch(() => null),
+        globalDiscovery().catch(() => null),
+        nearby().catch(() => null),
+      ]);
+      if (cancelled) return;
+      setSummary(s);
+      setMap(g);
+      setNear(n);
+      setSettled(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!user) return null;
+
+  const unreachable = settled && !summary && !map;
+
+  return (
+    <div className="flex flex-col gap-6 py-2">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="label-sm inline-flex items-center gap-1.5 text-accent-strong">
+            <Sparkles size={12} /> Home
+          </p>
+          <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+            Welcome back, {user.displayName}
+          </h1>
+          <p className="mt-1 text-sm text-ink-muted">
+            Your shelf, your city, and what curious minds are reading right now.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/me" className="btn-ghost text-sm">
+            My profile
+          </Link>
+          <Link href="/discover/global" className="btn-ghost text-sm">
+            <Globe2 size={15} /> Open the map
+          </Link>
+          <Link href="/circles" className="btn-accent text-sm shadow-lg shadow-accent/25">
+            <MessagesSquare size={15} /> Start a discussion
+          </Link>
+        </div>
+      </header>
+
+      {unreachable ? (
+        <ErrorState message="CurioMap couldn't load your dashboard — the API may be unreachable. Refresh to retry." />
+      ) : null}
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <Reveal className="lg:col-span-8">
+          <section className="card overflow-hidden">
+            <div className="relative">
+              <CuriosityMapShell
+                regions={map?.regions ?? []}
+                height={340}
+                topBooks={[]}
+                focusOnVisitor
+              />
+              <div className="pointer-events-none absolute inset-x-4 bottom-4 z-[500] sm:right-36">
+                <div className="pointer-events-auto">
+                  <HomeSearchBar />
+                </div>
+              </div>
+            </div>
+            <HomeStatsStrip stats={summary} />
+          </section>
+        </Reveal>
+
+        <div className="flex flex-col gap-6 lg:col-span-4">
+          <DashboardPanel
+            icon={TrendingUp}
+            title="Trending books"
+            hint="What readers are shelving now"
+            action={
+              <Link
+                href="/discover/top-books"
+                className="text-[11px] font-semibold text-accent-strong hover:text-accent"
+              >
+                All →
+              </Link>
+            }
+          >
+            <TrendingPanel books={summary?.topBooks ?? []} loading={!settled} />
+          </DashboardPanel>
+
+          <DashboardPanel icon={Compass} title="Popular genres" hint="Jump into a catalog search">
+            <GenreChips />
+          </DashboardPanel>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <DashboardPanel
+          className="lg:col-span-4"
+          icon={MapPin}
+          title="Nearby readers"
+          hint={near ? `${near.readers.length} matched at ${near.scope} level` : "Coarse location only"}
+          action={
+            <Link
+              href="/discover/nearby"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent-strong hover:text-accent"
+            >
+              See all →
+            </Link>
+          }
+        >
+          {near ? (
+            <NearbyReadersList scope={near.scope} readers={near.readers} compact limit={4} />
+          ) : (
+            <p className="text-sm leading-relaxed text-ink-muted">
+              {settled
+                ? "Nobody to show yet — your location may be hidden, or your area is still quiet."
+                : "Looking for readers near you…"}{" "}
+              <Link
+                href="/me/settings"
+                className="font-medium text-accent-strong underline-offset-2 hover:underline"
+              >
+                Location privacy
+              </Link>
+            </p>
+          )}
+        </DashboardPanel>
+
+        <DashboardPanel
+          className="lg:col-span-4"
+          icon={MessagesSquare}
+          title="Book discussion"
+          hint="From readers you follow"
+        >
+          <DiscussionPanel />
+        </DashboardPanel>
+
+        <DashboardPanel
+          className="lg:col-span-4"
+          icon={BookMarked}
+          title="My bookshelf"
+          hint="Private rows stay private — only you see them"
+        >
+          <ShelfGlance />
+        </DashboardPanel>
+      </div>
+
+      <StreakCard />
+    </div>
+  );
+}

@@ -33,13 +33,13 @@ export function BackfillButton() {
       <button
         onClick={run}
         disabled={busy}
-        className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm text-slate-100 transition hover:bg-white/10 disabled:opacity-50"
+        className="btn-ghost text-sm disabled:opacity-50"
       >
         <Sparkles size={16} className={busy ? "animate-pulse" : ""} aria-hidden />
         {busy ? "Backfilling…" : "Run badge backfill"}
       </button>
-      {result ? <p className="text-xs text-emerald-400">{result}</p> : null}
-      {error ? <p className="text-xs text-red-400">{error}</p> : null}
+      {result ? <p className="text-xs text-emerald-600">{result}</p> : null}
+      {error ? <p className="text-xs text-rose-600">{error}</p> : null}
     </div>
   );
 }

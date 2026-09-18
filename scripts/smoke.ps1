@@ -201,6 +201,13 @@ if ($front_circles.ok) {
     $out.Add("FRONT_CIRCLES: FAIL status=$($front_circles.status) err=$($front_circles.err)")
 }
 
+$front_dashboard = Invoke-Http -Uri "$FrontendUrl/home" -Method Get
+if ($front_dashboard.ok) {
+    $out.Add("FRONT_HOME_DASHBOARD: OK status=$($front_dashboard.status)")
+} else {
+    $out.Add("FRONT_HOME_DASHBOARD: FAIL status=$($front_dashboard.status) err=$($front_dashboard.err)")
+}
+
 $front_map = Invoke-Http -Uri "$FrontendUrl/discover/global" -Method Get
 if ($front_map.ok) {
     $out.Add("FRONT_MAP: OK status=$($front_map.status)")

@@ -1,23 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { BookOpenText, Compass, Flame, LibraryBig, LogOut, Map as MapIcon, Search, Settings, ShieldCheck, User } from "lucide-react";
+import { BookMarked, Compass, Flame, House, LibraryBig, LogOut, Map as MapIcon, Search, Settings, ShieldCheck, User } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Avatar } from "@/components/profile/Avatar";
 import { cn } from "@/lib/utils";
 
 const navItems = [
+  { href: "/home", label: "Home", icon: House, authOnly: true },
   { href: "/discover/nearby", label: "Nearby", icon: Compass },
-  { href: "/discover/global", label: "Curiosity map", icon: MapIcon },
+  { href: "/discover/global", label: "Map", icon: MapIcon },
   { href: "/books/search", label: "Books", icon: LibraryBig },
+  { href: "/me/bookshelf", label: "My shelf", icon: BookMarked, authOnly: true },
   { href: "/feed", label: "Feed", icon: Flame },
-];
+] as const;
 
 export function SiteHeader() {
   const { user, loading, logout } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -29,6 +32,18 @@ export function SiteHeader() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // ⌘K / Ctrl+K jumps to book search — matches the hint shown in the header field.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        router.push("/books/search");
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [router]);
+
   useEffect(() => {
     setMenuOpen(false);
   }, [pathname]);
@@ -37,32 +52,37 @@ export function SiteHeader() {
     <>
       <header className="sticky top-0 z-40 border-b border-line bg-canvas/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-[1280px] items-center gap-4 px-5 sm:px-8">
-          <Link href="/" className="group flex shrink-0 items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-ink via-ink to-accent-strong text-amber-300 shadow-lg transition group-hover:scale-105">
-              <BookOpenText size={18} />
+          <Link href={user ? "/home" : "/"} className="group flex shrink-0 items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-600 text-night shadow-lg shadow-amber-500/25 transition group-hover:scale-105">
+              <Compass size={18} strokeWidth={2.4} />
             </span>
-            <span className="hidden text-[16px] font-bold tracking-tight text-ink min-[400px]:block">
-              CurioMap
+            <span className="hidden leading-tight min-[400px]:block">
+              <span className="block text-[16px] font-bold tracking-tight text-ink">CurioMap</span>
+              <span className="hidden text-[10.5px] text-ink-3 lg:block">
+                A live map of readers&apos; curiosity
+              </span>
             </span>
           </Link>
 
           <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">
-            {navItems.map((item) => {
-              const active = pathname.startsWith(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition",
-                    active ? "bg-ink text-surface shadow" : "text-ink-2 hover:bg-surface-2 hover:text-ink",
-                  )}
-                >
-                  <item.icon size={15} />
-                  {item.label}
-                </Link>
-              );
-            })}
+            {navItems
+              .filter((item) => !("authOnly" in item && item.authOnly) || Boolean(user))
+              .map((item) => {
+                const active = pathname.startsWith(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition",
+                      active ? "bg-ink text-surface shadow" : "text-ink-2 hover:bg-surface-2 hover:text-ink",
+                    )}
+                  >
+                    <item.icon size={15} />
+                    {item.label}
+                  </Link>
+                );
+              })}
           </nav>
 
           <Link
@@ -99,6 +119,7 @@ export function SiteHeader() {
                       </div>
                     </div>
                     {[
+                      { href: "/home", label: "Home", icon: House },
                       { href: "/me", label: "My profile", icon: User },
                       { href: "/me/bookshelf", label: "My bookshelf", icon: LibraryBig },
                       { href: "/me/settings", label: "Settings", icon: Settings },

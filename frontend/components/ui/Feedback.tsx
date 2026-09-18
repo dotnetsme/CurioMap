@@ -1,7 +1,7 @@
 export function Spinner({ className = "" }: { className?: string }) {
   return (
     <div
-      className={`inline-block h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-violet-400 ${className}`}
+      className={`inline-block h-5 w-5 animate-spin rounded-full border-2 border-line border-t-accent ${className}`}
       role="status"
       aria-label="Loading"
     />
@@ -16,18 +16,30 @@ export function PageLoading() {
   );
 }
 
-export function EmptyState({ title, hint }: { title: string; hint?: string }) {
+export function EmptyState({
+  title,
+  hint,
+  action,
+}: {
+  title: string;
+  hint?: string;
+  action?: React.ReactNode;
+}) {
   return (
-    <div className="glass py-12 text-center">
-      <p className="text-slate-200">{title}</p>
-      {hint ? <p className="mt-1 text-sm text-slate-400">{hint}</p> : null}
+    <div className="glass px-6 py-10 text-center">
+      <p className="font-medium text-ink">{title}</p>
+      {hint ? <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-ink-muted">{hint}</p> : null}
+      {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
     </div>
   );
 }
 
 export function ErrorState({ message }: { message: string }) {
   return (
-    <div className="rounded-2xl border border-rose-400/30 bg-rose-500/10 p-4 text-sm text-rose-200">
+    <div
+      role="alert"
+      className="rounded-2xl border border-rose-300 bg-rose-50 p-4 text-sm text-rose-700"
+    >
       {message}
     </div>
   );

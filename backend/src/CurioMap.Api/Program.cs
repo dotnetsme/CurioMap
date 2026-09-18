@@ -97,6 +97,7 @@ builder.Services.Configure<AffiliateOptions>(builder.Configuration.GetSection("A
 builder.Services.Configure<OpenLibraryOptions>(builder.Configuration.GetSection("OpenLibrary"));
 builder.Services.Configure<ConversationOptions>(builder.Configuration.GetSection("Conversations"));
 builder.Services.Configure<AdminOptions>(builder.Configuration.GetSection("Admin"));
+builder.Services.Configure<SeedOptions>(builder.Configuration.GetSection("Seed"));
 
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<RefreshTokenService>();

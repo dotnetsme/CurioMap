@@ -592,6 +592,24 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
     }
 
     [Fact]
+    public async Task Seed_Gate_Demo_Scripts_Are_Classified_Correctly()
+    {
+        // Regression: demo-reader seeds (0013-0014) must never run in prod.
+        // DbInitializer skips them when Seed:DemoReaders=false; the catalog
+        // seeds (0010-0012) are product data and always apply.
+        Assert.False(DbInitializer.IsDemoSeedScript(
+            "CurioMap.Api.Data.Migrations.0010_seed_books_1.sql"));
+        Assert.False(DbInitializer.IsDemoSeedScript(
+            "CurioMap.Api.Data.Migrations.0012_seed_books_3.sql"));
+        Assert.True(DbInitializer.IsDemoSeedScript(
+            "CurioMap.Api.Data.Migrations.0013_seed_demo_readers.sql"));
+        Assert.True(DbInitializer.IsDemoSeedScript(
+            "CurioMap.Api.Data.Migrations.0014_seed_ratings_challenges.sql"));
+        Assert.True(DbInitializer.IsDemoSeedScript("0013_anything.sql"));
+        Assert.False(DbInitializer.IsDemoSeedScript("0008_fix_ratings_challenges.sql"));
+    }
+
+    [Fact]
     public async Task Conversation_Read_Does_Not_Persist_Archive_Flag()
     {
         // Regression: GET /conversations/{id} used to run ExecuteUpdateAsync,

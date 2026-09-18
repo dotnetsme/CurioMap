@@ -1,9 +1,13 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect } from "react";
+import { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 
+/**
+ * Accessible, light-theme dialog: Escape + backdrop close, background scroll
+ * lock, initial focus moved into the panel and restored to the trigger on close.
+ */
 export function Modal({
   open,
   onClose,
@@ -15,6 +19,9 @@ export function Modal({
   title: string;
   children: ReactNode;
 }) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
@@ -24,25 +31,43 @@ export function Modal({
     return () => window.removeEventListener("keydown", handler);
   }, [open, onClose]);
 
+  useEffect(() => {
+    if (!open) return;
+    const trigger = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    panelRef.current?.focus();
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      trigger?.focus?.();
+    };
+  }, [open]);
+
   if (!open) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+      role="presentation"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/45 p-4 backdrop-blur-sm"
       onClick={onClose}
-      role="dialog"
-      aria-modal="true"
     >
       <div
-        className="glass max-h-[85vh] w-full max-w-lg overflow-y-auto bg-[#0d1326] p-6"
+        ref={panelRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
         onClick={(e) => e.stopPropagation()}
+        className="card max-h-[85vh] w-full max-w-lg overflow-y-auto p-6 shadow-2xl outline-none"
       >
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-white">{title}</h3>
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <h3 id={titleId} className="font-display text-lg font-semibold text-ink">
+            {title}
+          </h3>
           <button
             onClick={onClose}
-            className="inline-flex cursor-pointer items-center justify-center rounded-lg p-1.5 text-slate-400 transition hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-indigo-500"
-            aria-label="Close"
+            aria-label="Close dialog"
+            className="-mr-1 -mt-1 inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-3 transition hover:bg-surface-2 hover:text-ink"
           >
             <X size={18} />
           </button>

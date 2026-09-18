@@ -13,9 +13,12 @@ const modeLabels: Record<string, string> = {
 export function ProfileHeader({
   profile,
   actions,
+  bookshelfHref,
 }: {
   profile: PublicProfile;
   actions?: React.ReactNode;
+  /** Self-view points at /me/bookshelf (shows private entries); defaults to the public shelf. */
+  bookshelfHref?: string;
 }) {
   const loc = profile.location;
   const locationLabel = loc
@@ -44,7 +47,10 @@ export function ProfileHeader({
           </span>
           <span>{profile.followersCount} followers</span>
           <span>{profile.followingCount} following</span>
-          <Link href={`/users/${profile.id}/bookshelf`} className="text-accent hover:text-accent-strong">
+          <Link
+            href={bookshelfHref ?? `/users/${profile.id}/bookshelf`}
+            className="text-accent hover:text-accent-strong"
+          >
             View bookshelf →
           </Link>
         </div>

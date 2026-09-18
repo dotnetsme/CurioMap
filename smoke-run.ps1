@@ -1,1 +1,2 @@
-$PSDefaultParameterValues = @{ "Invoke-WebRequest:UseBasicParsing" = $true }; & "d:\dev\CurioMap\scripts\smoke.ps1"
+$PSDefaultParameterValues = @{ "Invoke-WebRequest:UseBasicParsing" = $true }
+& (Join-Path $PSScriptRoot "scripts\smoke.ps1")

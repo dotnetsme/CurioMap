@@ -41,11 +41,11 @@ export default function BookConversationsPage({ params }: { params: Promise<{ id
       <div className="glass flex items-center gap-4 p-4">
         <BookCover book={book} size={56} />
         <div className="min-w-0 flex-1">
-          <p className="text-xs uppercase tracking-widest text-slate-500">Discussions on</p>
-          <Link href={`/books/${book.id}`} className="text-lg font-semibold text-white hover:text-violet-200">
+          <p className="label-sm text-ink-3">Discussions on</p>
+          <Link href={`/books/${book.id}`} className="text-lg font-semibold text-ink hover:text-accent-strong">
             {book.title}
           </Link>
-          <p className="text-sm text-slate-400">{book.author}</p>
+          <p className="text-sm text-ink-muted">{book.author}</p>
         </div>
       </div>
       <NewConversationForm bookId={book.id} onCreated={(c) => setConversations((prev) => [c, ...prev])} />

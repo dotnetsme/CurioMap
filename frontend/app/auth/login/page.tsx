@@ -21,7 +21,7 @@ export default function LoginPage() {
     setError(null);
     try {
       await login(email, password);
-      router.push("/feed");
+      router.push("/home");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign in failed");
     } finally {

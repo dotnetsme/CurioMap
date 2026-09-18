@@ -32,12 +32,12 @@ export default function RegisterPage() {
 
   return (
     <div className="mx-auto max-w-md py-10">
-      <h1 className="text-2xl font-bold text-white">Join CurioMap</h1>
-      <p className="mt-1 text-sm text-slate-400">
+      <h1 className="font-display text-3xl font-bold tracking-tight text-ink">Join CurioMap</h1>
+      <p className="mt-2 text-sm text-ink-muted">
         You&apos;ll get a generated handle and avatar — anonymous by default, fully
         customizable later.
       </p>
-      <form onSubmit={submit} className="glass mt-6 flex flex-col gap-4 p-6">
+      <form onSubmit={submit} className="card mt-8 flex flex-col gap-4 p-6">
         <div>
           <Label>Email</Label>
           <Input
@@ -59,17 +59,17 @@ export default function RegisterPage() {
             autoComplete="new-password"
           />
         </div>
-        {error ? <p className="text-sm text-rose-300">{error}</p> : null}
+        {error ? <p className="text-sm text-rose-600">{error}</p> : null}
         <Button type="submit" disabled={busy}>
           {busy ? "Creating…" : "Create my identity"}
         </Button>
-        <p className="text-center text-sm text-slate-400">
+        <p className="text-center text-sm text-ink-muted">
           Already exploring?{" "}
-          <Link href="/auth/login" className="text-violet-300 hover:text-violet-200">
+          <Link href="/auth/login" className="font-medium text-accent-strong hover:text-accent">
             Sign in
           </Link>
         </p>
-        <p className="text-center text-[11px] text-slate-500">
+        <p className="text-center text-[11px] text-ink-3">
           We store your email only for sign-in. No tracking, no data selling.
         </p>
       </form>

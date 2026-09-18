@@ -73,7 +73,7 @@ export function ReportsBoard() {
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone={r.status === "open" ? "amber" : "emerald"}>{r.status}</Badge>
               <Badge tone="slate">message: {r.messageStatus}</Badge>
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-ink-3">
                               by @{r.reporter.handle} · {timeAgo(r.createdAt)}
               </span>
             </div>

@@ -35,24 +35,26 @@ export default function ConversationThreadPage({ params }: { params: Promise<{ i
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-5 py-4">
       <div>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-ink-3">
           {conversation.book ? (
             <>
               in{" "}
               <Link
                 href={`/books/${conversation.book.id}`}
-                className="text-slate-300 underline hover:text-slate-200"
+                className="text-ink-2 underline hover:text-ink"
               >
                 {conversation.book.title}
               </Link>
             </>
           ) : null}
         </p>
-        <h1 className="mt-1 text-2xl font-bold text-white">{conversation.title}</h1>
+        <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-ink">
+          {conversation.title}
+        </h1>
         <div className="mt-2 flex flex-wrap gap-2">
           <Badge tone="violet">{conversation.topicType}</Badge>
           {conversation.isArchived ? <Badge tone="slate">archived — read only</Badge> : null}
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-ink-3">
             started by {conversation.createdBy.displayName}
           </span>
         </div>
@@ -61,7 +63,7 @@ export default function ConversationThreadPage({ params }: { params: Promise<{ i
       <MessageList messages={messages} onChanged={() => void load(conversation.id)} />
 
       {conversation.isArchived ? (
-        <div className="glass p-4 text-sm text-slate-400">
+        <div className="glass p-4 text-sm text-ink-muted">
           This thread is archived after {""}30 days of quiet. Start a fresh one for fresh energy.
         </div>
       ) : (

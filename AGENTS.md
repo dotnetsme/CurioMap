@@ -42,13 +42,14 @@ This document establishes non-negotiable architectural rules, domain invariants,
 - **Backend (`backend/src/CurioMap.Api`)**:
   - ASP.NET Core 10 Web API host, attribute-routed controllers.
   - **Controllers only, NO MediatR**: Each HTTP domain maps to a single controller; shared logic lives in plain services (`Services/`, `Auth/`, `Common/`). Explicit, greppable, boring.
-  - **Data Access & Schema**: EF Core 10 + Npgsql targeting Neon Postgres. Schema is strictly owned by ordered SQL migration scripts (`backend/src/CurioMap.Api/Data/Migrations/*.sql`) applied at startup by `DbInitializer` with PostgreSQL advisory locks. Never edit already-applied migrations in production.
+  - **Data Access & Schema**: EF Core 10 + Npgsql targeting Neon Postgres. Schema is strictly owned by ordered SQL migration scripts (`backend/src/CurioMap.Api/Data/Migrations/*.sql`) applied at startup by `DbInitializer` with per-migration transaction-scoped PostgreSQL advisory locks (`pg_advisory_xact_lock`). Never edit already-applied migrations in production. Non-Npgsql providers (hermetic SQLite tests) short-circuit to `EnsureCreatedAsync`.
   - **Caching & Rate Limiting**: Redis (Upstash / Redis Cloud) cache-aside with in-memory compute fallback. Dual rate limiting: fixed-window policies (`auth`, `write`, `search`) plus Redis-backed limits for message posting.
   - **Auth**: JWT bearer access tokens (15 min) + rotating refresh tokens (httpOnly cookie, SHA-256 hashed in DB). Passwords hashed with PBKDF2-SHA256 (100k iterations).
 - **Frontend (`frontend`)**:
   - Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4.
   - Same-origin `/api` rewrites proxying requests to the backend API (`http://localhost:8080` locally, `http://curiomap-api.internal:8080` on Fly.io private network).
   - Client components consume typed API clients under `frontend/lib/api/*` with transparent 401 refresh retry logic in `http.ts`.
+  - Signed-in landing is `/home` (dashboard behind the single `AuthGate` session boundary). `proxy.ts` presence-routes holders of the httpOnly `curio_rt` cookie off `/` and `/auth/*` to `/home`; stale cookies fall back to `/home` guest state (no redirect loop). `/me` renders identity only (`ProfilePageView`); shelf widgets live in `/me/bookshelf`.
   - **Zero Mapping Libraries**: Curiosity map is a dependency-free SVG equirectangular projection of fuzzed region coordinates.
 - **Infrastructure (`infra`, `docker-compose.yml`)**:
   - Docker Compose for local PostgreSQL (port 5433) and Redis (port 6380).
@@ -94,9 +95,10 @@ This document establishes non-negotiable architectural rules, domain invariants,
 ### 5. Concurrency, Race Condition Prevention & Data Integrity
 
 - **Database Concurrency & Advisory Locks**:
-  - Startup migrations use PostgreSQL advisory locks (`pg_advisory_xact_lock`) to prevent race conditions across horizontally scaled Fly.io instances.
+  - Startup migrations use per-migration transaction-scoped PostgreSQL advisory locks (`pg_advisory_xact_lock`) to prevent race conditions across horizontally scaled Fly.io instances. The lock is always released on commit/rollback by Postgres itself.
+  - **Reads never mutate**: conversation staleness is derived in memory on reads; only write paths and the hourly `ConversationArchiver` worker persist the archived flag (see ADR 0004).
 - **Single-Use Refresh Token Rotation**:
-  - Refresh tokens are single-use. Each token rotation revokes the previous token family entry. Stolen/reused tokens trigger complete token family invalidation.
+  - Refresh tokens are single-use. Rotation locks the token row (`SELECT ... FOR UPDATE` on Npgsql, transaction-serialized on SQLite/test providers). Each rotation revokes the previous token. Stolen/reused tokens trigger complete token family invalidation (see ADR 0004).
 - **Self-Follow & Duplication Constraints**:
   - Self-follows are blocked at the database level by SQL `CHECK` constraints (`follower_id != followed_id`).
   - Shelf entries enforce uniqueness per `(user_id, book_id)`.
@@ -156,7 +158,7 @@ After EVERY code modification, execute the verification pipeline before concludi
      ```bash
      powershell -ExecutionPolicy Bypass -File scripts/smoke.ps1
      ```
-   - Validates live services end-to-end: Health -> Auth -> Geo -> Search -> Shelf -> Conversations -> Circles -> Streaks -> Discovery -> Frontend SSR Pages.
+   - Validates live services end-to-end: Health -> Auth -> Geo -> Search -> Shelf -> Conversations -> Circles -> Streaks -> Discovery -> Frontend SSR Pages (`/`, `/home`, `/books/:id`, `/circles`, `/discover/global`).
 4. **Mandatory Systematic Code Review Protocol**:
    - **Privacy Check**: Ensure no unfuzzed coordinates, emails, or private shelf items leak through new or modified DTOs.
    - **Next.js Audit**: Check for missing `'use client'` directives, SSR hydration risks, broken imports, or missing keys in `.map()`.

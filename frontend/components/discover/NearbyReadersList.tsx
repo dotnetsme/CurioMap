@@ -16,15 +16,81 @@ const scopeLabels = {
   country: "your country",
 } as const;
 
-export function NearbyReadersList({ scope, readers }: { scope: Nearby["scope"]; readers: NearbyReader[] }) {
-  const { user } = useAuth();
+function placeOf(reader: NearbyReader): string {
+  return [reader.location.city, reader.location.region, reader.location.country]
+    .filter(Boolean)
+    .join(", ");
+}
 
-  if (readers.length === 0) {
+export function NearbyReadersList({
+  scope,
+  readers,
+  /** Slim rows for dashboard columns — no per-reader follow control. */
+  compact = false,
+  /** Render at most this many readers (the API already enforces its own maximum). */
+  limit,
+}: {
+  scope: Nearby["scope"];
+  readers: NearbyReader[];
+  compact?: boolean;
+  limit?: number;
+}) {
+  const { user } = useAuth();
+  const shown = typeof limit === "number" ? readers.slice(0, limit) : readers;
+
+  if (shown.length === 0) {
     return (
       <EmptyState
         title={`No readers found in ${scopeLabels[scope] ?? "your area"} yet`}
         hint="Share CurioMap — the map grows one curious reader at a time."
       />
+    );
+  }
+
+  if (compact) {
+    return (
+      <div className="flex flex-col">
+        <p className="inline-flex items-center gap-1.5 text-[11px] font-medium text-ink-faint">
+          <ShieldCheck size={12} className="shrink-0 text-reading" />
+          {scopeLabels[scope] ?? scope} · fuzzed to ~15 km
+        </p>
+        <ul className="mt-1 flex flex-col divide-y divide-line">
+          {shown.map((reader) => {
+            const place = placeOf(reader);
+            return (
+              <li key={reader.user.id} className="flex items-center gap-3 py-2.5">
+                <Link
+                  href={`/users/${reader.user.id}`}
+                  className="shrink-0 rounded-full transition hover:scale-105"
+                >
+                  <Avatar avatarId={reader.user.avatarId} name={reader.user.displayName} size={38} />
+                </Link>
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href={`/users/${reader.user.id}`}
+                    className="block truncate text-sm font-semibold text-ink hover:text-accent-strong"
+                  >
+                    {reader.user.displayName}
+                  </Link>
+                  {reader.books.length > 0 ? (
+                    <p className="truncate text-[11.5px] text-ink-faint">
+                      Reading{" "}
+                      <Link
+                        href={`/books/${reader.books[0].id}`}
+                        className="font-medium text-ink-2 hover:text-accent-strong"
+                      >
+                        {reader.books[0].title}
+                      </Link>
+                    </p>
+                  ) : (
+                    <p className="truncate text-[11.5px] text-ink-faint">{place || "Reading now"}</p>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     );
   }
 
@@ -34,7 +100,7 @@ export function NearbyReadersList({ scope, readers }: { scope: Nearby["scope"]; 
         <ShieldCheck size={13} className="text-reading" />
         Matched at {scopeLabels[scope] ?? scope} level · locations fuzzed to ~15 km
       </p>
-      {readers.map((reader, i) => (
+      {shown.map((reader, i) => (
         <Reveal key={reader.user.id} delay={Math.min(i, 8) * 0.05}>
           <div className="card card-hover p-4 sm:p-5">
             <div className="flex items-center gap-3">

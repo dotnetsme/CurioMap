@@ -1,17 +1,18 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useAuth } from "@/components/providers/AuthProvider";
+import { Settings2 } from "lucide-react";
+import { AuthGate } from "@/components/auth/AuthGate";
 import { AvatarSelector } from "@/components/profile/AvatarSelector";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Select, Textarea } from "@/components/ui/Input";
 import { ErrorState, PageLoading } from "@/components/ui/Feedback";
+import { useAuth } from "@/components/providers/AuthProvider";
 import * as usersApi from "@/lib/api/users";
 import type { DisplayMode, LocationVisibilitySetting, Settings, ShelfVisibilitySetting } from "@/types";
 
-export default function SettingsPage() {
-  const { user, loading, updateUser } = useAuth();
+function SettingsForm() {
+  const { user, updateUser } = useAuth();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [profile, setProfile] = useState<Awaited<ReturnType<typeof usersApi.getProfile>> | null>(null);
 
@@ -39,7 +40,7 @@ export default function SettingsPage() {
   }
 
   useEffect(() => {
-    if (loading || !user) return;
+    if (!user) return;
     (async () => {
       try {
         const [s, p] = await Promise.all([usersApi.getSettings(), usersApi.getProfile(user.id)]);
@@ -55,18 +56,9 @@ export default function SettingsPage() {
         setError(e instanceof Error ? e.message : "Failed to load settings");
       }
     })();
-  }, [user, loading]);
+  }, [user]);
 
-  if (loading) return <PageLoading />;
-  if (!user)
-    return (
-      <div className="glass p-6 text-sm text-slate-300">
-        <Link href="/auth/login" className="text-violet-300 underline">
-          Sign in
-        </Link>{" "}
-        to manage your settings.
-      </div>
-    );
+  if (!user) return null;
   if (error) return <ErrorState message={error} />;
   if (!settings || !profile) return <PageLoading />;
 
@@ -125,15 +117,15 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 py-4">
-      <h1 className="text-2xl font-bold text-white">Settings</h1>
+      <h1 className="font-display text-3xl font-bold tracking-tight text-ink">Settings</h1>
       {message ? (
-        <div className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-3 text-sm text-emerald-200">
+        <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-700">
           {message}
         </div>
       ) : null}
 
       <section className="glass flex flex-col gap-4 p-6">
-        <h2 className="font-semibold text-white">Identity</h2>
+        <h2 className="font-semibold text-ink">Identity</h2>
         <div>
           <Label>Avatar (curated set — uploads are intentionally not supported)</Label>
           <AvatarSelector value={avatarId} onChange={setAvatarId} />
@@ -166,7 +158,7 @@ export default function SettingsPage() {
       </section>
 
       <section className="glass flex flex-col gap-4 p-6">
-        <h2 className="font-semibold text-white">Location &amp; privacy</h2>
+        <h2 className="font-semibold text-ink">Location &amp; privacy</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <Label>Location visibility</Label>
@@ -214,16 +206,28 @@ export default function SettingsPage() {
             {savingLocation ? "Saving…" : "Save location"}
           </Button>
           {settings.location ? (
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-ink-3">
               stored (fuzzed): lat {settings.location.latFuzzed ?? "—"}, lng {settings.location.lngFuzzed ?? "—"}
             </span>
           ) : null}
         </div>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-ink-3">
           We never store exact coordinates. On the map, your city shows only fuzzed to a ~15 km
           grid — and only if visibility allows.
         </p>
       </section>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <AuthGate
+      icon={Settings2}
+      title="Settings"
+      body="Sign in to manage your identity, location, and privacy controls."
+    >
+      <SettingsForm />
+    </AuthGate>
   );
 }

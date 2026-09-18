@@ -111,6 +111,13 @@ cookies.txt
 # Stray editor/agent temp files (e.g. page.tsx.new left by an interrupted edit)
 *.new
 
+# Local dev process artifacts (PIDs, ad-hoc error dumps, wrapper scripts)
+.api-pid
+frontend/.nextdev-pid
+frontend-err.log
+frontend/*-err.log
+smoke-run.ps1
+
 # -----------------------------------------------------------------------------
 # Docker & Local Infrastructure Data
 # -----------------------------------------------------------------------------
@@ -125,10 +132,9 @@ docker-compose.override.yml
 *.flyc
 
 # -----------------------------------------------------------------------------
-# Agent & Codebase Memory Graph Stores (Local DBs)
-# Note: Persisted artifact .codebase-memory/graph.db.zst is tracked if shared
+# Agent working dirs + codebase-memory index cache (ALL local-only, never tracked)
+# Contributors re-index locally via the codebase-memory MCP extension.
 # -----------------------------------------------------------------------------
-.codebase-memory/*.db
-.codebase-memory/*.db-wal
-.codebase-memory/*.db-shm
-.codebase-memory/*.stage.*
+.codebase-memory/
+.claude/
+.kilo/

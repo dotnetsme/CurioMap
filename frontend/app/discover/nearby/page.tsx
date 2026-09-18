@@ -2,21 +2,19 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Compass, LibraryBig, LogIn, MapPin, ShieldCheck } from "lucide-react";
+import { LibraryBig, MapPin, ShieldCheck } from "lucide-react";
+import { AuthGate } from "@/components/auth/AuthGate";
 import { NearbyReadersList } from "@/components/discover/NearbyReadersList";
 import { ReaderCardSkeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/Feedback";
-import { useAuth } from "@/components/providers/AuthProvider";
 import { nearby } from "@/lib/api/discover";
 import type { Nearby } from "@/types";
 
-export default function NearbyPage() {
-  const { user, loading } = useAuth();
+function NearbyBody() {
   const [data, setData] = useState<Nearby | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (loading || !user) return;
     let cancelled = false;
     (async () => {
       try {
@@ -29,46 +27,7 @@ export default function NearbyPage() {
     return () => {
       cancelled = true;
     };
-  }, [user, loading]);
-
-  if (loading) {
-    return (
-      <div className="flex max-w-2xl flex-col gap-3 py-4">
-        <ReaderCardSkeleton />
-        <ReaderCardSkeleton />
-        <ReaderCardSkeleton />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="night-panel mx-auto flex max-w-xl flex-col items-center gap-4 rounded-3xl px-8 py-14 text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-400/15 text-amber-300">
-          <MapPin size={26} />
-        </span>
-        <h1 className="font-display text-3xl font-bold text-amber-50">Readers near you</h1>
-        <p className="text-sm leading-relaxed text-amber-100/65">
-          Sign in to discover curious readers in your city. Your location stays fuzzed to a ~15 km
-          grid — never exact, always reversible.
-        </p>
-        <div className="flex flex-wrap justify-center gap-3">
-          <Link
-            href="/auth/login"
-            className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-6 py-2.5 text-sm font-bold text-night transition hover:bg-amber-300"
-          >
-            <LogIn size={15} /> Sign in
-          </Link>
-          <Link
-            href="/auth/register"
-            className="inline-flex items-center gap-2 rounded-full border border-amber-300/30 px-6 py-2.5 text-sm font-semibold text-amber-100 transition hover:bg-white/5"
-          >
-            <Compass size={15} /> Join free
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  }, []);
 
   if (error) return <ErrorState message={error} />;
 
@@ -108,5 +67,17 @@ export default function NearbyPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function NearbyPage() {
+  return (
+    <AuthGate
+      icon={MapPin}
+      title="Readers near you"
+      body="Sign in to discover curious readers in your city. Your location stays fuzzed to a ~15 km grid — never exact, always reversible."
+    >
+      <NearbyBody />
+    </AuthGate>
   );
 }

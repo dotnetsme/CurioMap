@@ -42,6 +42,10 @@ jobs:
 
   deploy:
     name: Deploy to Fly.io
+    # Contributor PRs must never trigger a prod deploy: only pushes to main
+    # (never PRs), and only after a human approves the `fly` environment.
+    # Configure the approval in GitHub: Settings → Environments → fly →
+    # "Required reviewers". The environment below enforces it.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [api, web]
     runs-on: ubuntu-latest
