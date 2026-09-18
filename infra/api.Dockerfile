@@ -1,8 +1,10 @@
 # CurioMap API — production image (built via GitHub Actions, run on Fly.io)
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
+COPY NuGet.config NuGet.config
 COPY backend/CurioMap.slnx backend/CurioMap.slnx
 COPY backend/src/CurioMap.Api/CurioMap.Api.csproj backend/src/CurioMap.Api/CurioMap.Api.csproj
+COPY backend/tests/CurioMap.Api.Tests/CurioMap.Api.Tests.csproj backend/tests/CurioMap.Api.Tests/CurioMap.Api.Tests.csproj
 RUN dotnet restore backend/CurioMap.slnx
 COPY backend/src backend/src
 RUN dotnet publish backend/src/CurioMap.Api/CurioMap.Api.csproj -c Release -o /publish --nologo

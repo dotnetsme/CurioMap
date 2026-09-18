@@ -171,14 +171,29 @@ if ($reg.ok -and $reg.body) {
     }
 }
 
-$front_home = Invoke-Http -Uri "$FrontendUrl/" -Method Get
+# Frontend pages return HTML, not JSON — parse-free check: any 2xx is OK.
+function Invoke-Frontend {
+    param([string]$Uri)
+    try {
+        $r = Invoke-WebRequest -Uri $Uri -Method Get -TimeoutSec 15 -UseBasicParsing
+        return @{ ok = ($r.StatusCode -ge 200 -and $r.StatusCode -lt 300); status = $r.StatusCode; err = $null }
+    } catch {
+        $code = 0
+        if ($_.Exception.Response) {
+            try { $code = [int]$_.Exception.Response.StatusCode } catch {}
+        }
+        return @{ ok = $false; status = $code; err = $_.Exception.Message }
+    }
+}
+
+$front_home = Invoke-Frontend -Uri "$FrontendUrl/"
 if ($front_home.ok) {
     $out.Add("FRONT_HOME: OK status=$($front_home.status)")
 } else {
     $out.Add("FRONT_HOME: FAIL status=$($front_home.status) err=$($front_home.err)")
 }
 if ($bid) {
-    $front_book = Invoke-Http -Uri "$FrontendUrl/books/$bid" -Method Get
+    $front_book = Invoke-Frontend -Uri "$FrontendUrl/books/$bid"
     if ($front_book.ok) {
         $out.Add("FRONT_BOOK: OK status=$($front_book.status)")
     } else {
@@ -186,7 +201,7 @@ if ($bid) {
     }
 }
 if ($bid -and $cid) {
-    $front_conv = Invoke-Http -Uri "$FrontendUrl/books/$bid/conversations/$cid" -Method Get
+    $front_conv = Invoke-Frontend -Uri "$FrontendUrl/books/$bid/conversations/$cid"
     if ($front_conv.ok) {
         $out.Add("FRONT_CONV: OK status=$($front_conv.status)")
     } else {
@@ -194,21 +209,21 @@ if ($bid -and $cid) {
     }
 }
 
-$front_circles = Invoke-Http -Uri "$FrontendUrl/circles" -Method Get
+$front_circles = Invoke-Frontend -Uri "$FrontendUrl/circles"
 if ($front_circles.ok) {
     $out.Add("FRONT_CIRCLES: OK status=$($front_circles.status)")
 } else {
     $out.Add("FRONT_CIRCLES: FAIL status=$($front_circles.status) err=$($front_circles.err)")
 }
 
-$front_dashboard = Invoke-Http -Uri "$FrontendUrl/home" -Method Get
+$front_dashboard = Invoke-Frontend -Uri "$FrontendUrl/home"
 if ($front_dashboard.ok) {
     $out.Add("FRONT_HOME_DASHBOARD: OK status=$($front_dashboard.status)")
 } else {
     $out.Add("FRONT_HOME_DASHBOARD: FAIL status=$($front_dashboard.status) err=$($front_dashboard.err)")
 }
 
-$front_map = Invoke-Http -Uri "$FrontendUrl/discover/global" -Method Get
+$front_map = Invoke-Frontend -Uri "$FrontendUrl/discover/global"
 if ($front_map.ok) {
     $out.Add("FRONT_MAP: OK status=$($front_map.status)")
 } else {
