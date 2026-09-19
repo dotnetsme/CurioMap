@@ -45,6 +45,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(u => u.Bio).HasMaxLength(1000);
             e.Property(u => u.LocationVisibility).HasConversion<string>().HasMaxLength(20);
             e.Property(u => u.BookshelfVisibility).HasConversion<string>().HasMaxLength(20);
+            e.Property(u => u.TermsVersion).HasMaxLength(20);
             e.HasOne(u => u.Location).WithMany(l => l.Users)
                 .HasForeignKey(u => u.LocationId).OnDelete(DeleteBehavior.SetNull);
         });

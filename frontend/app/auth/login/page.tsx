@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { useState, type FormEvent } from "react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,7 +23,12 @@ export default function LoginPage() {
     setError(null);
     try {
       await login(email, password);
-      router.push("/home");
+      const returnTo = searchParams.get("returnTo");
+      const destination =
+        returnTo?.startsWith("/") && !returnTo.startsWith("//")
+          ? returnTo
+          : "/home";
+      router.push(destination);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign in failed");
     } finally {
@@ -62,11 +69,22 @@ export default function LoginPage() {
         </Button>
         <p className="text-center text-sm text-ink-muted">
           New here?{" "}
-          <Link href="/auth/register" className="font-medium text-amber hover:text-amber/80">
+          <Link
+            href="/auth/register"
+            className="font-medium text-amber hover:text-amber/80"
+          >
             Create an anonymous identity
           </Link>
         </p>
       </form>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-md py-10" />}>
+      <LoginForm />
+    </Suspense>
   );
 }

@@ -27,6 +27,15 @@ public class User : IAuditable
     public LocationVisibility LocationVisibility { get; set; } = LocationVisibility.RegionCity;
     public ShelfVisibility BookshelfVisibility { get; set; } = ShelfVisibility.Public;
 
+    /// <summary>
+    /// Version of the Terms of Use the reader accepted (e.g. "1.0"); null when
+    /// the reader predates consent tracking or has not yet accepted.
+    /// </summary>
+    public string? TermsVersion { get; set; }
+
+    /// <summary>UTC timestamp of the acceptance above; null with TermsVersion.</summary>
+    public DateTime? TermsAcceptedAt { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

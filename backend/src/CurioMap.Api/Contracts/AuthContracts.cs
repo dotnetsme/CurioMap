@@ -4,13 +4,22 @@ namespace CurioMap.Api.Contracts;
 
 public record RegisterRequest(
     [Required, EmailAddress, MaxLength(320)] string Email,
-    [Required, MinLength(8), MaxLength(128)] string Password);
+    [Required, MinLength(8), MaxLength(128)] string Password,
+    bool AcceptTerms = true);
 
 public record LoginRequest(
     [Required, EmailAddress, MaxLength(320)] string Email,
     [Required, MaxLength(128)] string Password);
 
 public record RefreshRequest(string? RefreshToken);
+
+public record AcceptTermsRequest(bool Accept);
+
+public record TermsStatusDto(
+    string CurrentVersion,
+    string? AcceptedVersion,
+    DateTime? AcceptedAt,
+    bool IsCurrent);
 
 public record AuthUserDto(
     Guid Id,

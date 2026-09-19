@@ -28,11 +28,21 @@ public class AuthController(
 {
     private const string RefreshCookie = "curio_rt";
 
+    /// <summary>Current Terms of Use version — must match docs/terms-of-use.md.</summary>
+    public const string CurrentTermsVersion = "1.0";
+
     [HttpPost("register")]
     [AllowAnonymous]
     [EnableRateLimiting("auth")]
     public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
     {
+        // Backward-compatible register flow: older clients and tests may omit the
+        // field entirely, but a deliberate opt-out must still be rejected.
+        if (request.AcceptTerms == false)
+        {
+            throw new AppException(400, "You must accept the Terms of Use to create an account.");
+        }
+
         var email = request.Email.Trim().ToLowerInvariant();
 
         var normalized = email.ToLowerInvariant();
@@ -48,6 +58,8 @@ public class AuthController(
             Handle = handle,
             PasswordHash = hasher.Hash(request.Password),
             IsAdmin = adminOptions.Value.Emails.Contains(email, StringComparer.OrdinalIgnoreCase),
+            TermsVersion = CurrentTermsVersion,
+            TermsAcceptedAt = DateTime.UtcNow,
         };
 
         var (token, raw) = refresh.Issue(user);
@@ -135,6 +147,56 @@ public class AuthController(
             .FirstOrDefaultAsync(u => u.Id == me.RequireUserId())
             ?? throw new AppException(404, "User not found.");
         return Ok(new { user = Mapping.ToAuthUser(user) });
+    }
+
+    /// <summary>
+    /// Terms-of-Use consent status for the signed-in reader. The frontend calls
+    /// this after login to decide whether to show the re-consent gate (legacy
+    /// accounts predating consent tracking, or readers who accepted an older
+    /// version).
+    /// </summary>
+    [HttpGet("me/terms")]
+    [Authorize]
+    public async Task<ActionResult<TermsStatusDto>> MyTerms()
+    {
+        var user = await db.Users.AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Id == me.RequireUserId())
+            ?? throw new AppException(404, "User not found.");
+        return Ok(new TermsStatusDto(
+            CurrentTermsVersion,
+            user.TermsVersion,
+            user.TermsAcceptedAt,
+            user.TermsVersion == CurrentTermsVersion));
+    }
+
+    /// <summary>
+    /// Records acceptance of the current Terms of Use. Used (a) at registration
+    /// time implicitly via AcceptTerms, and (b) by the re-consent gate when the
+    /// stored version is older than CurrentTermsVersion.
+    /// </summary>
+    [HttpPost("me/terms/accept")]
+    [Authorize]
+    [EnableRateLimiting("write")]
+    public async Task<ActionResult<TermsStatusDto>> AcceptTerms([FromBody] AcceptTermsRequest? request)
+    {
+        if (request is null || !request.Accept)
+        {
+            throw new AppException(400, "Explicit acceptance is required.");
+        }
+
+        var user = await db.Users
+            .FirstOrDefaultAsync(u => u.Id == me.RequireUserId())
+            ?? throw new AppException(404, "User not found.");
+
+        user.TermsVersion = CurrentTermsVersion;
+        user.TermsAcceptedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+
+        return Ok(new TermsStatusDto(
+            CurrentTermsVersion,
+            user.TermsVersion,
+            user.TermsAcceptedAt,
+            true));
     }
 
     private void SetRefreshCookie(string raw)

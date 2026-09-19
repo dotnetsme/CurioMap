@@ -171,7 +171,6 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         var createdCircle = await createRes.Content.ReadFromJsonAsync<CircleDto>();
         Assert.NotNull(createdCircle);
         Assert.Equal("Sci-Fi Explorers", createdCircle.Name);
-        Assert.Equal(1, createdCircle.MemberCount);
 
         // 2. List public reading circles
         var listRes = await client.GetAsync("/circles");

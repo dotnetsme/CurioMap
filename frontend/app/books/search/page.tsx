@@ -1,16 +1,11 @@
 import { SearchPageClient } from "@/components/books/SearchPageClient";
 
 export default async function SearchPage({
-  params,
+  searchParams,
 }: {
-  params: Promise<{ searchParams: Promise<URLSearchParams> }>;
+  searchParams: Promise<{ q?: string | string[] }>;
 }) {
-  const { searchParams } = await params;
-  const sp = (await searchParams) ?? new URLSearchParams();
-  return (
-    <SearchPageClient
-      key={sp.get("q") ?? ""}
-      initialQuery={sp.get("q") ?? ""}
-    />
-  );
+  const sp = await searchParams;
+  const query = Array.isArray(sp.q) ? sp.q[0] : sp.q;
+  return <SearchPageClient key={query ?? ""} initialQuery={query ?? ""} />;
 }

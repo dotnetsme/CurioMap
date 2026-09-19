@@ -19,6 +19,12 @@ public class OpenLibraryOptions
     public bool Enabled { get; set; } = true;
 }
 
+public class GoogleBooksOptions
+{
+    public bool Enabled { get; set; }
+    public string ApiKey { get; set; } = string.Empty;
+}
+
 public class ConversationOptions
 {
     /// <summary>Ephemeral threads: auto-archive after this many days of inactivity.</summary>

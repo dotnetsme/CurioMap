@@ -18,8 +18,10 @@ namespace CurioMap.Api.Controllers;
 public class BooksController(
     AppDbContext db,
     OpenLibraryService openLibrary,
+    GoogleBooksService googleBooks,
     AffiliateLinkService affiliate,
-    IOptions<OpenLibraryOptions> openLibraryOptions) : ControllerBase
+    IOptions<OpenLibraryOptions> openLibraryOptions,
+    IOptions<GoogleBooksOptions> googleBooksOptions) : ControllerBase
 {
     [HttpGet("search")]
     [AllowAnonymous]
@@ -49,10 +51,16 @@ public class BooksController(
         var total = await baseQuery.CountAsync();
         var fromExternal = false;
 
-        // Empty local catalog → transparently import from Open Library (public API, no key).
+        // Empty local catalog -> try Open Library first, then optional Google Books.
         if (total == 0 && offset == 0 && openLibraryOptions.Value.Enabled)
         {
             var external = await openLibrary.SearchAsync(query, Math.Min(limit, 12));
+            var source = "openlibrary";
+            if (external.Count == 0 && googleBooksOptions.Value.Enabled && !string.IsNullOrWhiteSpace(googleBooksOptions.Value.ApiKey))
+            {
+                external = await googleBooks.SearchAsync(query, googleBooksOptions.Value.ApiKey, Math.Min(limit, 12));
+                source = "googlebooks";
+            }
             if (external.Count > 0)
             {
                 try
@@ -69,7 +77,7 @@ public class BooksController(
                             continue;
                         }
 
-                        var metadata = new Dictionary<string, string> { ["source"] = "openlibrary" };
+                        var metadata = new Dictionary<string, string> { ["source"] = source };
                         if (result.Year is not null)
                         {
                             metadata["year"] = result.Year.Value.ToString();

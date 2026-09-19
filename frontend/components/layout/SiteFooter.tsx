@@ -39,6 +39,9 @@ export function SiteFooter() {
           </div>
           <div className="flex flex-col gap-2">
             <span className="mono-label text-ink-3">Project</span>
+            <a href="/policy/terms" className="text-ink-2 hover:text-ink">
+              Terms of use
+            </a>
             <a href="/policy/privacy" className="text-ink-2 hover:text-ink">
               Privacy policy
             </a>
@@ -58,7 +61,17 @@ export function SiteFooter() {
       </div>
       <div className="mx-auto mt-8 w-full max-w-[1280px] px-5 sm:px-8">
         <div className="flex flex-col gap-2 border-t border-line pt-6 text-xs text-ink-3 sm:flex-row sm:items-center sm:justify-between">
-          <span>© 2026 CurioMap. Apache 2.0.</span>
+          <span>
+            © 2026 CurioMap. Apache 2.0. Use of this site is subject to the{" "}
+            <a href="/policy/terms" className="underline underline-offset-2 hover:text-ink">
+              Terms of Use
+            </a>{" "}
+            and{" "}
+            <a href="/policy/privacy" className="underline underline-offset-2 hover:text-ink">
+              Privacy Policy
+            </a>
+            .
+          </span>
           <span className="flex items-center gap-1.5">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-reading" />
             Built in public, privacy-first.

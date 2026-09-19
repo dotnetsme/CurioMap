@@ -32,13 +32,25 @@ export const metadata: Metadata = {
     "A global, open-source, geolocation-based reading graph. Anonymous identities, coarse-location discovery, and short book conversations — privacy-first.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable} ${jetbrains.variable}`}>
-      <body className="min-h-screen bg-canvas text-ink antialiased font-sans">
+    <html
+      lang="en"
+      className={`${inter.variable} ${playfair.variable} ${jetbrains.variable}`}
+    >
+      <body
+        suppressHydrationWarning
+        className="min-h-screen bg-canvas text-ink antialiased font-sans"
+      >
         <AuthProvider>
           <SiteHeader />
-          <main className="mx-auto w-full max-w-[1280px] px-5 pb-24 pt-6 sm:px-8">{children}</main>
+          <main className="mx-auto w-full max-w-[1280px] px-5 pb-24 pt-6 sm:px-8">
+            {children}
+          </main>
           <SiteFooter />
         </AuthProvider>
       </body>

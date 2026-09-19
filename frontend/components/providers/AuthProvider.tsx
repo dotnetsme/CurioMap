@@ -9,7 +9,7 @@ interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<AuthUser>;
-  register: (email: string, password: string) => Promise<AuthUser>;
+  register: (email: string, password: string, acceptTerms: boolean) => Promise<AuthUser>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<AuthUser | null>;
   updateUser: (user: AuthUser) => void;
@@ -42,8 +42,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return r.user;
   }, []);
 
-  const register = useCallback(async (email: string, password: string) => {
-    const r = await authApi.register(email, password);
+  const register = useCallback(async (email: string, password: string, acceptTerms: boolean) => {
+    const r = await authApi.register(email, password, acceptTerms);
     setAccessToken(r.accessToken);
     setUser(r.user);
     return r.user;

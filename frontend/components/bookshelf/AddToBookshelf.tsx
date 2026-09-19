@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import * as bookshelfApi from "@/lib/api/bookshelf";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -12,23 +14,35 @@ const statuses: { value: BookStatus; label: string }[] = [
   { value: "wishlist", label: "Wishlist" },
 ];
 
-/**
- * Add a book to the signed-in reader's shelf. Inline status choice;
- * prompts to sign in when logged out.
- */
+/** Add a book to the signed-in reader's shelf or route a guest through auth. */
 export function AddToBookshelf({ book }: { book: BookStub }) {
   const { user } = useAuth();
+  const router = useRouter();
   const [busy, setBusy] = useState<BookStatus | null>(null);
-  const [done, setDone] = useState<BookStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   if (!user) {
     return (
       <div className="rounded border border-ink/10 bg-white p-4 text-sm text-ink-soft">
-        <a href="/auth/login" className="font-medium text-ink underline decoration-accent decoration-2 underline-offset-2 hover:text-accent">
-          Sign in
-        </a>{" "}
-        to add &ldquo;{book.title}&rdquo; to your bookshelf.
+        <p>
+          Found the right book? Save it to your shelf after a quick account
+          setup.
+        </p>
+        <Link
+          href={`/auth/register?returnTo=${encodeURIComponent(`/books/${book.id}`)}`}
+          className="mt-2 inline-flex font-medium text-ink underline decoration-accent decoration-2 underline-offset-2 hover:text-accent"
+        >
+          Create an account to add it
+        </Link>
+        <span className="mt-1 block text-xs text-ink-faint">
+          Already a reader?{" "}
+          <Link
+            href={`/auth/login?returnTo=${encodeURIComponent(`/books/${book.id}`)}`}
+            className="underline underline-offset-2"
+          >
+            Sign in
+          </Link>
+        </span>
       </div>
     );
   }
@@ -38,7 +52,7 @@ export function AddToBookshelf({ book }: { book: BookStub }) {
     setError(null);
     try {
       await bookshelfApi.add({ bookId: book.id, status, visibility: "public" });
-      setDone(status);
+      router.push("/me/bookshelf");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to add book");
     } finally {
@@ -46,29 +60,20 @@ export function AddToBookshelf({ book }: { book: BookStub }) {
     }
   }
 
-  if (done) {
-    return (
-      <div className="rounded border border-ink/10 bg-white p-4 text-sm text-green-700">
-        On your shelf as &ldquo;{done}&rdquo;.{" "}
-        <a href="/me/bookshelf" className="underline decoration-accent decoration-2 underline-offset-2 hover:text-accent">
-          Manage
-        </a>
-      </div>
-    );
-  }
-
   return (
     <div className="rounded border border-ink/10 bg-white p-4">
-      <p className="mb-2 text-xs font-semibold tracking-wide text-ink-soft">ADD TO BOOKSHELF</p>
+      <p className="mb-2 text-xs font-semibold tracking-wide text-ink-soft">
+        ADD TO BOOKSHELF
+      </p>
       <div className="flex flex-wrap gap-2">
-        {statuses.map((s) => (
+        {statuses.map((status) => (
           <Button
-            key={s.value}
+            key={status.value}
             variant="ghost"
             disabled={busy !== null}
-            onClick={() => void addBook(s.value)}
+            onClick={() => void addBook(status.value)}
           >
-            {busy === s.value ? "…" : s.label}
+            {busy === status.value ? "…" : status.label}
           </Button>
         ))}
       </div>

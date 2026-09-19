@@ -134,7 +134,6 @@ public class ReadingCirclesController(
 
     [HttpPost("/circles/{id}/join")]
     [Authorize]
-    [EnableRateLimiting("write")]
     public async Task<ActionResult> Join(string id)
     {
         var userId = me.RequireUserId();

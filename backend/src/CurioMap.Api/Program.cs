@@ -86,6 +86,11 @@ builder.Services.AddHttpClient<OpenLibraryService>(client =>
     client.BaseAddress = new Uri("https://openlibrary.org/");
     client.Timeout = TimeSpan.FromSeconds(5);
 });
+builder.Services.AddHttpClient<GoogleBooksService>(client =>
+{
+    client.BaseAddress = new Uri("https://www.googleapis.com/");
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
 builder.Services.AddHttpClient<GeoResolveService>(client =>
 {
     client.BaseAddress = new Uri("https://geocoding-api.open-meteo.com/");
@@ -95,6 +100,7 @@ builder.Services.AddHttpClient<GeoResolveService>(client =>
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<AffiliateOptions>(builder.Configuration.GetSection("Affiliate"));
 builder.Services.Configure<OpenLibraryOptions>(builder.Configuration.GetSection("OpenLibrary"));
+builder.Services.Configure<GoogleBooksOptions>(builder.Configuration.GetSection("GoogleBooks"));
 builder.Services.Configure<ConversationOptions>(builder.Configuration.GetSection("Conversations"));
 builder.Services.Configure<AdminOptions>(builder.Configuration.GetSection("Admin"));
 builder.Services.Configure<SeedOptions>(builder.Configuration.GetSection("Seed"));

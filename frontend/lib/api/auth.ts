@@ -7,10 +7,17 @@ interface AuthResponse {
   expiresIn: number;
 }
 
-export async function register(email: string, password: string): Promise<AuthResponse> {
+interface TermsStatus {
+  currentVersion: string;
+  acceptedVersion: string | null;
+  acceptedAt: string | null;
+  isCurrent: boolean;
+}
+
+export async function register(email: string, password: string, acceptTerms: boolean): Promise<AuthResponse> {
   return api("/auth/register", {
     method: "POST",
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, acceptTerms }),
     auth: false,
   });
 }
@@ -55,4 +62,17 @@ export async function logout(): Promise<void> {
 
 export async function me(): Promise<{ user: AuthUser }> {
   return api("/auth/me");
+}
+
+/** Terms-of-Use consent status for the signed-in reader. */
+export function termsStatus(): Promise<TermsStatus> {
+  return api("/auth/me/terms");
+}
+
+/** Records acceptance of the current Terms of Use. */
+export function acceptTerms(): Promise<TermsStatus> {
+  return api("/auth/me/terms/accept", {
+    method: "POST",
+    body: JSON.stringify({ accept: true }),
+  });
 }

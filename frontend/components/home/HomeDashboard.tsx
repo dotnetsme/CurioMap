@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   BookMarked,
-  Compass,
   Globe2,
   MapPin,
   MessagesSquare,
@@ -15,7 +14,6 @@ import { CuriosityMapShell } from "@/components/discover/CuriosityMapShell";
 import { NearbyReadersList } from "@/components/discover/NearbyReadersList";
 import { DashboardPanel } from "@/components/home/DashboardPanel";
 import { DiscussionPanel } from "@/components/home/DiscussionPanel";
-import { GenreChips } from "@/components/home/GenreChips";
 import { HomeSearchBar } from "@/components/home/HomeSearchBar";
 import { HomeStatsStrip } from "@/components/home/HomeStatsStrip";
 import { ShelfGlance } from "@/components/home/ShelfGlance";
@@ -64,13 +62,13 @@ export function HomeDashboard() {
   const unreachable = settled && !summary && !map;
 
   return (
-    <div className="flex flex-col gap-6 py-2">
-      <header className="flex flex-wrap items-end justify-between gap-4">
+    <div className="mx-auto max-w-[1280px] py-4">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="label-sm inline-flex items-center gap-1.5 text-accent-strong">
             <Sparkles size={12} /> Home
           </p>
-          <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">
             Welcome back, {user.displayName}
           </h1>
           <p className="mt-1 text-sm text-ink-muted">
@@ -84,7 +82,10 @@ export function HomeDashboard() {
           <Link href="/discover/global" className="btn-ghost text-sm">
             <Globe2 size={15} /> Open the map
           </Link>
-          <Link href="/circles" className="btn-accent text-sm shadow-lg shadow-accent/25">
+          <Link
+            href="/circles"
+            className="btn-accent text-sm shadow-lg shadow-accent/25"
+          >
             <MessagesSquare size={15} /> Start a discussion
           </Link>
         </div>
@@ -94,55 +95,54 @@ export function HomeDashboard() {
         <ErrorState message="CurioMap couldn't load your dashboard — the API may be unreachable. Refresh to retry." />
       ) : null}
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <Reveal className="lg:col-span-8">
+      <div className="grid gap-6 xl:grid-cols-[1.7fr_0.95fr]">
+        <Reveal>
           <section className="card overflow-hidden">
-            <div className="relative">
+            <div className="relative border-b border-line">
               <CuriosityMapShell
                 regions={map?.regions ?? []}
-                height={340}
-                topBooks={[]}
+                height={410}
+                topBooks={summary?.topBooks ?? []}
                 focusOnVisitor
               />
-              <div className="pointer-events-none absolute inset-x-4 bottom-4 z-[500] sm:right-36">
+              <div className="pointer-events-none absolute inset-x-3 bottom-4 z-[500] sm:right-28">
                 <div className="pointer-events-auto">
                   <HomeSearchBar />
                 </div>
               </div>
             </div>
-            <HomeStatsStrip stats={summary} />
+            <div className="bg-[#f9f6f1] px-3 py-3 sm:px-4">
+              <HomeStatsStrip stats={summary} />
+            </div>
           </section>
         </Reveal>
 
-        <div className="flex flex-col gap-6 lg:col-span-4">
-          <DashboardPanel
-            icon={TrendingUp}
-            title="Trending books"
-            hint="What readers are shelving now"
-            action={
-              <Link
-                href="/discover/top-books"
-                className="text-[11px] font-semibold text-accent-strong hover:text-accent"
-              >
-                All →
-              </Link>
-            }
-          >
-            <TrendingPanel books={summary?.topBooks ?? []} loading={!settled} />
-          </DashboardPanel>
-
-          <DashboardPanel icon={Compass} title="Popular genres" hint="Jump into a catalog search">
-            <GenreChips />
-          </DashboardPanel>
-        </div>
+        <DashboardPanel
+          icon={TrendingUp}
+          title="Trending books"
+          hint="What readers are shelving now"
+          action={
+            <Link
+              href="/discover/top-books"
+              className="text-[11px] font-semibold text-accent-strong hover:text-accent"
+            >
+              All →
+            </Link>
+          }
+        >
+          <TrendingPanel books={summary?.topBooks ?? []} loading={!settled} />
+        </DashboardPanel>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className="mt-6 grid gap-6 xl:grid-cols-[0.95fr_1.2fr_1fr]">
         <DashboardPanel
-          className="lg:col-span-4"
           icon={MapPin}
           title="Nearby readers"
-          hint={near ? `${near.readers.length} matched at ${near.scope} level` : "Coarse location only"}
+          hint={
+            near
+              ? `${near.readers.length} matched at ${near.scope} level`
+              : "Coarse location only"
+          }
           action={
             <Link
               href="/discover/nearby"
@@ -153,7 +153,12 @@ export function HomeDashboard() {
           }
         >
           {near ? (
-            <NearbyReadersList scope={near.scope} readers={near.readers} compact limit={4} />
+            <NearbyReadersList
+              scope={near.scope}
+              readers={near.readers}
+              compact
+              limit={5}
+            />
           ) : (
             <p className="text-sm leading-relaxed text-ink-muted">
               {settled
@@ -170,7 +175,6 @@ export function HomeDashboard() {
         </DashboardPanel>
 
         <DashboardPanel
-          className="lg:col-span-4"
           icon={MessagesSquare}
           title="Book discussion"
           hint="From readers you follow"
@@ -179,7 +183,6 @@ export function HomeDashboard() {
         </DashboardPanel>
 
         <DashboardPanel
-          className="lg:col-span-4"
           icon={BookMarked}
           title="My bookshelf"
           hint="Private rows stay private — only you see them"
@@ -188,7 +191,9 @@ export function HomeDashboard() {
         </DashboardPanel>
       </div>
 
-      <StreakCard />
+      <div className="mt-6">
+        <StreakCard />
+      </div>
     </div>
   );
 }
