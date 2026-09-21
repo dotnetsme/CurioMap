@@ -78,7 +78,7 @@ export function StreakCard({ userId }: { userId?: string }) {
               ) : null}{" "}
               ·{" "}
               {stats.activeToday ? (
-                <span className="font-medium text-emerald-600">Active today</span>
+                <span className="font-medium text-signal">Active today</span>
               ) : (
                 "Read something to keep it alive"
               )}

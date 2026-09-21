@@ -31,19 +31,19 @@ export function AuthGate({
   if (!user) {
     return (
       <div className="night-panel mx-auto flex max-w-xl flex-col items-center gap-4 rounded-3xl px-8 py-14 text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-400/15 text-amber-300">
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/15 text-accent">
           <Icon size={26} />
         </span>
-        {eyebrow ? <p className="label-sm text-amber-300">{eyebrow}</p> : null}
-        <h1 className="font-display text-3xl font-bold text-amber-50">{title}</h1>
-        <p className="text-sm leading-relaxed text-amber-100/65">{body}</p>
+        {eyebrow ? <p className="label-sm text-signal">{eyebrow}</p> : null}
+        <h1 className="font-display text-3xl font-bold text-ink-strong">{title}</h1>
+        <p className="text-sm leading-relaxed text-ink-muted">{body}</p>
         <div className="flex flex-wrap justify-center gap-3">
           <Link href="/auth/login" className="btn-accent">
             <LogIn size={15} /> Sign in
           </Link>
           <Link
             href="/auth/register"
-            className="inline-flex items-center gap-2 rounded-full border border-amber-300/30 px-6 py-2.5 text-sm font-semibold text-amber-100 transition hover:bg-white/5"
+            className="inline-flex items-center gap-2 rounded-full border border-line-2 px-6 py-2.5 text-sm font-semibold text-ink transition hover:bg-white/5"
           >
             Join free
           </Link>

@@ -11,48 +11,48 @@ export function SiteFooter() {
             </span>
             <span className="text-sm font-semibold text-ink">CurioMap</span>
           </div>
-          <p className="mt-2 max-w-xs text-sm text-ink-3">
+          <p className="mt-2 max-w-xs text-sm text-ink-faint">
             A live map of human curiosity. Open source, privacy-first.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-x-10 gap-y-2 text-sm md:grid-cols-3">
           <div className="flex flex-col gap-2">
-            <span className="mono-label text-ink-3">Discover</span>
-            <Link href="/discover/global" className="text-ink-2 hover:text-ink">
+            <span className="mono-label text-ink-faint">Discover</span>
+            <Link href="/discover/global" className="text-ink-muted hover:text-ink">
               Curiosity map
             </Link>
-            <Link href="/discover/nearby" className="text-ink-2 hover:text-ink">
+            <Link href="/discover/nearby" className="text-ink-muted hover:text-ink">
               Nearby readers
             </Link>
-            <Link href="/discover/top-books" className="text-ink-2 hover:text-ink">
+            <Link href="/discover/top-books" className="text-ink-muted hover:text-ink">
               Top books
             </Link>
           </div>
           <div className="flex flex-col gap-2">
-            <span className="mono-label text-ink-3">Platform</span>
-            <Link href="/books/search" className="text-ink-2 hover:text-ink">
+            <span className="mono-label text-ink-faint">Platform</span>
+            <Link href="/books/search" className="text-ink-muted hover:text-ink">
               Book search
             </Link>
-            <Link href="/feed" className="text-ink-2 hover:text-ink">
+            <Link href="/feed" className="text-ink-muted hover:text-ink">
               Activity feed
             </Link>
           </div>
           <div className="flex flex-col gap-2">
-            <span className="mono-label text-ink-3">Project</span>
-            <a href="/policy/terms" className="text-ink-2 hover:text-ink">
+            <span className="mono-label text-ink-faint">Project</span>
+            <a href="/policy/terms" className="text-ink-muted hover:text-ink">
               Terms of use
             </a>
-            <a href="/policy/privacy" className="text-ink-2 hover:text-ink">
+            <a href="/policy/privacy" className="text-ink-muted hover:text-ink">
               Privacy policy
             </a>
-            <a href="/policy/affiliates" className="text-ink-2 hover:text-ink">
+            <a href="/policy/affiliates" className="text-ink-muted hover:text-ink">
               Affiliate policy
             </a>
             <a
               href="https://github.com/curiomap/curiomap"
               target="_blank"
               rel="noreferrer"
-              className="text-ink-2 hover:text-ink"
+              className="text-ink-muted hover:text-ink"
             >
               GitHub
             </a>
@@ -60,7 +60,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="mx-auto mt-8 w-full max-w-[1280px] px-5 sm:px-8">
-        <div className="flex flex-col gap-2 border-t border-line pt-6 text-xs text-ink-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 border-t border-line pt-6 text-xs text-ink-faint sm:flex-row sm:items-center sm:justify-between">
           <span>
             © 2026 CurioMap. Apache 2.0. Use of this site is subject to the{" "}
             <a href="/policy/terms" className="underline underline-offset-2 hover:text-ink">
@@ -73,7 +73,7 @@ export function SiteFooter() {
             .
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-reading" />
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-signal" />
             Built in public, privacy-first.
           </span>
         </div>

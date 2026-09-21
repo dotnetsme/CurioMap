@@ -19,9 +19,9 @@ export function Select({ className = "", children, ...props }: SelectHTMLAttribu
 }
 
 export function Label({ children }: { children: React.ReactNode }) {
-  return <label className="mb-1.5 block text-xs font-medium tracking-wide text-ink-2">{children}</label>;
+  return <label className="mb-1.5 block text-xs font-medium tracking-wide text-ink-muted">{children}</label>;
 }
 
 export function FieldError({ children }: { children: React.ReactNode }) {
-  return <p className="mt-1 text-xs text-rose-600">{children}</p>;
+  return <p className="mt-1 text-xs text-heat-hot">{children}</p>;
 }

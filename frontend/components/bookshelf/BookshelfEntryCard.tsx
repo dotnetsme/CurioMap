@@ -51,7 +51,7 @@ export function BookshelfEntryCard({
   }
 
   return (
-    <div className="flex items-center gap-4 rounded border border-ink/10 bg-white p-4 transition hover:shadow-sm">
+    <div className="flex items-center gap-4 rounded-xl border border-line bg-white/5 p-4 transition hover:border-line-2">
       <a href={`/books/${entry.bookId}`} className="shrink-0">
         <BookCover book={entry.book} size={48} />
       </a>
@@ -59,14 +59,14 @@ export function BookshelfEntryCard({
         <a href={`/books/${entry.bookId}`} className="font-medium text-ink hover:text-accent">
           {entry.book.title}
         </a>
-        <p className="text-sm text-ink-soft">{entry.book.author}</p>
+        <p className="text-sm text-ink-muted">{entry.book.author}</p>
         <div className="mt-1 flex items-center gap-2">
-          <Badge tone={status === "reading" ? "amber" : status === "finished" ? "green" : "muted"}>
+          <Badge tone={status === "reading" ? "accent" : status === "finished" ? "reading" : "slate"}>
             {status}
           </Badge>
-          <Badge tone={visibility === "public" ? "amber" : "muted"}>{visibility}</Badge>
+          <Badge tone={visibility === "public" ? "accent" : "slate"}>{visibility}</Badge>
         </div>
-        {error ? <p className="mt-1 text-xs text-red-700">{error}</p> : null}
+        {error ? <p className="mt-1 text-xs text-heat-hot">{error}</p> : null}
       </div>
       {editable ? (
         <div className="flex shrink-0 flex-col gap-2 sm:flex-row">

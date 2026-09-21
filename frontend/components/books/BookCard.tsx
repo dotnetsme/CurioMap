@@ -21,12 +21,10 @@ export function BookCard({
   const conversations = "conversationsCount" in book ? book.conversationsCount : 0;
   return (
     <div className="card card-hover group flex h-full gap-4 p-4">
-      <Link href={`/books/${book.id}`} className="relative shrink-0 overflow-hidden rounded-md">
-        <span className="block transition duration-300 group-hover:scale-[1.04] group-hover:-rotate-1">
-          <BookCover book={book} size={64} />
-        </span>
+      <Link href={`/books/${book.id}`} className="relative block shrink-0 overflow-hidden rounded-md ring-2 ring-stage/85 transition hover:-translate-y-1 hover:ring-accent/50">
+        <BookCover book={book} size={64} />
         {rank && rank <= 3 ? (
-          <span className="absolute left-1 top-1 rounded-full bg-ink/85 px-1.5 py-0.5 text-[10px] font-bold text-amber-300 backdrop-blur">
+          <span className="absolute left-1 top-1 rounded-full bg-stage/85 px-1.5 py-0.5 text-[10px] font-bold text-signal backdrop-blur">
             #{rank}
           </span>
         ) : null}
@@ -38,10 +36,10 @@ export function BookCard({
         >
           {book.title}
         </Link>
-        <p className="mt-0.5 truncate text-sm text-ink-3">{book.author}</p>
+        <p className="mt-0.5 truncate text-sm text-ink-faint">{book.author}</p>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium">
           {readers > 0 ? (
-            <span className="inline-flex items-center gap-1 text-accent-strong">
+            <span className="inline-flex items-center gap-1 text-accent">
               <Flame size={12} /> {readers} reading
             </span>
           ) : null}

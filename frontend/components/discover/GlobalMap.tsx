@@ -22,13 +22,13 @@ export function GlobalMap({ regions }: { regions: RegionStat[] }) {
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Global curiosity heatmap">
         <defs>
           <radialGradient id="dot" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#d97706" stopOpacity="0.9" />
-            <stop offset="60%" stopColor="#b45309" stopOpacity="0.45" />
-            <stop offset="100%" stopColor="#b45309" stopOpacity="0" />
+            <stop offset="0%" stopColor="#ec4899" stopOpacity="0.9" />
+            <stop offset="60%" stopColor="#7c3aed" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="#22d3ee" stopOpacity="0" />
           </radialGradient>
         </defs>
 
-        <rect x="0" y="0" width={W} height={H} fill="#fef3c7" />
+        <rect x="0" y="0" width={W} height={H} fill="#0b1120" />
 
         {/* graticule */}
         {Array.from({ length: 11 }, (_, i) => (
@@ -38,8 +38,8 @@ export function GlobalMap({ regions }: { regions: RegionStat[] }) {
             x2={W}
             y1={(i / 10) * H}
             y2={(i / 10) * H}
-            stroke="#92400e"
-            strokeOpacity="0.08"
+            stroke="#8b5cf6"
+            strokeOpacity="0.12"
           />
         ))}
         {Array.from({ length: 13 }, (_, i) => (
@@ -49,8 +49,8 @@ export function GlobalMap({ regions }: { regions: RegionStat[] }) {
             y2={H}
             x1={(i / 12) * W}
             x2={(i / 12) * W}
-            stroke="#92400e"
-            strokeOpacity="0.08"
+            stroke="#8b5cf6"
+            strokeOpacity="0.12"
           />
         ))}
 
@@ -65,7 +65,7 @@ export function GlobalMap({ regions }: { regions: RegionStat[] }) {
                 <circle cx={x} cy={y} r={radius} fill="url(#dot)">
                   <title>{`${r.country}${r.region ? ` / ${r.region}` : ""} — ${r.activeReaders} readers`}</title>
                 </circle>
-                <circle cx={x} cy={y} r={2.5} fill="#fbbf24" fillOpacity={0.5 + intensity * 0.5} />
+                <circle cx={x} cy={y} r={2.5} fill="#22d3ee" fillOpacity={0.5 + intensity * 0.5} />
               </g>
             );
           })}

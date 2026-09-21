@@ -38,8 +38,8 @@ export function BackfillButton() {
         <Sparkles size={16} className={busy ? "animate-pulse" : ""} aria-hidden />
         {busy ? "Backfilling…" : "Run badge backfill"}
       </button>
-      {result ? <p className="text-xs text-emerald-600">{result}</p> : null}
-      {error ? <p className="text-xs text-rose-600">{error}</p> : null}
+      {result ? <p className="text-xs text-signal">{result}</p> : null}
+      {error ? <p className="text-xs text-heat-hot">{error}</p> : null}
     </div>
   );
 }

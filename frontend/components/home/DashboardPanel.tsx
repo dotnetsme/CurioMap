@@ -25,7 +25,7 @@ export function DashboardPanel({
         <div className="flex min-w-0 items-center gap-2.5">
           <span
             aria-hidden
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-strong"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-accent"
           >
             <Icon size={16} />
           </span>

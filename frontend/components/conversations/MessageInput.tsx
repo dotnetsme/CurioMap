@@ -57,7 +57,7 @@ export function MessageInput({
         maxLength={2000}
         required
       />
-      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+      {error ? <p className="text-sm text-heat-hot">{error}</p> : null}
       <div className="flex items-center justify-between">
         <span className="text-xs text-ink-3">{content.length}/2000</span>
         <Button type="submit" disabled={busy || !content.trim()}>

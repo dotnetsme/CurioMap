@@ -86,24 +86,24 @@ export function BookDetail({ bookId }: { bookId: string }) {
               <BookCover book={book} size={150} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="label-sm text-amber-300/70">Book · {book.conversationsCount} circles</p>
-              <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-amber-50 text-balance sm:text-4xl">
+              <p className="label-sm text-signal/80">Book · {book.conversationsCount} circles</p>
+              <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-ink-strong text-balance sm:text-4xl">
                 {book.title}
               </h1>
-              <p className="mt-1 text-[15px] text-amber-100/70">by {book.author}</p>
+              <p className="mt-1 text-[15px] text-ink-muted">by {book.author}</p>
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-                                <span className="flex items-center gap-2 rounded-full border border-amber-300/20 bg-white/5 px-3 py-1.5">
+                                <span className="flex items-center gap-2 rounded-full border border-line bg-white/5 px-3 py-1.5">
                                     <Stars value={rating} size={14} onRate={rate} />
-                                    <span className="text-xs font-medium text-amber-100/70">
+                                    <span className="text-xs font-medium text-ink-muted">
                     {rating ? `You rated ${rating}/5` : "Rate it"}
                   </span>
                   {ratingStats ? (
-                    <span className="ml-2 rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-amber-100/50">
+                    <span className="ml-2 rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-ink-faint">
                       {ratingStats.average.toFixed(2)} · {ratingStats.count} ratings
                     </span>
                   ) : null}
                 </span>
-                <span className="flex items-center gap-1.5 text-xs font-medium text-amber-100/70">
+                <span className="flex items-center gap-1.5 text-xs font-medium text-ink-muted">
                   <BookOpenCheck size={14} /> {book.readersCount} reading now
                 </span>
               </div>
@@ -115,7 +115,7 @@ export function BookDetail({ bookId }: { bookId: string }) {
                 )}
               </div>
               {book.description ? (
-                <p className="mt-4 max-w-2xl text-sm leading-relaxed text-amber-100/70">{book.description}</p>
+                <p className="mt-4 max-w-2xl text-sm leading-relaxed text-ink-muted">{book.description}</p>
               ) : null}
             </div>
           </div>
@@ -128,13 +128,13 @@ export function BookDetail({ bookId }: { bookId: string }) {
             <div className="flex items-center gap-1 rounded-full border border-line bg-surface p-1 text-sm font-semibold">
               <button
                 onClick={() => setTab("circles")}
-                className={`flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-1.5 transition ${tab === "circles" ? "bg-ink text-surface shadow" : "text-ink-3 hover:text-ink"}`}
+                className={`flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-1.5 transition ${tab === "circles" ? "bg-accent text-accent-ink shadow" : "text-ink-faint hover:text-ink"}`}
               >
                 <MessagesSquare size={14} /> Circles ({conversations.length})
               </button>
               <button
                 onClick={() => setTab("about")}
-                className={`flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-1.5 transition ${tab === "about" ? "bg-ink text-surface shadow" : "text-ink-3 hover:text-ink"}`}
+                className={`flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-1.5 transition ${tab === "about" ? "bg-accent text-accent-ink shadow" : "text-ink-faint hover:text-ink"}`}
               >
                 <LibraryBig size={14} /> About
               </button>

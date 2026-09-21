@@ -72,3 +72,12 @@ the written record?
 
 Docs that are not enforced by code or review are labeled as such. If a doc and the code disagree,
 the code wins and the doc gets flagged for correction.
+
+## Index
+
+- [0001 — ADR agent governance](0001-adr-agent-governance.md)
+- [0002 — Integration and E2E testing](0002-integration-and-e2e-testing.md)
+- [0003 — Privacy redaction and map hardening](0003-privacy-redaction-and-map-hardening.md)
+- [0004 — Read-only reads, archival, and concurrency](0004-readonly-reads-archival-and-concurrency.md)
+- [0005 — Home dashboard and auth gate](0005-home-dashboard-and-auth-gate.md)
+- [0006 — Observatory map engine (supersedes 0003 rule 9)](0006-observatory-map-engine.md)

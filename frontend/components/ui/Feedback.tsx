@@ -38,7 +38,7 @@ export function ErrorState({ message }: { message: string }) {
   return (
     <div
       role="alert"
-      className="rounded-2xl border border-rose-300 bg-rose-50 p-4 text-sm text-rose-700"
+      className="rounded-2xl border border-heat-hot/40 bg-heat-hot/10 p-4 text-sm text-ink"
     >
       {message}
     </div>

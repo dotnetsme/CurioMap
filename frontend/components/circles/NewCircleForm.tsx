@@ -99,7 +99,7 @@ export function NewCircleForm({ onCreated }: { onCreated: (c: Circle) => void })
               max={100}
             />
 
-            {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+            {error ? <p className="text-sm text-heat-hot">{error}</p> : null}
 
             <div className="flex gap-2">
               <Button type="submit" disabled={busy}>

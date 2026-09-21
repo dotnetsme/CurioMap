@@ -119,7 +119,7 @@ function SettingsForm() {
     <div className="mx-auto flex max-w-2xl flex-col gap-6 py-4">
       <h1 className="font-display text-3xl font-bold tracking-tight text-ink">Settings</h1>
       {message ? (
-        <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-700">
+        <div className="rounded-xl border border-signal/40 bg-signal/10 p-3 text-sm text-ink">
           {message}
         </div>
       ) : null}

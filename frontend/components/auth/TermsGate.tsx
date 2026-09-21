@@ -79,8 +79,8 @@ export function TermsGate({ children }: { children: ReactNode }) {
           Read the full Terms of Use
         </Link>
       </div>
-      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
-      <p className="text-[11px] text-ink-3">
+      {error ? <p className="text-sm text-heat-hot">{error}</p> : null}
+      <p className="text-[11px] text-ink-faint">
         Don&apos;t want to accept? You can stop using CurioMap and request account
         deletion via security@curiomap.app.
       </p>

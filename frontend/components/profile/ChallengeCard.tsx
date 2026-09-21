@@ -82,7 +82,7 @@ export function ChallengeCard() {
 
         <p className="text-sm text-ink-muted">
           {stats.aheadOfPace ? (
-            <span className="inline-flex items-center gap-1 font-medium text-emerald-600">
+            <span className="inline-flex items-center gap-1 font-medium text-signal">
               <TrendingUp className="size-3.5" />
               Ahead of pace
             </span>

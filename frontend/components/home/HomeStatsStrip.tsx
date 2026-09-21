@@ -3,10 +3,10 @@ import { CountUp } from "@/components/ui/CountUp";
 import type { StatsSummary } from "@/types";
 
 const defs = [
-  { key: "books", label: "books mapped", icon: BookOpen, tint: "text-violet-500" },
-  { key: "readers", label: "curious readers", icon: Globe2, tint: "text-accent-strong" },
-  { key: "conversations", label: "reading circles", icon: MessagesSquare, tint: "text-reading" },
-  { key: "activeRegions", label: "active regions", icon: Radar, tint: "text-cyan" },
+  { key: "books", label: "books mapped", icon: BookOpen, tint: "text-accent" },
+  { key: "readers", label: "curious readers", icon: Globe2, tint: "text-signal" },
+  { key: "conversations", label: "reading circles", icon: MessagesSquare, tint: "text-signal" },
+  { key: "activeRegions", label: "active regions", icon: Radar, tint: "text-heat-hot" },
 ] as const;
 
 /** Real numbers straight from /stats/summary — no invented "active now" counters. */

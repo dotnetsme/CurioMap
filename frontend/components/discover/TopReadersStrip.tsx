@@ -24,15 +24,15 @@ export function TopReadersStrip({ regions }: { regions: RegionStat[] }) {
                     {r.region ? `${r.region}, ` : ""}
                     {r.country}
                   </p>
-                  <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-accent-strong">
+                  <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-signal">
                     <Flame size={12} /> {r.activeReaders} reading now
                   </p>
                 </div>
               </div>
             </div>
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-ink/8">
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-accent-strong to-amber-400"
+                className="h-full rounded-full bg-gradient-to-r from-signal via-accent to-heat-hot"
                 style={{ width: `${Math.max(8, (r.activeReaders / max) * 100)}%` }}
               />
             </div>

@@ -23,7 +23,7 @@ export function AddToBookshelf({ book }: { book: BookStub }) {
 
   if (!user) {
     return (
-      <div className="rounded border border-ink/10 bg-white p-4 text-sm text-ink-soft">
+      <div className="rounded-xl border border-line bg-white/5 p-4 text-sm text-ink-muted">
         <p>
           Found the right book? Save it to your shelf after a quick account
           setup.
@@ -61,8 +61,8 @@ export function AddToBookshelf({ book }: { book: BookStub }) {
   }
 
   return (
-    <div className="rounded border border-ink/10 bg-white p-4">
-      <p className="mb-2 text-xs font-semibold tracking-wide text-ink-soft">
+    <div className="rounded-xl border border-line bg-white/5 p-4">
+      <p className="mb-2 text-xs font-semibold tracking-wide text-ink-muted">
         ADD TO BOOKSHELF
       </p>
       <div className="flex flex-wrap gap-2">
@@ -77,7 +77,7 @@ export function AddToBookshelf({ book }: { book: BookStub }) {
           </Button>
         ))}
       </div>
-      {error ? <p className="mt-2 text-xs text-red-700">{error}</p> : null}
+      {error ? <p className="mt-2 text-xs text-heat-hot">{error}</p> : null}
     </div>
   );
 }

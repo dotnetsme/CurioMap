@@ -16,14 +16,14 @@ export function Progress({
   const pct = Math.max(0, Math.min(100, (value / max) * 100));
   return (
     <div
-      className={cn("h-2 w-full overflow-hidden rounded-full bg-ink/10", className)}
+      className={cn("h-2 w-full overflow-hidden rounded-full bg-white/10", className)}
       role="progressbar"
       aria-valuenow={Math.round(pct)}
       aria-valuemin={0}
       aria-valuemax={100}
     >
       <div
-        className={cn("h-full rounded-full bg-gradient-to-r from-accent-strong via-accent to-amber-400 transition-[width] duration-700", barClassName)}
+        className={cn("h-full rounded-full bg-gradient-to-r from-signal via-accent to-heat-hot transition-[width] duration-700", barClassName)}
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -51,7 +51,7 @@ export function Ring({
   return (
     <div className={cn("relative inline-flex items-center justify-center", className)} style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} className="stroke-ink/10" />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} className="stroke-white/10" />
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -66,12 +66,12 @@ export function Ring({
         />
         <defs>
           <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#b45309" />
-            <stop offset="100%" stopColor="#fbbf24" />
+            <stop offset="0%" stopColor="#22d3ee" />
+            <stop offset="100%" stopColor="#ec4899" />
           </linearGradient>
         </defs>
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-ink">{children}</span>
+      <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-ink-strong">{children}</span>
     </div>
   );
 }

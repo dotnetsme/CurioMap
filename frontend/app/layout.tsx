@@ -44,7 +44,7 @@ export default function RootLayout({
     >
       <body
         suppressHydrationWarning
-        className="min-h-screen bg-canvas text-ink antialiased font-sans"
+        className="min-h-screen bg-stage text-ink antialiased font-sans"
       >
         <AuthProvider>
           <SiteHeader />

@@ -65,7 +65,7 @@ export function HomeDashboard() {
     <div className="mx-auto max-w-[1280px] py-4">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="label-sm inline-flex items-center gap-1.5 text-accent-strong">
+          <p className="label-sm inline-flex items-center gap-1.5 text-accent">
             <Sparkles size={12} /> Home
           </p>
           <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">
@@ -102,7 +102,6 @@ export function HomeDashboard() {
               <CuriosityMapShell
                 regions={map?.regions ?? []}
                 height={410}
-                topBooks={summary?.topBooks ?? []}
                 focusOnVisitor
               />
               <div className="pointer-events-none absolute inset-x-3 bottom-4 z-[500] sm:right-28">
@@ -111,7 +110,7 @@ export function HomeDashboard() {
                 </div>
               </div>
             </div>
-            <div className="bg-[#f9f6f1] px-3 py-3 sm:px-4">
+            <div className="bg-stage-2/60 px-3 py-3 sm:px-4">
               <HomeStatsStrip stats={summary} />
             </div>
           </section>
@@ -124,7 +123,7 @@ export function HomeDashboard() {
           action={
             <Link
               href="/discover/top-books"
-              className="text-[11px] font-semibold text-accent-strong hover:text-accent"
+              className="text-[11px] font-semibold text-accent hover:text-accent-strong"
             >
               All →
             </Link>
@@ -146,7 +145,7 @@ export function HomeDashboard() {
           action={
             <Link
               href="/discover/nearby"
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent-strong hover:text-accent"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent hover:text-accent-strong"
             >
               See all →
             </Link>
@@ -166,7 +165,7 @@ export function HomeDashboard() {
                 : "Looking for readers near you…"}{" "}
               <Link
                 href="/me/settings"
-                className="font-medium text-accent-strong underline-offset-2 hover:underline"
+                className="font-medium text-accent underline-offset-2 hover:underline"
               >
                 Location privacy
               </Link>

@@ -67,7 +67,7 @@ export function AddBookButton({ onAdded }: { onAdded?: () => void }) {
             {searching ? "…" : "Find"}
           </Button>
         </form>
-        {error ? <p className="mb-3 text-sm text-red-700">{error}</p> : null}
+        {error ? <p className="mb-3 text-sm text-heat-hot">{error}</p> : null}
         <div className="flex flex-col gap-3">
           {results.map((book) => (
             <BookCard

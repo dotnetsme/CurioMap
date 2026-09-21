@@ -104,7 +104,7 @@ function RegisterForm() {
             minimum age).
           </span>
         </label>
-        {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+        {error ? <p className="text-sm text-heat-hot">{error}</p> : null}
         <Button type="submit" disabled={busy}>
           {busy ? "Creating…" : "Create my identity"}
         </Button>

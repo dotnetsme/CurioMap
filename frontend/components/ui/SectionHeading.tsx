@@ -26,17 +26,17 @@ export function SectionHeading({
         className,
       )}
     >
-      <p className={cn("label-sm", dark ? "text-amber-300" : "text-accent-strong")}>{eyebrow}</p>
+      <p className={cn("label-sm", dark ? "text-signal" : "text-accent")}>{eyebrow}</p>
       <h2
         className={cn(
           "font-display text-3xl font-semibold tracking-tight text-balance sm:text-4xl",
-          dark ? "text-amber-50" : "text-ink",
+          dark ? "text-ink-strong" : "text-ink",
         )}
       >
         {title}
       </h2>
       {hint ? (
-        <p className={cn("max-w-2xl text-[15px] leading-relaxed", dark ? "text-amber-100/60" : "text-ink-muted")}>{hint}</p>
+        <p className={cn("max-w-2xl text-[15px] leading-relaxed", dark ? "text-ink-muted" : "text-ink-muted")}>{hint}</p>
       ) : null}
       {action ? <div className="mt-1">{action}</div> : null}
     </div>

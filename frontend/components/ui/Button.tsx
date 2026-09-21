@@ -6,15 +6,15 @@ type Variant = "primary" | "accent" | "ghost" | "danger" | "subtle";
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-ink text-surface hover:bg-ink-2 active:scale-[0.98]",
+    "bg-accent text-accent-ink shadow-lg shadow-accent/25 hover:bg-accent-strong active:scale-[0.98]",
   accent:
-    "bg-accent text-white hover:bg-accent-strong active:scale-[0.98]",
+    "bg-accent text-accent-ink shadow-lg shadow-accent/25 hover:bg-accent-strong active:scale-[0.98]",
   danger:
-    "bg-rose-600 text-white hover:bg-rose-700 active:scale-[0.98]",
+    "bg-heat-hot text-white hover:bg-heat-hot-2 active:scale-[0.98]",
   ghost:
-    "border border-line bg-transparent text-ink hover:border-ink-2 hover:bg-surface-2",
+    "border border-line bg-transparent text-ink hover:border-accent hover:bg-white/5",
   subtle:
-    "text-ink-2 hover:text-ink",
+    "text-ink-muted hover:text-ink",
 };
 
 export function Button({

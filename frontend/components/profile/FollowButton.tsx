@@ -41,7 +41,7 @@ export function FollowButton({
       <Button variant={following ? "ghost" : "primary"} onClick={toggle} disabled={busy}>
         {following ? "Following ✓" : "Follow"}
       </Button>
-      {error ? <span className="text-xs text-rose-600">{error}</span> : null}
+      {error ? <span className="text-xs text-heat-hot">{error}</span> : null}
     </span>
   );
 }

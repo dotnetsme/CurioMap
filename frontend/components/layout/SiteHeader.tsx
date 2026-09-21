@@ -63,13 +63,13 @@ export function SiteHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-line bg-[#f7f4ef]/90 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-line bg-stage/90 backdrop-blur-xl">
         <div className="mx-auto flex h-18 w-full max-w-[1280px] items-center gap-3 px-5 sm:px-8">
           <Link
             href={user ? "/home" : "/"}
             className="group flex shrink-0 items-center gap-2.5"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-orange-500 to-amber-600 text-night shadow-lg shadow-amber-500/25 transition group-hover:scale-105">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-accent via-accent-strong to-signal text-accent-ink shadow-lg shadow-accent/25 transition group-hover:scale-105">
               <Compass size={18} strokeWidth={2.4} />
             </span>
             <span className="block text-[18px] font-bold tracking-tight text-ink">
@@ -95,8 +95,8 @@ export function SiteHeader() {
                     className={cn(
                       "flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition",
                       active
-                        ? "bg-[#1a1612] text-white shadow-sm"
-                        : "text-ink-2 hover:bg-surface-2 hover:text-ink",
+                        ? "bg-accent text-accent-ink shadow-sm"
+                        : "text-ink-muted hover:bg-white/5 hover:text-ink",
                     )}
                   >
                     <item.icon size={15} />
@@ -108,7 +108,7 @@ export function SiteHeader() {
 
           <div className="ml-auto flex items-center gap-2">
             {loading ? (
-              <div className="h-9 w-9 animate-pulse rounded-full bg-surface-2" />
+              <div className="h-9 w-9 animate-pulse rounded-full bg-white/10" />
             ) : user ? (
               <div className="relative" ref={menuRef}>
                 <button
@@ -124,7 +124,7 @@ export function SiteHeader() {
                   />
                 </button>
                 {menuOpen ? (
-                  <div className="card absolute right-0 mt-2 w-60 overflow-hidden bg-surface p-1.5 text-sm shadow-2xl">
+                  <div className="card absolute right-0 mt-2 w-60 overflow-hidden p-1.5 text-sm shadow-2xl">
                     <div className="flex items-center gap-3 border-b border-line px-3 py-3">
                       <Avatar
                         avatarId={user.avatarId}
@@ -135,7 +135,7 @@ export function SiteHeader() {
                         <p className="truncate text-sm font-semibold text-ink">
                           {user.displayName}
                         </p>
-                        <p className="truncate text-xs text-ink-3">
+                        <p className="truncate text-xs text-ink-faint">
                           @{user.handle}
                         </p>
                       </div>
@@ -167,7 +167,7 @@ export function SiteHeader() {
                         key={item.href}
                         href={item.href}
                         onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-ink-2 transition hover:bg-surface-2 hover:text-ink"
+                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-ink-muted transition hover:bg-white/5 hover:text-ink"
                       >
                         <item.icon size={15} />
                         {item.label}
@@ -178,7 +178,7 @@ export function SiteHeader() {
                         setMenuOpen(false);
                         void logout();
                       }}
-                      className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left text-rose-600 transition hover:bg-rose-50"
+                      className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left text-heat-hot transition hover:bg-heat-hot/10"
                     >
                       <LogOut size={15} />
                       Sign out
@@ -190,7 +190,7 @@ export function SiteHeader() {
               <>
                 <Link
                   href="/auth/login"
-                  className="hidden rounded-full px-3.5 py-2 text-sm font-medium text-ink-2 transition hover:text-ink sm:block"
+                  className="hidden rounded-full px-3.5 py-2 text-sm font-medium text-ink-muted transition hover:text-ink sm:block"
                 >
                   Sign in
                 </Link>

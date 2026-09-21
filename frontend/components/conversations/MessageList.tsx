@@ -60,7 +60,7 @@ function MessageRow({ message, onReact }: { message: Message; onReact?: (m: Mess
         {user && user.id !== message.author.id ? (
           <button
             onClick={() => setReportOpen(true)}
-            className="ml-auto cursor-pointer text-xs text-ink-3 hover:text-rose-600"
+            className="ml-auto cursor-pointer text-xs text-ink-faint hover:text-heat-hot"
           >
             Report
           </button>
@@ -84,7 +84,7 @@ function MessageRow({ message, onReact }: { message: Message; onReact?: (m: Mess
           );
         })}
         {reported ? <Badge tone="reading">reported — thank you</Badge> : null}
-        {error ? <span className="text-xs text-rose-600">{error}</span> : null}
+        {error ? <span className="text-xs text-heat-hot">{error}</span> : null}
       </div>
 
       <Modal open={reportOpen} onClose={() => setReportOpen(false)} title="Report this message">

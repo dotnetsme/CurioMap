@@ -133,7 +133,7 @@ export function NewConversationForm({
         <option value="theme">Theme</option>
         <option value="question">Question</option>
       </Select>
-      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+      {error ? <p className="text-sm text-heat-hot">{error}</p> : null}
       <div className="flex gap-2">
         <Button type="submit" disabled={busy}>
           {busy ? "…" : "Create"}

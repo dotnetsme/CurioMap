@@ -6,9 +6,9 @@ import { Reveal } from "@/components/ui/Reveal";
 import type { StatsSummary } from "@/types";
 
 const defs = [
-  { key: "readers", label: "curious readers", icon: Globe2, tint: "text-amber-500 bg-amber-500/10" },
-  { key: "books", label: "books mapped", icon: MapPin, tint: "text-violet-500 bg-violet-500/10" },
-  { key: "conversations", label: "reading circles", icon: Flame, tint: "text-rose-500 bg-rose-500/10" },
+  { key: "readers", label: "curious readers", icon: Globe2, tint: "text-signal bg-signal/10" },
+  { key: "books", label: "books mapped", icon: MapPin, tint: "text-accent bg-accent/10" },
+  { key: "conversations", label: "reading circles", icon: Flame, tint: "text-heat-hot bg-heat-hot/10" },
 ] as const;
 
 export function StatsBar({ stats }: { stats: StatsSummary }) {

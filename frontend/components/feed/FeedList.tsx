@@ -13,13 +13,13 @@ function EventIcon({ type }: { type: string }) {
   switch (type) {
     case "bookshelf_added":
       return (
-        <span className={`${cls} bg-emerald-500/10 text-emerald-500`}>
+        <span className={`${cls} bg-signal/10 text-signal`}>
           <BookOpen size={16} />
         </span>
       );
     case "conversation_created":
       return (
-        <span className={`${cls} bg-violet-500/10 text-violet-500`}>
+        <span className={`${cls} bg-accent/10 text-accent`}>
           <MessageCircle size={16} />
         </span>
       );
@@ -37,7 +37,7 @@ function EventIcon({ type }: { type: string }) {
       );
     default:
       return (
-        <span className={`${cls} bg-surface-2 text-ink-3`}>
+        <span className={`${cls} bg-white/5 text-ink-faint`}>
           <Flame size={16} />
         </span>
       );
@@ -53,7 +53,7 @@ function describe(event: FeedEvent): React.ReactNode {
   const conversation = event.conversation ? (
     <Link
       href={`/books/${event.book?.id ?? ""}/conversations/${event.conversation.id}`}
-      className="font-semibold text-ink decoration-violet-400 decoration-2 underline-offset-2 hover:underline"
+      className="font-semibold text-ink decoration-accent decoration-2 underline-offset-2 hover:underline"
     >
       {event.conversation.title}
     </Link>
@@ -116,7 +116,7 @@ export function FeedList({ events }: { events: FeedEvent[] }) {
             {event.book ? (
               <Link
                 href={`/books/${event.book.id}`}
-                className="mt-3 flex items-center gap-3 rounded-2xl border border-line bg-surface-2/60 p-3 transition hover:border-ink-2"
+                className="mt-3 flex items-center gap-3 rounded-2xl border border-line bg-white/5 p-3 transition hover:border-accent"
               >
                 <BookCover book={{ ...event.book, isbn: null, coverUrl: (event.book as { coverUrl?: string | null }).coverUrl ?? null } as BookStub} size={34} />
                 <span className="min-w-0">
