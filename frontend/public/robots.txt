@@ -1,0 +1,55 @@
+# CurioMap Search Engine & AI Crawler Governance (AGENTS.md §6)
+# Two-file rule: must match frontend/app/robots.ts
+
+# AI Scrapers - Strict Disallow
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+# General Search Engines - Privacy-Scoped Scope
+# Reader profiles (/users/*), circles (/circles/*), and discovery heatmaps (/discover/*)
+# carry pseudonymous identity and fuzzed location data and must never be indexed.
+User-agent: *
+Allow: /
+Allow: /policy/terms
+Allow: /policy/privacy
+Allow: /policy/affiliates
+Allow: /books/search
+Allow: /books/
+Disallow: /home
+Disallow: /me
+Disallow: /feed
+Disallow: /discover
+Disallow: /circles
+Disallow: /users
+Disallow: /admin
+Disallow: /auth
+Disallow: /api
+
+Sitemap: https://curiomap.app/sitemap.xml

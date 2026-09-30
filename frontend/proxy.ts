@@ -11,18 +11,52 @@ import { NextResponse, type NextRequest } from "next/server";
 const REFRESH_COOKIE = "curio_rt";
 const AUTH_ROUTES = ["/", "/auth/login", "/auth/register"];
 
+const INDEXABLE_PREFIXES = [
+  "/",
+  "/policy/terms",
+  "/policy/privacy",
+  "/policy/affiliates",
+  "/books/search",
+  "/books",
+];
+
+function isIndexableRoute(pathname: string): boolean {
+  if (pathname === "/") return true;
+  return INDEXABLE_PREFIXES.some(
+    (prefix) => prefix !== "/" && (pathname === prefix || pathname.startsWith(prefix + "/")),
+  );
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  if (!AUTH_ROUTES.includes(pathname)) return NextResponse.next();
-  if (request.method !== "GET" && request.method !== "HEAD") return NextResponse.next();
-  if (!request.cookies.has(REFRESH_COOKIE)) return NextResponse.next();
+  if (
+    AUTH_ROUTES.includes(pathname) &&
+    (request.method === "GET" || request.method === "HEAD") &&
+    request.cookies.has(REFRESH_COOKIE)
+  ) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/home";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
 
-  const url = request.nextUrl.clone();
-  url.pathname = "/home";
-  url.search = "";
-  return NextResponse.redirect(url);
+  const response = NextResponse.next();
+
+  // Crawler governance (AGENTS.md §6.2):
+  // Non-production deployments or non-indexable routes carry X-Robots-Tag: noindex, nofollow
+  const allowIndexing =
+    process.env.NODE_ENV === "production" &&
+    process.env.NEXT_PUBLIC_ALLOW_INDEXING === "true";
+
+  if (!allowIndexing || !isIndexableRoute(pathname)) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+
+  return response;
 }
 
 export const config = {
-  matcher: ["/", "/auth/login", "/auth/register"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)",
+  ],
 };
