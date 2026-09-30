@@ -9,12 +9,10 @@ const variants: Record<Variant, string> = {
     "bg-accent text-accent-ink shadow-lg shadow-accent/25 hover:bg-accent-strong active:scale-[0.98]",
   accent:
     "bg-accent text-accent-ink shadow-lg shadow-accent/25 hover:bg-accent-strong active:scale-[0.98]",
-  danger:
-    "bg-heat-hot text-white hover:bg-heat-hot-2 active:scale-[0.98]",
+  danger: "bg-heat-hot text-white hover:bg-heat-hot-2 active:scale-[0.98]",
   ghost:
     "border border-line bg-transparent text-ink hover:border-accent hover:bg-white/5",
-  subtle:
-    "text-ink-muted hover:text-ink",
+  subtle: "text-ink-muted hover:text-ink",
 };
 
 export function Button({
@@ -22,10 +20,13 @@ export function Button({
   className = "",
   children,
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; children: ReactNode }) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: Variant;
+  children: ReactNode;
+}) {
   return (
     <button
-      className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${variants[variant]} ${className}`}
+      className={`inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[10px] px-5 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${variants[variant]} ${className}`}
       {...props}
     >
       {children}

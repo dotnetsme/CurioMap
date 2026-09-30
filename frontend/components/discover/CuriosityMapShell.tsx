@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import type { MapReader, RegionStat, TopBook } from "@/types";
 import { cn } from "@/lib/utils";
 import type { MapMode } from "./ObservatoryMap";
-import type { ViewBox } from "./observatory-viewport";
+import type { MapView } from "./map-style";
 import { GlobalMap } from "./GlobalMap";
 
 const LiveMap = dynamic(
@@ -13,8 +13,9 @@ const LiveMap = dynamic(
 );
 
 /**
- * Observatory shell: dependency-free SVG curiosity map (no Leaflet).
- * Equirectangular projection of fuzzed regions + global persona avatars.
+ * Map shell: thin client boundary around the Leaflet + OpenStreetMap engine.
+ * The engine is browser-only, so it loads through `next/dynamic` with SSR
+ * disabled (AGENTS.md §3) and never widens a route's first-load JS.
  */
 export function CuriosityMapShell(props: {
   regions: RegionStat[];
@@ -25,7 +26,7 @@ export function CuriosityMapShell(props: {
   selected?: RegionStat | null;
   onSelect?: (region: RegionStat | null) => void;
   topBooks?: TopBook[];
-  initialView?: ViewBox | null;
+  initialView?: MapView | null;
   overlayStats?: { readers: number; regions: number } | null;
   /** Fly to the current visitor's / logged-in user's area to show local activity. */
   focusOnVisitor?: boolean;
@@ -52,8 +53,8 @@ export function CuriosityMapShell(props: {
       </div>
     );
   }
-  const { focusOnVisitor: _focusOnVisitor, navigateOnSelect: _navigateOnSelect, ...mapProps } = props;
-  void _focusOnVisitor;
-  void _navigateOnSelect;
-  return <LiveMap {...mapProps} />;
+  // `focusOnVisitor` and `navigateOnSelect` are forwarded to the engine: the
+  // Leaflet map can fly to the visitor's fuzzed area and hand region clicks to
+  // the full `/discover/global` workflow.
+  return <LiveMap {...props} />;
 }

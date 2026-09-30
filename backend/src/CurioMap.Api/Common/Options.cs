@@ -46,3 +46,18 @@ public class AdminOptions
     /// <summary>Emails listed here are promoted to admin at registration.</summary>
     public string[] Emails { get; set; } = [];
 }
+
+public class ProxyOptions
+{
+    /// <summary>
+    /// CIDR ranges whose peers may speak for the client in forwarded IP headers
+    /// (AGENTS §5.3). Defaults to Fly.io's 6PN private network plus loopback: only the
+    /// platform proxy (or a process on the same host) can reach the app from those
+    /// ranges, so a public caller can never inject a trusted header. Set to an empty
+    /// array to trust nobody and always use the socket address.
+    /// </summary>
+    public string[] TrustedNetworks { get; set; } = ["fdaa::/16", "::1/128", "127.0.0.1/32"];
+
+    /// <summary>Headers consulted, in order, once the peer is trusted.</summary>
+    public string[] ClientIpHeaders { get; set; } = ["Fly-Client-IP", "X-Forwarded-For"];
+}

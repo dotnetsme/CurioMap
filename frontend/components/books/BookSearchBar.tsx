@@ -5,7 +5,11 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
-export function BookSearchBar({ initialQuery = "" }: { initialQuery?: string }) {
+export function BookSearchBar({
+  initialQuery = "",
+}: {
+  initialQuery?: string;
+}) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
 
@@ -17,14 +21,16 @@ export function BookSearchBar({ initialQuery = "" }: { initialQuery?: string }) 
   }
 
   return (
-    <form onSubmit={submit} className="flex gap-2">
+    <form onSubmit={submit} className="flex flex-col gap-2 sm:flex-row">
       <Input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search by title, author, or ISBN…"
         aria-label="Search books"
       />
-      <Button type="submit">Search</Button>
+      <Button type="submit" className="w-full sm:w-auto">
+        Search
+      </Button>
     </form>
   );
 }

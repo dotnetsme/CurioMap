@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using CurioMap.Api.Common;
 using CurioMap.Api.Contracts;
 using CurioMap.Api.Controllers;
 using CurioMap.Api.Data;
@@ -30,6 +31,56 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
 
         var healthResponse = await client.GetAsync("/health");
         Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task Remaining_Routes_Return_Expected_Authorization_And_NotFound_Outcomes()
+    {
+        var client = _factory.CreateClient();
+        var registration = await client.PostAsJsonAsync(
+            "/auth/register",
+            new RegisterRequest($"route_{Guid.NewGuid():N}@curiomap.local", "Password123!"));
+        var auth = await registration.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.NotNull(auth);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
+
+        var missingBook = Guid.NewGuid();
+        var missingUser = Guid.NewGuid();
+        var missingEntry = Guid.NewGuid();
+        var missingMessage = Guid.NewGuid();
+        var missingCircle = $"missing-{Guid.NewGuid():N}";
+
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/auth/me/terms")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.PostAsJsonAsync("/auth/me/terms/accept", new AcceptTermsRequest(true))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/stats/summary")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/discover/top-books")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/bookshelf/me")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.PostAsJsonAsync("/books/import", new ImportBookRequest("9780132350884"))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/books/{missingBook}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/books/{missingBook}/conversations")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.DeleteAsync($"/bookshelf/{missingEntry}")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.PutAsJsonAsync("/me/challenge", new SetChallengeTargetRequest(12))).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await client.GetAsync("/geo/me")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.PatchAsJsonAsync("/geo/me", new UpdateLocationRequest("United States", "Virginia", "Arlington"))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/users/{auth.User.Id}/followers")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/users/{auth.User.Id}/following")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/users/{auth.User.Id}/streak/calendar")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.DeleteAsync($"/follow/{missingUser}")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/users/me/settings")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.PostAsJsonAsync($"/messages/{missingMessage}/report", new ReportRequest("route coverage"))).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.PatchAsJsonAsync($"/messages/{missingMessage}", new SetMessageStatusRequest("deleted"))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.PostAsJsonAsync($"/messages/{missingMessage}/reactions", new ReactRequest("insightful"))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.DeleteAsync($"/messages/{missingMessage}/reactions?kind=insightful")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/books/{missingBook}/rating")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/circles/{missingCircle}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.PostAsync($"/circles/{missingCircle}/leave", null)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/circles/{missingCircle}/messages")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/circles/{missingCircle}/streak")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.PostAsJsonAsync($"/circles/{missingCircle}/messages/{missingMessage}/react", new ReactRequest("insightful"))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.DeleteAsync($"/circles/{missingCircle}")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.PostAsync("/admin/gamification/backfill", null)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync("/admin/reports")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.PostAsJsonAsync($"/admin/reports/{Guid.NewGuid()}/resolve", new ResolveReportRequest("dismiss"))).StatusCode);
     }
 
     [Fact]
@@ -754,5 +805,358 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         var loginData = await login.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(loginData);
         Assert.Equal(email, loginData.User.Email);
+    }
+
+    // ── Feed privacy: private shelf entries never reach followers (AGENTS §2.2.4) ──
+
+    /// <summary>Registers a reader through the real API and returns an authenticated client.</summary>
+    private async Task<(HttpClient Client, AuthResponse Auth)> RegisterFeedReaderAsync(string prefix)
+    {
+        var client = _factory.CreateClient();
+        var reg = await client.PostAsJsonAsync("/auth/register",
+            new RegisterRequest($"{prefix}_{Guid.NewGuid():N}@curiomap.local", "Password123!"));
+        Assert.Equal(HttpStatusCode.OK, reg.StatusCode);
+        var auth = await reg.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.NotNull(auth);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
+        return (client, auth);
+    }
+
+    /// <summary>Creates a book straight through the DbContext (tests seed no catalog).</summary>
+    private Guid CreateFeedBook(string title)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var book = new Book { Title = title, Author = "Feed Author" };
+        db.Books.Add(book);
+        db.SaveChanges();
+        return book.Id;
+    }
+
+    private async Task<List<FeedEventDto>> ReadFeedAsync(HttpClient client)
+    {
+        var res = await client.GetAsync("/feed");
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var page = await res.Content.ReadFromJsonAsync<FeedPage>();
+        Assert.NotNull(page);
+        return page.Items.ToList();
+    }
+
+    [Fact]
+    public async Task Feed_Never_Shows_Private_Shelf_Entries_To_Followers()
+    {
+        var (follower, _) = await RegisterFeedReaderAsync("feed_private_follower");
+        var (author, authorAuth) = await RegisterFeedReaderAsync("feed_private_author");
+
+        var follow = await follower.PostAsync($"/follow/{authorAuth.User.Id}", null);
+        Assert.Equal(HttpStatusCode.OK, follow.StatusCode);
+
+        var bookId = CreateFeedBook("Never Advertised Book");
+        var add = await author.PostAsJsonAsync("/bookshelf", new AddBookshelfRequest(bookId, "reading", "private"));
+        Assert.Equal(HttpStatusCode.OK, add.StatusCode);
+
+        // Regression: the shelf add used to emit an unconditional activity event, so a
+        // follower saw the title, author and cover of a private shelf entry.
+        var items = await ReadFeedAsync(follower);
+        Assert.DoesNotContain(items, e => e.Book?.Id == bookId);
+        Assert.DoesNotContain(items, e => e.Type == ActivityService.BookshelfAdded);
+    }
+
+    [Fact]
+    public async Task Feed_Hides_Historical_Shelf_Event_When_Entry_Becomes_Private()
+    {
+        var (follower, _) = await RegisterFeedReaderAsync("feed_flip_follower");
+        var (author, authorAuth) = await RegisterFeedReaderAsync("feed_flip_author");
+        Assert.Equal(HttpStatusCode.OK, (await follower.PostAsync($"/follow/{authorAuth.User.Id}", null)).StatusCode);
+
+        var bookId = CreateFeedBook("Flip To Private Book");
+        var add = await author.PostAsJsonAsync("/bookshelf", new AddBookshelfRequest(bookId, "reading", "public"));
+        Assert.Equal(HttpStatusCode.OK, add.StatusCode);
+        var entry = await add.Content.ReadFromJsonAsync<BookshelfEntryDto>();
+        Assert.NotNull(entry);
+
+        // Positive control: a public add IS advertised to followers.
+        Assert.Contains(await ReadFeedAsync(follower), e => e.Book?.Id == bookId);
+
+        // Flip to private: the historical event must disappear, not linger.
+        var flip = await author.PatchAsJsonAsync($"/bookshelf/{entry.Id}", new UpdateBookshelfRequest(null, "private", null, null));
+        Assert.Equal(HttpStatusCode.OK, flip.StatusCode);
+        Assert.DoesNotContain(await ReadFeedAsync(follower), e => e.Book?.Id == bookId);
+
+        // Flip back to public: the event is re-published rather than lost forever.
+        var back = await author.PatchAsJsonAsync($"/bookshelf/{entry.Id}", new UpdateBookshelfRequest(null, "public", null, null));
+        Assert.Equal(HttpStatusCode.OK, back.StatusCode);
+        Assert.Contains(await ReadFeedAsync(follower), e => e.Book?.Id == bookId);
+    }
+
+    [Fact]
+    public async Task Feed_Excludes_Shelf_Events_When_The_Reader_Goes_Private_Globally()
+    {
+        var (follower, _) = await RegisterFeedReaderAsync("feed_global_follower");
+        var (author, authorAuth) = await RegisterFeedReaderAsync("feed_global_author");
+        Assert.Equal(HttpStatusCode.OK, (await follower.PostAsync($"/follow/{authorAuth.User.Id}", null)).StatusCode);
+
+        var bookId = CreateFeedBook("Global Visibility Book");
+        var add = await author.PostAsJsonAsync("/bookshelf", new AddBookshelfRequest(bookId, "reading", "public"));
+        Assert.Equal(HttpStatusCode.OK, add.StatusCode);
+        Assert.Contains(await ReadFeedAsync(follower), e => e.Book?.Id == bookId);
+
+        // The reader-level privacy switch must retro-hide shelf activity even though the
+        // per-entry visibility was never touched.
+        var settings = await author.PatchAsJsonAsync("/users/me/settings", new UpdateSettingsRequest(null, "private"));
+        Assert.Equal(HttpStatusCode.OK, settings.StatusCode);
+
+        Assert.DoesNotContain(await ReadFeedAsync(follower), e => e.Book?.Id == bookId);
+    }
+
+    [Fact]
+    public async Task Geo_Ip_Ignores_Spoofed_Country_Header_From_An_Untrusted_Remote()
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("x-geo-country", "US");
+
+        var response = await client.GetAsync("/geo/ip");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var geo = await response.Content.ReadFromJsonAsync<IpGeoDto>();
+        Assert.NotNull(geo);
+
+        // TestServer has no socket peer, so it is not inside any trusted network: the
+        // endpoint must fail closed rather than echo the spoofed header.
+        Assert.Equal("none", geo.Source);
+        Assert.Null(geo.Country);
+    }
+
+    [Fact]
+    public async Task Geo_Ip_Returns_None_When_No_Country_Header_Is_Present()
+    {
+        var client = _factory.CreateClient();
+
+        var response = await client.GetAsync("/geo/ip");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var geo = await response.Content.ReadFromJsonAsync<IpGeoDto>();
+        Assert.NotNull(geo);
+        Assert.Equal("none", geo.Source);
+        Assert.Null(geo.Country);
+    }
+
+    [Fact]
+    public async Task SeedStyle_Lowercase_Visibility_Row_Fails_Materialization()
+    {
+        // Documents why 0017_normalize_enum_casing.sql exists and why its CHECKs are not
+        // optional: EF's enum converter reads case-sensitively, so a legacy lowercase
+        // row ('region_city') does not silently filter - it throws on materialization,
+        // which surfaces as a 500 in any endpoint that loads that row. The migration
+        // eliminates the rows; the CHECKs stop them coming back.
+        var lowerEmail = $"lower_{Guid.NewGuid():N}@curiomap.local";
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Database.ExecuteSqlRaw(
+                "INSERT INTO users (id, email, password_hash, handle, avatar_id, display_name_mode, bio, location_visibility, bookshelf_visibility, is_admin, is_author, terms_accepted_at, created_at, updated_at) " +
+                "VALUES ({0}, {1}, {2}, {3}, 'curio-01', 'anonymous', NULL, 'region_city', 'public', 0, 0, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+                Guid.NewGuid(), lowerEmail, "not-a-real-hash", $"lower_reader_{Guid.NewGuid():N}"[..24]);
+        }
+
+        using var readScope = _factory.Services.CreateScope();
+        var reader = readScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            reader.Users.SingleAsync(u => u.Email == lowerEmail));
+    }
+
+    [Fact]
+    public async Task Feed_Drops_Message_Events_Once_A_Message_Is_Hidden()
+    {
+        var (follower, _) = await RegisterFeedReaderAsync("feed_mod_follower");
+        var (_, authorAuth) = await RegisterFeedReaderAsync("feed_mod_author");
+        Assert.Equal(HttpStatusCode.OK, (await follower.PostAsync($"/follow/{authorAuth.User.Id}", null)).StatusCode);
+
+        Guid messageId;
+        Guid conversationId;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var book = new Book { Title = "Moderated Feed Book", Author = "Feed Author" };
+            db.Books.Add(book);
+            var conversation = new Conversation
+            {
+                BookId = book.Id,
+                CreatedBy = authorAuth.User.Id,
+                Title = "Moderated thread",
+                TopicType = TopicType.General,
+            };
+            db.Conversations.Add(conversation);
+            var message = new Message
+            {
+                ConversationId = conversation.Id,
+                AuthorId = authorAuth.User.Id,
+                Content = "an excerpt that must not survive moderation",
+                Status = MessageStatus.Visible,
+            };
+            db.Messages.Add(message);
+            db.ActivityEvents.Add(new ActivityEvent
+            {
+                ActorId = authorAuth.User.Id,
+                Type = ActivityService.MessagePosted,
+                BookId = book.Id,
+                ConversationId = conversation.Id,
+                MessageId = message.Id,
+            });
+            db.SaveChanges();
+            messageId = message.Id;
+            conversationId = conversation.Id;
+        }
+
+        Assert.Contains(await ReadFeedAsync(follower), e => e.Conversation?.Id == conversationId);
+
+        // Moderation hides the message (PATCH /messages/{id} needs the Admin policy, which
+        // is asserted separately), so a direct status change stands in for it here.
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var message = await db.Messages.FirstAsync(m => m.Id == messageId);
+            message.Status = MessageStatus.Deleted;
+            await db.SaveChangesAsync();
+        }
+
+        // AGENTS §2.4.2: a hidden message must not resurface as a feed excerpt.
+        Assert.DoesNotContain(await ReadFeedAsync(follower), e => e.Conversation?.Id == conversationId);
+    }
+
+    [Fact]
+    public async Task Auth_Refresh_Token_Reuse_Invalidates_The_Whole_Family()
+    {
+        // The API resolves the refresh token cookie-first and only falls back to the body
+        // for non-browser clients. In-memory clients also keep a cookie jar, so every
+        // refresh below runs on a cookie-free client and names its token in the body -
+        // the only way to deterministically present a STALE token after a newer one.
+        string? rawRefresh;
+        using (var bootstrap = _factory.CreateClient())
+        {
+            var reg = await bootstrap.PostAsJsonAsync("/auth/register",
+                new RegisterRequest($"theft_{Guid.NewGuid():N}@curiomap.local", "Password123!"));
+            Assert.Equal(HttpStatusCode.OK, reg.StatusCode);
+            Assert.True(reg.Headers.TryGetValues("Set-Cookie", out var cookies));
+            rawRefresh = CaptureRefreshCookie(cookies);
+            Assert.False(string.IsNullOrWhiteSpace(rawRefresh));
+        }
+
+        // First rotation succeeds: token #1 is consumed, token #2 is issued.
+        string? rotatedRaw;
+        AuthResponse? rotatedAuth;
+        using (var rotator = _factory.CreateClient())
+        {
+            var first = await PostRefreshAsync(rotator, rawRefresh);
+            Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+            Assert.True(first.Headers.TryGetValues("Set-Cookie", out var rotatedCookies));
+            rotatedRaw = CaptureRefreshCookie(rotatedCookies);
+            rotatedAuth = await first.Content.ReadFromJsonAsync<AuthResponse>();
+            Assert.NotNull(rotatedAuth);
+        }
+
+        // Reusing the consumed token is theft: 401 immediately, AND the whole live family
+        // is wiped, so the freshly rotated token #2 dies with it.
+        using (var attacker = _factory.CreateClient())
+        {
+            Assert.Equal(HttpStatusCode.Unauthorized,
+                (await PostRefreshAsync(attacker, rawRefresh)).StatusCode);
+            Assert.Equal(HttpStatusCode.Unauthorized,
+                (await PostRefreshAsync(attacker, rotatedRaw)).StatusCode);
+        }
+
+        // Boundary this test documents: the bearer access token minted before the wipe
+        // still verifies, because it carries no server-side state. Family invalidation
+        // (refresh-chain death) - not access-token revocation - is the theft response
+        // defined by ADR 0004.
+        using (var victim = _factory.CreateClient())
+        {
+            victim.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", rotatedAuth!.AccessToken);
+            Assert.Equal(HttpStatusCode.OK, (await victim.GetAsync("/auth/me")).StatusCode);
+        }
+    }
+
+    private static async Task<HttpResponseMessage> PostRefreshAsync(HttpClient client, string? raw)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, "/auth/refresh")
+        {
+            Content = JsonContent.Create(new RefreshRequest(raw)),
+        };
+        return await client.SendAsync(request);
+    }
+
+    private static string CaptureRefreshCookie(IEnumerable<string> setCookies)
+    {
+        foreach (var header in setCookies)
+        {
+            var pair = header.Split(';', 2, StringSplitOptions.TrimEntries)[0].Split('=', 2);
+            if (pair.Length == 2 && pair[0].Equals("curio_rt", StringComparison.OrdinalIgnoreCase))
+            {
+                return pair[1];
+            }
+        }
+
+        throw new InvalidOperationException("No curio_rt cookie was set by the auth endpoint.");
+    }
+
+    [Fact]
+    public async Task OpenApi_Document_Is_Served_In_Development()
+    {
+        var client = _factory.CreateClient();
+
+        var response = await client.GetAsync("/openapi/v1.json");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Security_Headers_Are_On_Every_Response()
+    {
+        var client = _factory.CreateClient();
+
+        var response = await client.GetAsync("/health");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.Headers.TryGetValues("X-Content-Type-Options", out var nosniff));
+        Assert.Equal("nosniff", nosniff.First());
+        Assert.True(response.Headers.TryGetValues("X-Frame-Options", out var frame));
+        Assert.Equal("DENY", frame.First());
+        Assert.True(response.Headers.TryGetValues("Referrer-Policy", out var referrer));
+        Assert.Equal("strict-origin-when-cross-origin", referrer.First());
+        Assert.True(response.Headers.TryGetValues("Content-Security-Policy", out var csp));
+        Assert.Contains("default-src 'none'", csp.First());
+
+        // HSTS over the plaintext dev loop is meaningless - its presence is pinned by
+        // ProductionEnvironmentTests instead.
+        Assert.False(response.Headers.Contains("Strict-Transport-Security"));
+    }
+
+    [Fact]
+    public async Task Book_Search_Clamps_Limit_And_Offset()
+    {
+        var client = _factory.CreateClient();
+
+        var response = await client.GetAsync("/books/search?q=the&limit=500&offset=999999");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var page = await response.Content.ReadFromJsonAsync<SearchResponse>();
+        Assert.NotNull(page);
+        Assert.True(page.Items.Count <= PageBounds.MaxPageSize);
+    }
+
+    [Fact]
+    public async Task Handle_Profanity_Is_Rejected()
+    {
+        var (client, _) = await RegisterFeedReaderAsync("handle_prof");
+
+        var flagged = await client.PatchAsJsonAsync("/users/me",
+            new UpdateProfileRequest("asshole_reader", null, null, null, null));
+        Assert.Equal(HttpStatusCode.BadRequest, flagged.StatusCode);
+
+        // Positive control: a clean handle still updates.
+        var clean = await client.PatchAsJsonAsync("/users/me",
+            new UpdateProfileRequest($"clean_reader_{Guid.NewGuid():N}"[..24], null, null, null, null));
+        Assert.Equal(HttpStatusCode.OK, clean.StatusCode);
     }
 }

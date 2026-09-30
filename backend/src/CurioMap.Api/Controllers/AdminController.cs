@@ -40,7 +40,7 @@ public class AdminController(AppDbContext db, IStreakService streaks) : Controll
         List<MessageReport> reports;
         if (status.Equals("all", StringComparison.OrdinalIgnoreCase))
         {
-            reports = await query.OrderByDescending(r => r.CreatedAt).Take(50).ToListAsync();
+            reports = await query.OrderByDescending(r => r.CreatedAt).Take(PageBounds.MaxPageSize).ToListAsync();
         }
         else
         {
@@ -51,7 +51,7 @@ public class AdminController(AppDbContext db, IStreakService streaks) : Controll
             reports = await query
                 .Where(r => r.Status == parsed)
                 .OrderByDescending(r => r.CreatedAt)
-                .Take(50)
+                .Take(PageBounds.MaxPageSize)
                 .ToListAsync();
         }
 

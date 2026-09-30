@@ -104,6 +104,7 @@ builder.Services.Configure<GoogleBooksOptions>(builder.Configuration.GetSection(
 builder.Services.Configure<ConversationOptions>(builder.Configuration.GetSection("Conversations"));
 builder.Services.Configure<AdminOptions>(builder.Configuration.GetSection("Admin"));
 builder.Services.Configure<SeedOptions>(builder.Configuration.GetSection("Seed"));
+builder.Services.Configure<ProxyOptions>(builder.Configuration.GetSection("Proxy"));
 
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<RefreshTokenService>();
@@ -113,6 +114,7 @@ builder.Services.AddScoped<HandleGenerator>();
 builder.Services.AddScoped<ProfanityFilter>();
 builder.Services.AddScoped<ActivityService>();
 builder.Services.AddScoped<AffiliateLinkService>();
+builder.Services.AddSingleton<ClientIpResolver>();
 builder.Services.AddHttpContextAccessor();
 
 // ---------------------------------------------------------------------------
@@ -156,6 +158,8 @@ builder.Services
             ValidAudience = jwt.Audience,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Secret)),
+            // Pin the signing algorithm family: never accept algorithm-switching tokens (§5.1).
+            ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(30),
         };
@@ -204,6 +208,10 @@ if (usingDevJwtFallback)
         "Set JWT__SECRET before exposing this instance to any network.");
 }
 
+// Security headers run first so every response - including error and static
+// responses - carries them (AGENTS §5.22).
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
 // ---------------------------------------------------------------------------
 // Database: apply ordered SQL migrations + seed at startup (advisory-locked).
 // ---------------------------------------------------------------------------
@@ -212,26 +220,45 @@ await DbInitializer.InitializeAsync(app.Services, app.Logger);
 app.UseExceptionHandler();
 app.UseCors();
 app.UseRateLimiter();
-app.UseDefaultFiles();
-app.UseStaticFiles();
+
+// The OpenAPI document and the Scalar docs page (wwwroot/docs.html, which boots
+// against /openapi/v1.json) are development surfaces: production ships neither,
+// and the root metadata stops advertising them (AGENTS §5.5).
+var isDevelopment = app.Environment.IsDevelopment();
+if (isDevelopment)
+{
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapOpenApi();
+if (isDevelopment)
+{
+    app.MapOpenApi();
+}
 app.MapControllers();
 
 app.MapGet("/", () => Results.Json(new
 {
     name = "CurioMap API",
     tagline = "live map of human curiosity",
-    docs = "/docs",
-    openapi = "/openapi/v1.json",
+    docs = isDevelopment ? "/docs" : null,
+    openapi = isDevelopment ? "/openapi/v1.json" : null,
     health = "/health",
 }));
 
+if (isDevelopment)
+{
+    // /docs.html under the friendlier /docs path - scoped so unmatched API routes
+    // still 404 instead of returning HTML.
+    app.MapFallbackToFile("/docs", "docs.html");
+}
+
 static string PartitionKey(HttpContext context) =>
     context.User.FindFirst("sub")?.Value
-    ?? context.Connection.RemoteIpAddress?.ToString()
+    ?? context.RequestServices.GetRequiredService<ClientIpResolver>().Resolve(context)
     ?? "anon";
 
 app.Run();

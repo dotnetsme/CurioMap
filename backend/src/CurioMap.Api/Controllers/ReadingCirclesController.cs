@@ -36,8 +36,8 @@ public class ReadingCirclesController(
         [FromQuery] string sort = "recent",
         [FromQuery] int limit = 30, [FromQuery] int offset = 0)
     {
-        limit = Math.Clamp(limit, 1, 50);
-        offset = Math.Max(0, offset);
+        limit = PageBounds.ClampPageSize(limit);
+        offset = PageBounds.ClampOffset(offset);
         var query = db.ReadingCircles.AsNoTracking().Include(c => c.Creator).Include(c => c.Book).Where(c => !c.IsArchived);
         if (!string.IsNullOrWhiteSpace(q))
         {
@@ -191,8 +191,8 @@ public class ReadingCirclesController(
     [AllowAnonymous]
     public async Task<ActionResult<MessagesPage<CircleMessageDto>>> ListMessages(string id, [FromQuery] int limit = 50, [FromQuery] int offset = 0)
     {
-        limit = Math.Clamp(limit, 1, 50);
-        offset = Math.Max(0, offset);
+        limit = PageBounds.ClampPageSize(limit);
+        offset = PageBounds.ClampOffset(offset);
         var circle = await LoadCircleAsync(id) ?? throw new AppException(404, "Circle not found.");
         var query = db.CircleMessages.AsNoTracking().Where(m => m.CircleId == circle.Id && m.Status == MessageStatus.Visible);
         var total = await query.CountAsync();

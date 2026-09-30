@@ -51,7 +51,7 @@ public class BookshelfController(AppDbContext db, CurrentUser me, ActivityServic
             query = query.Where(s => s.Visibility == ShelfVisibility.Public);
         }
 
-        var entries = await query.OrderByDescending(s => s.CreatedAt).Take(50).ToListAsync();
+        var entries = await query.OrderByDescending(s => s.CreatedAt).Take(PageBounds.MaxPageSize).ToListAsync();
         return Ok(entries.Select(ToDto).ToList());
     }
 
@@ -78,6 +78,7 @@ public class BookshelfController(AppDbContext db, CurrentUser me, ActivityServic
         var userId = me.RequireUserId();
         var book = await db.Books.FirstOrDefaultAsync(b => b.Id == request.BookId)
             ?? throw new AppException(404, "Book not found.");
+        var actor = await db.Users.FirstAsync(u => u.Id == userId);
 
         var entry = await db.BookshelfEntries
             .Include(s => s.Book)
@@ -96,8 +97,11 @@ public class BookshelfController(AppDbContext db, CurrentUser me, ActivityServic
             };
             db.BookshelfEntries.Add(entry);
 
-            var actor = await db.Users.FirstAsync(u => u.Id == userId);
-            activity.RecordBookshelfAdded(actor, book, status);
+            // AGENTS §2.2.4: private shelf adds are never advertised in a follower's feed.
+            if (ActivityService.IsFeedVisible(actor, entry.Visibility))
+            {
+                activity.RecordBookshelfAdded(actor, book, status, entry);
+            }
             await db.SaveChangesAsync();
 
             try
@@ -115,6 +119,8 @@ public class BookshelfController(AppDbContext db, CurrentUser me, ActivityServic
             entry.Status = status;
             entry.Visibility = visibility;
             ApplyTimestamps(entry);
+            // Retro-hide (or re-publish) the shelf event with the new visibility.
+            activity.SyncBookshelfActivity(actor, book, entry, status);
             await db.SaveChangesAsync();
         }
 
@@ -194,6 +200,7 @@ public class BookshelfController(AppDbContext db, CurrentUser me, ActivityServic
             throw new AppException(403, "Not your bookshelf entry.");
         }
 
+        activity.PurgeBookshelfActivity(entry.Id);
         db.BookshelfEntries.Remove(entry);
         await db.SaveChangesAsync();
         return NoContent();

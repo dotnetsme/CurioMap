@@ -110,24 +110,33 @@ public class GeoController(AppDbContext db, CurrentUser me, GeoResolveService ge
     [AllowAnonymous]
     public ActionResult<IpGeoDto> IpCountry()
     {
-        var headers = Request.Headers;
+        // Forwarded headers are client-controlled input. They are honored only when the
+        // socket peer sits inside a trusted proxy network (AGENTS §5.3); everything else
+        // gets "none" instead of a spoofable guess. A spoofed country used to flow into
+        // the frontend as a trusted default, so untrusted requests fail closed here.
+        var remote = HttpContext.Connection.RemoteIpAddress;
         string? country = null;
         string source = "none";
 
-        if (headers.ContainsKey("cf-ipcountry"))
+        var resolver = HttpContext.RequestServices.GetRequiredService<ClientIpResolver>();
+        if (resolver.IsTrustedPeer(remote))
         {
-            country = headers["cf-ipcountry"].ToString();
-            source = "cf-ipcountry";
-        }
-        else if (headers.ContainsKey("x-vercel-ip-country"))
-        {
-            country = headers["x-vercel-ip-country"].ToString();
-            source = "x-vercel-ip-country";
-        }
-        else if (headers.ContainsKey("x-geo-country"))
-        {
-            country = headers["x-geo-country"].ToString();
-            source = "x-geo-country";
+            var headers = Request.Headers;
+            if (headers.ContainsKey("cf-ipcountry"))
+            {
+                country = headers["cf-ipcountry"].ToString();
+                source = "cf-ipcountry";
+            }
+            else if (headers.ContainsKey("x-vercel-ip-country"))
+            {
+                country = headers["x-vercel-ip-country"].ToString();
+                source = "x-vercel-ip-country";
+            }
+            else if (headers.ContainsKey("x-geo-country"))
+            {
+                country = headers["x-geo-country"].ToString();
+                source = "x-geo-country";
+            }
         }
 
         return Ok(new IpGeoDto(string.IsNullOrWhiteSpace(country) ? null : country, source));

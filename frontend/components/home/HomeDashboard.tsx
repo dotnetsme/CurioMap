@@ -62,29 +62,32 @@ export function HomeDashboard() {
   const unreachable = settled && !summary && !map;
 
   return (
-    <div className="mx-auto max-w-[1280px] py-4">
-      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="mx-auto max-w-[1280px] py-2 sm:py-4">
+      <header className="mb-5 flex flex-col gap-4 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
         <div>
           <p className="label-sm inline-flex items-center gap-1.5 text-accent">
             <Sparkles size={12} /> Home
           </p>
-          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+          <h1 className="mt-2 max-w-2xl font-display text-[2rem] font-bold leading-[1.05] tracking-tight text-ink sm:text-4xl">
             Welcome back, {user.displayName}
           </h1>
           <p className="mt-1 text-sm text-ink-muted">
             Your shelf, your city, and what curious minds are reading right now.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/me" className="btn-ghost text-sm">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+          <Link href="/me" className="btn-ghost min-h-11 px-3 text-sm">
             My profile
           </Link>
-          <Link href="/discover/global" className="btn-ghost text-sm">
+          <Link
+            href="/discover/global"
+            className="btn-ghost min-h-11 px-3 text-sm"
+          >
             <Globe2 size={15} /> Open the map
           </Link>
           <Link
             href="/circles"
-            className="btn-accent text-sm shadow-lg shadow-accent/25"
+            className="btn-accent col-span-2 min-h-11 text-sm shadow-lg shadow-accent/25 sm:col-span-1"
           >
             <MessagesSquare size={15} /> Start a discussion
           </Link>
@@ -98,10 +101,10 @@ export function HomeDashboard() {
       <div className="grid gap-6 xl:grid-cols-[1.7fr_0.95fr]">
         <Reveal>
           <section className="card overflow-hidden">
-            <div className="relative border-b border-line">
+            <div className="relative h-[320px] border-b border-line sm:h-[410px]">
               <CuriosityMapShell
                 regions={map?.regions ?? []}
-                height={410}
+                height={0}
                 focusOnVisitor
               />
               <div className="pointer-events-none absolute inset-x-3 bottom-4 z-[500] sm:right-28">

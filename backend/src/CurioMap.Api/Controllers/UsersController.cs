@@ -83,6 +83,12 @@ public class UsersController(AppDbContext db, CurrentUser me, ProfanityFilter pr
             {
                 throw new AppException(400, "Handles must be 3–40 characters: lowercase letters, digits and underscores.");
             }
+            if (profanity.ContainsProfanity(handle))
+            {
+                // AGENTS §2.4.1: handles are a public identity surface and MUST pass the
+                // same filter as bios, real names, and circle descriptions.
+                throw new AppException(400, "That handle was flagged by the auto-filter. Please choose another.");
+            }
             if (await db.Users.AnyAsync(u => u.Handle.ToLower() == handle && u.Id != user.Id))
             {
                 throw new AppException(409, "That handle is already taken.");

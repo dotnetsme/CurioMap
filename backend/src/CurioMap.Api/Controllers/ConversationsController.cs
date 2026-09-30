@@ -33,8 +33,8 @@ public class ConversationsController(
         [FromQuery] int limit = 30,
         [FromQuery] int offset = 0)
     {
-        limit = Math.Clamp(limit, 1, 50);
-        offset = Math.Max(0, offset);
+        limit = PageBounds.ClampPageSize(limit);
+        offset = PageBounds.ClampOffset(offset);
 
         var book = await db.Books.AsNoTracking().FirstOrDefaultAsync(b => b.Id == bookId)
             ?? throw new AppException(404, "Book not found.");
@@ -162,8 +162,8 @@ public class ConversationsController(
         [FromQuery] int limit = 50,
         [FromQuery] int offset = 0)
     {
-        limit = Math.Clamp(limit, 1, 50);
-        offset = Math.Max(0, offset);
+        limit = PageBounds.ClampPageSize(limit);
+        offset = PageBounds.ClampOffset(offset);
 
         if (!await db.Conversations.AnyAsync(c => c.Id == id))
         {

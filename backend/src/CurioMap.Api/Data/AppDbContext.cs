@@ -165,6 +165,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(a => a.BookId).OnDelete(DeleteBehavior.SetNull);
             e.HasOne(a => a.Conversation).WithMany()
                 .HasForeignKey(a => a.ConversationId).OnDelete(DeleteBehavior.SetNull);
+            // Privacy snapshot for shelf events (AGENTS §2.2.4): the feed only shows
+            // an event while its entry is still public. Indexed FK keeps the feed's
+            // EXISTS check off a sequential scan.
+            e.Property(a => a.Visibility).HasMaxLength(20);
+            e.HasIndex(a => a.BookshelfEntryId);
+            e.HasOne<BookshelfEntry>().WithMany()
+                .HasForeignKey(a => a.BookshelfEntryId).OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<RefreshToken>(e =>

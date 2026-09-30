@@ -55,8 +55,11 @@
   is client components over the typed `lib/api/*` layer (same-origin `/api` rewrites).
 - **Auth state**: `AuthProvider` bootstraps from `/auth/refresh`; `lib/api/http.ts`
   transparently refreshes once on a 401 and retries.
-- **No mapping libraries** — the curiosity map is a dependency-free SVG equirectangular
-  projection of fuzzed region coordinates.
+- **Map**: Leaflet (BSD-2-Clause) over an OpenStreetMap raster basemap, loaded
+  through `next/dynamic` with `ssr: false` so it never enters a route's first-load
+  JS. Region blooms are screen-space markers at fuzzed coordinates, zoom is capped
+  at city scale, attribution stays visible, and the tile URL is configuration
+  (`NEXT_PUBLIC_MAP_TILE_URL`) — see [ADR 0007](adr/0007-openstreetmap-basemap.md).
 - **Design**: Tailwind CSS v4 (CSS-first config), dark glass aesthetic.
 
 ## Non-functional

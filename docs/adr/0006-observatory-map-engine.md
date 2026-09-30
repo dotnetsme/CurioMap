@@ -1,6 +1,6 @@
 # ADR 0006: Observatory map engine — superseding ADR 0003 rule 9
 
-- **Status**: Accepted
+- **Status**: Superseded by [ADR 0007](0007-openstreetmap-basemap.md) on 2026-09-22
 - **Date**: 2026-09-19
 - **Supersedes**: [ADR 0003](0003-privacy-redaction-and-map-hardening.md) rule 9 ("No mapping libraries, ever")
 - **Scope**: Frontend map rendering only; privacy, redaction, and API behavior in ADR 0003 remain fully in force.

@@ -1,14 +1,17 @@
 import Link from "next/link";
 import { CuriosityMapShell } from "@/components/discover/CuriosityMapShell";
-import { ObservatoryLegend } from "@/components/discover/ObservatoryMap";
+import { ObservatoryLegend } from "@/components/discover/ObservatoryLegend";
 import { StatsBar } from "@/components/discover/StatsBar";
 import { TopBooksRail } from "@/components/books/TopBooksRail";
 import { BookSearchBar } from "@/components/books/BookSearchBar";
+import { Avatar } from "@/components/profile/Avatar";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { stats, globalDiscovery, globalMapReaders } from "@/lib/server-api";
 import {
   Compass,
+  ArrowUpRight,
+  BookOpen,
   LibraryBig,
   MapPin,
   MessagesSquare,
@@ -40,6 +43,15 @@ const features = [
   },
 ];
 
+const quickGenres = [
+  "Fiction",
+  "Fantasy",
+  "History",
+  "Science fiction",
+  "Biography",
+  "Mystery",
+];
+
 export default async function LandingPage() {
   const [summary, map, personas] = await Promise.all([
     stats().catch(() => null),
@@ -51,10 +63,8 @@ export default async function LandingPage() {
   return (
     <div className="flex flex-col gap-10 sm:gap-14">
       {/* Hero */}
-      <section className="relative overflow-hidden rounded-3xl">
-        <div className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full border border-accent/20 anim-pulse-ring" />
-        <div className="pointer-events-none absolute -bottom-36 -left-16 h-80 w-80 rounded-full border border-signal/20 anim-pulse-ring [animation-delay:1.1s]" />
-        <div className="night-panel px-4 py-6 text-center sm:px-8 sm:py-7">
+      <section className="overflow-hidden rounded-3xl">
+        <div className="night-panel px-4 py-7 text-center sm:px-8 sm:py-9">
           <Reveal className="relative" y={14}>
             <p className="label-sm inline-flex items-center gap-2 rounded-full border border-line-2 bg-accent-soft px-3 py-1 text-ink">
               <Sparkles size={12} /> OPEN SOURCE · PRIVACY FIRST · APACHE 2.0
@@ -72,22 +82,22 @@ export default async function LandingPage() {
             <div className="mx-auto mt-4 max-w-xl transition-transform duration-300 hover:-translate-y-0.5">
               <BookSearchBar />
             </div>
-            <div className="mt-3 flex flex-wrap justify-center gap-2">
+            <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap sm:justify-center">
               <Link
                 href="/discover/nearby"
-                className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink shadow-xl shadow-accent/30 transition hover:bg-accent-strong active:scale-[0.98]"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink shadow-xl shadow-accent/30 transition hover:bg-accent-strong active:scale-[0.98] sm:w-auto"
               >
                 <Compass size={17} /> See readers near you
               </Link>
               <Link
                 href="/discover/global"
-                className="inline-flex items-center gap-2 rounded-full border border-line-2 bg-white/5 px-5 py-2.5 text-sm font-semibold text-ink backdrop-blur transition hover:border-accent hover:bg-white/10"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-line-2 bg-white/5 px-5 py-2.5 text-sm font-semibold text-ink backdrop-blur transition hover:border-accent hover:bg-white/10 sm:w-auto"
               >
                 <MapPin size={17} /> Explore the curiosity map
               </Link>
             </div>
             {summary ? (
-              <div className="mx-auto mt-4 flex max-w-lg items-center justify-center gap-8 text-center">
+              <div className="mx-auto mt-4 grid max-w-lg grid-cols-3 gap-3 text-center">
                 {[
                   { v: summary.readers, l: "readers" },
                   { v: summary.books, l: "books" },
@@ -106,13 +116,74 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="card p-5 sm:p-6">
+          <p className="label-sm text-accent">Start with a feeling</p>
+          <h2 className="mt-2 max-w-xl font-display text-2xl font-semibold text-ink sm:text-3xl">
+            What are you in the mood to read?
+          </h2>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-muted">
+            Browse a familiar doorway, then follow the people and conversations
+            that make a book worth opening.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {quickGenres.map((genre) => (
+              <Link
+                key={genre}
+                href={`/books/search?q=${encodeURIComponent(genre)}`}
+                className="chip min-h-11 px-4 text-sm hover:border-accent hover:text-ink"
+              >
+                <BookOpen size={14} /> {genre}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div className="card flex flex-col justify-between bg-accent/10 p-5 sm:p-6">
+          <div>
+            <p className="label-sm text-signal">Readers are here</p>
+            <h2 className="mt-2 font-display text-2xl font-semibold text-ink sm:text-3xl">
+              Find your next conversation.
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+              {summary
+                ? `${summary.readers.toLocaleString()} readers are mapping their shelves across ${summary.activeRegions.toLocaleString()} regions.`
+                : "Readers are mapping their shelves across the world."}
+            </p>
+          </div>
+          <div className="mt-6 flex items-center justify-between gap-4">
+            <div className="flex -space-x-2" aria-label="Readers on CurioMap">
+              {readers.slice(0, 5).map((reader) => (
+                <Avatar
+                  key={reader.user.id}
+                  avatarId={reader.user.avatarId}
+                  name={reader.user.displayName}
+                  size={38}
+                />
+              ))}
+              {readers.length > 5 ? (
+                <span className="grid h-[38px] w-[38px] place-items-center rounded-full border-2 border-stage bg-surface text-xs font-semibold text-ink-muted">
+                  +{readers.length - 5}
+                </span>
+              ) : null}
+            </div>
+            <Link
+              href="/discover/global"
+              className="btn-ghost min-h-11 shrink-0 px-3 text-sm"
+            >
+              Explore <ArrowUpRight size={15} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Map */}
       {map && map.regions.length > 0 ? (
         <section className="flex flex-col gap-4">
           <SectionHeading
             eyebrow="Heatmap"
             title="The curiosity map"
-            hint="Heat runs cyan → violet → magenta. Every glow is a fuzzed region; avatars below are real personas reading right now."
+            hint="Heat runs teal → coral → amber. Every glow is a fuzzed region; avatars below are real personas reading right now."
             action={
               <Link
                 href="/discover/global"
@@ -124,16 +195,21 @@ export default async function LandingPage() {
           />
           <ObservatoryLegend />
           <Reveal>
-            <CuriosityMapShell
-              regions={map.regions}
-              readers={readers}
-              height={700}
-              overlayStats={
-                summary
-                  ? { readers: summary.readers, regions: summary.activeRegions }
-                  : null
-              }
-            />
+            <div className="relative h-[420px] sm:h-[560px]">
+              <CuriosityMapShell
+                regions={map.regions}
+                readers={readers}
+                height={0}
+                overlayStats={
+                  summary
+                    ? {
+                        readers: summary.readers,
+                        regions: summary.activeRegions,
+                      }
+                    : null
+                }
+              />
+            </div>
           </Reveal>
         </section>
       ) : null}
@@ -206,13 +282,13 @@ export default async function LandingPage() {
           <div className="flex flex-wrap justify-center gap-3">
             <Link
               href="/auth/register"
-              className="inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3 text-[15px] font-bold text-accent-ink shadow-xl shadow-accent/30 transition hover:bg-accent-strong active:scale-[0.98]"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-accent px-7 py-3 text-[15px] font-bold text-accent-ink shadow-xl shadow-accent/30 transition hover:bg-accent-strong active:scale-[0.98] sm:w-auto"
             >
               <Users size={17} /> Start your shelf
             </Link>
             <Link
               href="/books/search"
-              className="inline-flex items-center gap-2 rounded-full border border-line-2 px-7 py-3 text-[15px] font-semibold text-ink transition hover:border-accent hover:bg-white/5"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-line-2 px-7 py-3 text-[15px] font-semibold text-ink transition hover:border-accent hover:bg-white/5 sm:w-auto"
             >
               <LibraryBig size={17} /> Find a book
             </Link>

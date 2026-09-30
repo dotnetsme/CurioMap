@@ -1,4 +1,12 @@
-import { BookOpen, Flame, LibraryBig, MessageCircle, Sparkles, Trophy } from "lucide-react";
+import {
+  BookOpen,
+  Compass,
+  Flame,
+  LibraryBig,
+  MessageCircle,
+  Sparkles,
+  Trophy,
+} from "lucide-react";
 import Link from "next/link";
 import { Avatar } from "@/components/profile/Avatar";
 import { BookCover } from "@/components/books/BookCover";
@@ -46,7 +54,10 @@ function EventIcon({ type }: { type: string }) {
 
 function describe(event: FeedEvent): React.ReactNode {
   const book = event.book?.title ? (
-    <Link href={`/books/${event.book.id}`} className="font-semibold text-ink decoration-accent decoration-2 underline-offset-2 hover:underline">
+    <Link
+      href={`/books/${event.book.id}`}
+      className="font-semibold text-ink decoration-accent decoration-2 underline-offset-2 hover:underline"
+    >
       {event.book.title}
     </Link>
   ) : null;
@@ -64,20 +75,33 @@ function describe(event: FeedEvent): React.ReactNode {
       return (
         <>
           shelved <strong>{book}</strong>
-          {event.shelfStatus && event.shelfStatus !== "reading" ? ` · marked ${event.shelfStatus}` : " · now reading"}
+          {event.shelfStatus && event.shelfStatus !== "reading"
+            ? ` · marked ${event.shelfStatus}`
+            : " · now reading"}
         </>
       );
     case "conversation_created":
-      return <>opened a circle: <strong>{conversation}</strong></>;
+      return (
+        <>
+          opened a circle: <strong>{conversation}</strong>
+        </>
+      );
     case "message_posted":
       return (
         <>
           replied in <strong>{conversation}</strong>
-          {event.messageExcerpt ? <span className="text-ink-muted"> — “{event.messageExcerpt}”</span> : null}
+          {event.messageExcerpt ? (
+            <span className="text-ink-muted"> — “{event.messageExcerpt}”</span>
+          ) : null}
         </>
       );
     case "badge_earned":
-      return <>earned the <strong>{badgeMeta(event.badgeKind ?? "").name}</strong> badge</>;
+      return (
+        <>
+          earned the <strong>{badgeMeta(event.badgeKind ?? "").name}</strong>{" "}
+          badge
+        </>
+      );
     default:
       return <>{event.type}</>;
   }
@@ -89,6 +113,11 @@ export function FeedList({ events }: { events: FeedEvent[] }) {
       <EmptyState
         title="Your feed is quiet"
         hint="Follow readers you meet on the curiosity map to fill your feed."
+        action={
+          <Link href="/discover/global" className="btn-accent min-h-11">
+            <Compass size={16} /> Find readers
+          </Link>
+        }
       />
     );
   }
@@ -99,17 +128,29 @@ export function FeedList({ events }: { events: FeedEvent[] }) {
         <Reveal key={event.id} delay={Math.min(i, 6) * 0.05}>
           <article className="card card-hover p-4 sm:p-5">
             <div className="flex items-start gap-3">
-              <Link href={`/users/${event.actor.id}`} className="shrink-0 transition hover:scale-105">
-                <Avatar avatarId={event.actor.avatarId} name={event.actor.displayName} size={42} />
+              <Link
+                href={`/users/${event.actor.id}`}
+                className="shrink-0 transition hover:scale-105"
+              >
+                <Avatar
+                  avatarId={event.actor.avatarId}
+                  name={event.actor.displayName}
+                  size={42}
+                />
               </Link>
               <div className="min-w-0 flex-1">
                 <p className="text-sm leading-relaxed text-ink-2">
-                  <Link href={`/users/${event.actor.id}`} className="font-semibold text-ink hover:text-accent">
+                  <Link
+                    href={`/users/${event.actor.id}`}
+                    className="font-semibold text-ink hover:text-accent"
+                  >
                     {event.actor.displayName}
                   </Link>{" "}
                   {describe(event)}
                 </p>
-                <p className="mt-1 text-[11px] font-medium text-ink-faint">{timeAgo(event.createdAt)}</p>
+                <p className="mt-1 text-[11px] font-medium text-ink-faint">
+                  {timeAgo(event.createdAt)}
+                </p>
               </div>
               <EventIcon type={event.type} />
             </div>
@@ -118,9 +159,22 @@ export function FeedList({ events }: { events: FeedEvent[] }) {
                 href={`/books/${event.book.id}`}
                 className="mt-3 flex items-center gap-3 rounded-2xl border border-line bg-white/5 p-3 transition hover:border-accent"
               >
-                <BookCover book={{ ...event.book, isbn: null, coverUrl: (event.book as { coverUrl?: string | null }).coverUrl ?? null } as BookStub} size={34} />
+                <BookCover
+                  book={
+                    {
+                      ...event.book,
+                      isbn: null,
+                      coverUrl:
+                        (event.book as { coverUrl?: string | null }).coverUrl ??
+                        null,
+                    } as BookStub
+                  }
+                  size={34}
+                />
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold text-ink">{event.book.title}</span>
+                  <span className="block truncate text-sm font-semibold text-ink">
+                    {event.book.title}
+                  </span>
                   <span className="mt-0.5 flex items-center gap-1 text-[11px] text-ink-faint">
                     <LibraryBig size={11} /> View book & circles →
                   </span>

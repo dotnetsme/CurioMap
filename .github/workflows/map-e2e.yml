@@ -1,0 +1,107 @@
+name: map-e2e
+
+# Headless-Chrome map interaction probe (ADR 0007 / AGENTS.md §8.11).
+#
+# IMPORTANT: this workflow has NEVER been executed — add it to `pull_request`
+# triggers ONLY after one successful manual `workflow_dispatch` run proves the
+# seed/boot timing below works on the runner. Until then it is opt-in, so a
+# broken job cannot block PRs or the Fly deploy chain.
+on:
+  workflow_dispatch:
+
+jobs:
+  map-live-probe:
+    name: Leaflet interaction probe (headless Chrome)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: curiomap
+          POSTGRES_PASSWORD: curiomap
+          POSTGRES_DB: curiomap
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6380:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://localhost:8080
+      DATABASE_URL: postgres://curiomap:curiomap@localhost:5433/curiomap
+      REDIS_URL: localhost:6380
+      JWT__SECRET: ci-only-map-e2e-secret-0123456789abcdef0123456789abcdef
+      # .NET env mapping: __ -> ":" so this is Seed:DemoReaders (appsettings
+      # also defaults it to true; set explicitly so the probe's persona markers
+      # exist regardless of future default changes).
+      SEED__DEMOREADERS: "true"
+      API_INTERNAL_URL: http://localhost:8080
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Start API (migrations + demo seed run at boot)
+        run: |
+          nohup dotnet run --project backend/src/CurioMap.Api --no-launch-profile \
+            > api.log 2>&1 &
+          echo "API started"
+
+      - name: Start web (standalone output, same as the Docker image)
+        run: |
+          cp -r frontend/.next/static frontend/.next/standalone/.next/static
+          if [ -d frontend/public ]; then cp -r frontend/public frontend/.next/standalone/public; fi
+          PORT=3000 HOSTNAME=127.0.0.1 \
+            nohup node frontend/.next/standalone/server.js > web.log 2>&1 &
+          echo "Web started"
+
+      - name: Wait for stack
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8080/health > /dev/null 2>&1 \
+               && curl -fsS http://localhost:3000/ > /dev/null 2>&1; then
+              echo "stack ready after ${i} tries"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "::error::stack never became healthy"
+          tail -100 api.log || true
+          tail -100 web.log || true
+          exit 1
+
+      - name: Map interaction probe (tiles, attribution, zoom ceiling, popovers)
+        run: node scripts/verify-map-live.mjs --chrome "$(command -v google-chrome)"
+
+      - name: Diagnostics on failure
+        if: failure()
+        run: |
+          tail -200 api.log || true
+          tail -200 web.log || true

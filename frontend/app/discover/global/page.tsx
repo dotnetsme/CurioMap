@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import { BookOpen, Flame, Sparkles, TrendingUp, Users, X } from "lucide-react";
 import { CuriosityMapShell } from "@/components/discover/CuriosityMapShell";
-import { ObservatoryLegend } from "@/components/discover/ObservatoryMap";
+import { ObservatoryLegend } from "@/components/discover/ObservatoryLegend";
 import type { MapMode } from "@/components/discover/ObservatoryMap";
 import { NearbyReadersList } from "@/components/discover/NearbyReadersList";
 import { BookCover } from "@/components/books/BookCover";
@@ -43,7 +43,9 @@ export default function GlobalMapPage() {
       try {
         const result = await globalDiscovery();
         const sum = await stats().catch(() => null);
-        const readers = await mapReaders(undefined, undefined, 50).catch(() => null);
+        const readers = await mapReaders(undefined, undefined, 50).catch(
+          () => null,
+        );
         if (!cancelled) {
           setData(result);
           setStatsData(sum);
@@ -136,7 +138,7 @@ export default function GlobalMapPage() {
   }
 
   return (
-    <div className="fixed inset-0 z-[1000] bg-stage overflow-hidden">
+    <div className="fixed inset-0 z-0 overflow-hidden bg-stage">
       <CuriosityMapShell
         regions={data.regions}
         readers={personas}
@@ -405,9 +407,7 @@ export default function GlobalMapPage() {
           <div className="no-scrollbar pointer-events-auto flex gap-2 overflow-x-auto rounded-2xl border border-line bg-stage/85 px-4 py-3 backdrop-blur-md">
             <div className="flex shrink-0 items-center gap-1.5 pr-2">
               <Flame size={14} className="text-heat-hot" />
-              <span className="text-xs font-bold text-ink-muted">
-                TRENDING
-              </span>
+              <span className="text-xs font-bold text-ink-muted">TRENDING</span>
             </div>
             {activeRegion.topBooks.slice(0, 7).map((b) => (
               <Link

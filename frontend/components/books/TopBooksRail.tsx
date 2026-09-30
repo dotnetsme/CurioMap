@@ -7,12 +7,22 @@ import { useCallback, useEffect, useState } from "react";
 import { BookCard } from "./BookCard";
 import type { Book, BookStub, TopBook } from "@/types";
 
-function toStub(b: TopBook | BookStub | Book): BookStub & { readerCount?: number } {
+function toStub(
+  b: TopBook | BookStub | Book,
+): BookStub & { readerCount?: number } {
   return { ...b, readerCount: "readerCount" in b ? b.readerCount : undefined };
 }
 
-export function TopBooksRail({ books }: { books: (TopBook | BookStub | Book)[] }) {
-  const [ref, api] = useEmblaCarousel({ align: "start", dragFree: true, containScroll: "trimSnaps" });
+export function TopBooksRail({
+  books,
+}: {
+  books: (TopBook | BookStub | Book)[];
+}) {
+  const [ref, api] = useEmblaCarousel({
+    align: "start",
+    dragFree: true,
+    containScroll: "trimSnaps",
+  });
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
 
@@ -50,7 +60,10 @@ export function TopBooksRail({ books }: { books: (TopBook | BookStub | Book)[] }
         </div>
       </div>
       <div className="mt-3 flex items-center justify-between">
-        <Link href="/discover/top-books" className="text-sm font-semibold text-accent-strong hover:text-accent">
+        <Link
+          href="/discover/top-books"
+          className="text-sm font-semibold text-accent-strong hover:text-accent"
+        >
           Full leaderboard →
         </Link>
         <div className="flex gap-2">
@@ -58,7 +71,7 @@ export function TopBooksRail({ books }: { books: (TopBook | BookStub | Book)[] }
             onClick={() => api?.scrollPrev()}
             disabled={!canPrev}
             aria-label="Scroll back"
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-line bg-surface text-ink transition hover:border-ink-2 disabled:opacity-30"
+            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-line bg-surface text-ink transition hover:border-ink-2 disabled:opacity-30"
           >
             <ArrowLeft size={16} />
           </button>
@@ -66,7 +79,7 @@ export function TopBooksRail({ books }: { books: (TopBook | BookStub | Book)[] }
             onClick={() => api?.scrollNext()}
             disabled={!canNext}
             aria-label="Scroll forward"
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-line bg-surface text-ink transition hover:border-ink-2 disabled:opacity-30"
+            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-line bg-surface text-ink transition hover:border-ink-2 disabled:opacity-30"
           >
             <ArrowRight size={16} />
           </button>

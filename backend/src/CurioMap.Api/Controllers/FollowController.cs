@@ -57,8 +57,8 @@ public class FollowController(AppDbContext db, CurrentUser me) : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<FollowListDto>> Followers(Guid id, [FromQuery] int limit = 30, [FromQuery] int offset = 0)
     {
-        limit = Math.Clamp(limit, 1, 50);
-        offset = Math.Max(0, offset);
+        limit = PageBounds.ClampPageSize(limit);
+        offset = PageBounds.ClampOffset(offset);
 
         if (!await db.Users.AnyAsync(u => u.Id == id))
         {
@@ -81,8 +81,8 @@ public class FollowController(AppDbContext db, CurrentUser me) : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<FollowListDto>> Following(Guid id, [FromQuery] int limit = 30, [FromQuery] int offset = 0)
     {
-        limit = Math.Clamp(limit, 1, 50);
-        offset = Math.Max(0, offset);
+        limit = PageBounds.ClampPageSize(limit);
+        offset = PageBounds.ClampOffset(offset);
 
         if (!await db.Users.AnyAsync(u => u.Id == id))
         {

@@ -1,12 +1,18 @@
 using CurioMap.Api.Data;
 using CurioMap.Api.Services;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Hosting;
 using StackExchange.Redis;
+using System.Threading.RateLimiting;
 
 namespace CurioMap.Api.Tests;
 
@@ -19,9 +25,22 @@ public class CurioMapTestFactory : WebApplicationFactory<Program>
 {
     private SqliteConnection? _connection;
 
+    /// <summary>
+    /// When true (the default) the production fixed-window rate-limit policies are dropped
+    /// so hermetic tests stay deterministic. <see cref="RateLimitedTestFactory"/> opts out
+    /// to assert the real 429 behavior.
+    /// </summary>
+    protected virtual bool NeutralizeRateLimits => true;
+
+    /// <summary>
+    /// Environment the hermetic host boots in. Derived factories (e.g. the Production
+    /// factory asserting OpenAPI gating) override this.
+    /// </summary>
+    protected virtual string TestEnvironment => Environments.Development;
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("Development");
+        builder.UseEnvironment(TestEnvironment);
 
         builder.ConfigureServices(services =>
         {
@@ -70,6 +89,26 @@ public class CurioMapTestFactory : WebApplicationFactory<Program>
                 services.Remove(cacheDescriptor);
             }
             services.AddScoped<ICacheService, InMemoryTestCacheService>();
+
+            // Rate limiting is neutralized for hermetic tests. Program.cs registers its
+            // policies through services.Configure(...), and they partition anonymous
+            // traffic by RemoteIpAddress - which is identical (null -> "anon") for every
+            // in-process TestServer request, so the shared `auth` budget (20/min) makes
+            // this suite order-dependent as soon as it registers enough users. Dropping the
+            // production configure action and installing no-op policies keeps the suite
+            // deterministic; live rate limiting is exercised by scripts/smoke.ps1.
+            if (NeutralizeRateLimits)
+            {
+                services.RemoveAll<IConfigureOptions<RateLimiterOptions>>();
+                services.Configure<RateLimiterOptions>(options =>
+                {
+                    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(
+                        _ => RateLimitPartition.GetNoLimiter("test"));
+                    options.AddPolicy<string>("auth", _ => RateLimitPartition.GetNoLimiter("test"));
+                    options.AddPolicy<string>("write", _ => RateLimitPartition.GetNoLimiter("test"));
+                    options.AddPolicy<string>("search", _ => RateLimitPartition.GetNoLimiter("test"));
+                });
+            }
 
             // Build schema
             var sp = services.BuildServiceProvider();

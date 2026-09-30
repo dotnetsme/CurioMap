@@ -37,8 +37,8 @@ public class BooksController(
             throw new AppException(400, "Search requires at least 2 characters.");
         }
 
-        limit = Math.Clamp(limit, 1, 50);
-        offset = Math.Max(0, offset);
+        limit = PageBounds.ClampPageSize(limit);
+        offset = PageBounds.ClampOffset(offset);
 
         // Portable case-insensitive substring (see Like.Needle): EF.Functions.ILike
         // has no SQLite translation, so tests would diverge from Postgres.

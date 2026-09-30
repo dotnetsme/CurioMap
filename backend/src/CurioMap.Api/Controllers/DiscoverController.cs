@@ -57,7 +57,7 @@ public class DiscoverController(AppDbContext db, CurrentUser me, ICacheService c
         [FromQuery] string? region,
         [FromQuery] int limit = 50)
     {
-        limit = Math.Clamp(limit, 1, 50);
+        limit = PageBounds.ClampPageSize(limit);
         country = country?.Trim();
         region = region?.Trim();
 
@@ -71,7 +71,7 @@ public class DiscoverController(AppDbContext db, CurrentUser me, ICacheService c
     [Authorize]
     public async Task<ActionResult<NearbyDto>> Nearby([FromQuery] int limit = 30)
     {
-        limit = Math.Clamp(limit, 1, 50);
+        limit = PageBounds.ClampPageSize(limit);
         var mine = await db.Users.AsNoTracking().Include(u => u.Location)
             .FirstOrDefaultAsync(u => u.Id == me.RequireUserId());
 
@@ -305,7 +305,7 @@ public class DiscoverController(AppDbContext db, CurrentUser me, ICacheService c
 
     private async Task<List<TopBookDto>> ComputeTopBooksAsync(string? country, string? region, int take)
     {
-        take = Math.Clamp(take, 1, 50);
+        take = PageBounds.ClampPageSize(take);
         var query = db.BookshelfEntries.AsNoTracking()
             .Where(s => s.Status == BookStatus.Reading
                         && s.Visibility == ShelfVisibility.Public

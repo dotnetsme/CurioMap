@@ -32,6 +32,26 @@ Rules:
 - GitHub Actions prod deploys additionally require a human approval of the
   `fly` environment (Settings → Environments → `fly` → Required reviewers).
 
+## Rate-limit client identity (`Proxy:TrustedNetworks`)
+
+Rate limits partition on the authenticated `sub` claim, else on the client IP resolved
+by `Services/ClientIpResolver.cs`. Forwarded headers (`Fly-Client-IP`,
+`X-Forwarded-For`) are honored **only** when the socket peer is inside
+`Proxy:TrustedNetworks`, which defaults to Fly.io's 6PN (`fdaa::/16`) plus loopback —
+correct out of the box on Fly, safe by default elsewhere.
+
+If the API ever sits behind a different trusted proxy, override explicitly (no
+wildcards):
+
+```bash
+fly secrets set -a curiomap-api \
+  PROXY__TRUSTEDNETWORKS__0='10.0.0.0/8' \
+  PROXY__TRUSTEDNETWORKS__1='fdaa::/16'
+```
+
+To trust nobody (partition anonymous traffic purely by socket address), set
+`Proxy:TrustedNetworks` to an empty list.
+
 ## Architecture
 
 Two Fly apps on one org, same private network:
@@ -60,6 +80,27 @@ fly secrets set -a curiomap-web \
 
 > `SEED__DEMOREADERS` must be `false` in production (see Secrets checklist
 > above). The double underscore maps to the nested `Seed:DemoReaders` setting.
+
+### Map basemap tiles (ADR 0007)
+
+The web image bakes its basemap provider in at build time, because Next inlines
+`NEXT_PUBLIC_*` values during `npm run build`:
+
+```bash
+flyctl deploy --config fly.web.toml \
+  --build-arg NEXT_PUBLIC_MAP_TILE_URL='https://your-tiles.example/{z}/{x}/{y}.png'
+```
+
+- Default when unset: `https://tile.openstreetmap.org/{z}/{x}/{y}.png`.
+- Setting it as a **runtime** env var/secret on `curiomap-web` does nothing —
+  the value is already compiled in.
+- OSM's tile service is best-effort with no SLA and may be rate-limited or
+  blocked without notice; the policy also forbids bulk/prefetch use. Before
+  real traffic, move to a self-hosted or paid OSM-derived provider.
+- Any replacement must keep visible attribution and must not be fetched in
+  bulk. Never hide or remove the attribution control.
+- The web app must NOT set a restrictive `Referrer-Policy`: OSM requires the
+  Referer header to reach the tile host.
 
 ## Deploy
 

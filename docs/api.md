@@ -29,7 +29,7 @@ REST + JWT. Live machine-readable spec: **`/openapi/v1.json`**; human reference:
 
 | method | path | notes |
 |---|---|---|
-| GET | `/books/search?q=` | local catalog + transparent Open Library import when empty; pg_trgm ILIKE |
+| GET | `/books/search?q=&limit=&offset=` | local catalog + transparent Open Library import when empty; `limit` clamped to ≤ 50, `offset` bounded to ≤ 10,000 |
 | GET | `/books/:id` | detail + affiliate links + reader/conversation counts |
 | POST | `/books/import` | admin-only; import a book by ISBN |
 | GET | `/bookshelf/me` | my shelf |

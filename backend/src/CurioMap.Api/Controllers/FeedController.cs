@@ -3,6 +3,7 @@ using CurioMap.Api.Common;
 using CurioMap.Api.Contracts;
 using CurioMap.Api.Data;
 using CurioMap.Api.Domain;
+using CurioMap.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,8 +18,8 @@ public class FeedController(AppDbContext db, CurrentUser me) : ControllerBase
     [Authorize]
     public async Task<ActionResult<FeedPage>> Feed([FromQuery] int limit = 30, [FromQuery] int offset = 0)
     {
-        limit = Math.Clamp(limit, 1, 50);
-        offset = Math.Max(0, offset);
+        limit = PageBounds.ClampPageSize(limit);
+        offset = PageBounds.ClampOffset(offset);
         var mineId = me.RequireUserId();
 
         var followed = await db.Follows.AsNoTracking()
@@ -30,6 +31,19 @@ public class FeedController(AppDbContext db, CurrentUser me) : ControllerBase
         var events = await db.ActivityEvents.AsNoTracking()
             .Include(e => e.Actor)
             .Where(e => actorIds.Contains(e.ActorId))
+            // Privacy (AGENTS §2.2.4): a shelf event is shown only while its entry is
+            // still public and its owner's bookshelf is still public. Legacy rows with
+            // no snapshot fail closed, so a private entry can never leak here.
+            .Where(e => e.Type != ActivityService.BookshelfAdded
+                || (e.Visibility == ActivityService.PublicVisibility
+                    && e.BookshelfEntryId != null
+                    && db.BookshelfEntries.Any(s => s.Id == e.BookshelfEntryId
+                        && s.Visibility == ShelfVisibility.Public
+                        && s.User!.BookshelfVisibility == ShelfVisibility.Public)))
+            // Moderation (AGENTS §2.4.2): an excerpt of a muted/deleted message must not
+            // resurface here after the thread stopped returning it.
+            .Where(e => e.MessageId == null
+                || db.Messages.Any(m => m.Id == e.MessageId && m.Status == MessageStatus.Visible))
             .OrderByDescending(e => e.CreatedAt)
             .Skip(offset)
             .Take(limit + 1)

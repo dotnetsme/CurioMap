@@ -9,6 +9,10 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "dev:only-ui": "node scripts/dev.mjs --only-ui",
-    "smoke": "powershell -ExecutionPolicy Bypass -File scripts/smoke.ps1"
+    "smoke": "powershell -ExecutionPolicy Bypass -File scripts/smoke.ps1",
+    "verify:map": "node scripts/verify-map-engine.mjs && node scripts/verify-map-live.mjs",
+    "verify:map:e2e": "node scripts/verify-map-stack.mjs",
+    "audit:routes": "node scripts/verify-route-coverage.mjs",
+    "audit:routes:strict": "node scripts/verify-route-coverage.mjs --strict"
   }
 }

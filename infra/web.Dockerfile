@@ -2,6 +2,11 @@
 FROM node:24-alpine AS build
 RUN apk add --no-cache libc6-compat
 WORKDIR /src
+# Public map basemap provider (ADR 0007). Next inlines NEXT_PUBLIC_* values at
+# BUILD time, so this must arrive as a build arg (Fly: [build.args] on a web
+# deploy) — a runtime env var or secret on the web app has no effect.
+ARG NEXT_PUBLIC_MAP_TILE_URL=https://tile.openstreetmap.org/{z}/{x}/{y}.png
+ENV NEXT_PUBLIC_MAP_TILE_URL=$NEXT_PUBLIC_MAP_TILE_URL
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci --no-audit --no-fund
 COPY frontend ./

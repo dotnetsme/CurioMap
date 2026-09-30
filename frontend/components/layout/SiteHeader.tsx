@@ -19,6 +19,7 @@ import { Avatar } from "@/components/profile/Avatar";
 import { cn } from "@/lib/utils";
 
 const navItems = [
+  { href: "/home", label: "Home", icon: House, authOnly: true },
   { href: "/discover/global", label: "Discover", icon: Compass },
   {
     href: "/me/bookshelf",
@@ -27,6 +28,14 @@ const navItems = [
     authOnly: true,
   },
   { href: "/feed", label: "Community", icon: Flame },
+] as const;
+
+const mobileNavItems = [
+  { href: "/home", label: "Home", icon: House },
+  { href: "/discover/global", label: "Discover", icon: Compass },
+  { href: "/me/bookshelf", label: "Shelf", icon: BookMarked, authOnly: true },
+  { href: "/feed", label: "Feed", icon: Flame },
+  { href: "/me", label: "Profile", icon: User, authOnly: true },
 ] as const;
 
 export function SiteHeader() {
@@ -63,8 +72,8 @@ export function SiteHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-line bg-stage/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-18 w-full max-w-[1280px] items-center gap-3 px-5 sm:px-8">
+      <header className="sticky top-0 z-40 border-b border-line bg-stage/92 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 w-full max-w-[1280px] items-center gap-3 px-4 sm:h-18 sm:px-8">
           <Link
             href={user ? "/home" : "/"}
             className="group flex shrink-0 items-center gap-2.5"
@@ -72,7 +81,7 @@ export function SiteHeader() {
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-accent via-accent-strong to-signal text-accent-ink shadow-lg shadow-accent/25 transition group-hover:scale-105">
               <Compass size={18} strokeWidth={2.4} />
             </span>
-            <span className="block text-[18px] font-bold tracking-tight text-ink">
+            <span className="hidden text-[18px] font-bold tracking-tight text-ink sm:block">
               CurioMap
             </span>
           </Link>
@@ -92,6 +101,7 @@ export function SiteHeader() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    aria-current={active ? "page" : undefined}
                     className={cn(
                       "flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition",
                       active
@@ -113,7 +123,7 @@ export function SiteHeader() {
               <div className="relative" ref={menuRef}>
                 <button
                   onClick={() => setMenuOpen((v) => !v)}
-                  className="cursor-pointer rounded-full outline-none transition ring-accent/40 hover:ring-2"
+                  className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full outline-none transition ring-accent/40 hover:ring-2"
                   aria-label="Account menu"
                   aria-expanded={menuOpen}
                 >
@@ -205,6 +215,43 @@ export function SiteHeader() {
           </div>
         </div>
       </header>
+
+      {user ? (
+        <nav
+          className="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-stage/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
+          aria-label="Mobile primary"
+        >
+          <div className="mx-auto grid max-w-lg grid-cols-5 gap-1">
+            {mobileNavItems
+              .filter(
+                (item) =>
+                  !("authOnly" in item && item.authOnly) || Boolean(user),
+              )
+              .map((item) => {
+                const active =
+                  item.href === "/home"
+                    ? pathname === "/home"
+                    : pathname.startsWith(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold transition",
+                      active
+                        ? "text-accent"
+                        : "text-ink-faint hover:bg-white/5 hover:text-ink",
+                    )}
+                  >
+                    <item.icon size={19} strokeWidth={active ? 2.4 : 1.9} />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+          </div>
+        </nav>
+      ) : null}
     </>
   );
 }

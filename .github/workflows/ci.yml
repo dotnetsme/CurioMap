@@ -20,8 +20,12 @@ jobs:
           dotnet-version: "10.0.x"
       - name: Build
         run: dotnet build backend/CurioMap.slnx --nologo
+      - name: Format (AGENTS.md §0 — formatting must not drift)
+        run: dotnet format backend/ --verify-no-changes
       - name: Test
         run: dotnet test backend/CurioMap.slnx --no-build --nologo
+      - name: Route coverage audit (AGENTS.md §4B — controllers are the source of truth)
+        run: npm run audit:routes:strict
 
   web:
     name: Web (lint + build)

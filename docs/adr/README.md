@@ -81,3 +81,4 @@ the code wins and the doc gets flagged for correction.
 - [0004 — Read-only reads, archival, and concurrency](0004-readonly-reads-archival-and-concurrency.md)
 - [0005 — Home dashboard and auth gate](0005-home-dashboard-and-auth-gate.md)
 - [0006 — Observatory map engine (supersedes 0003 rule 9)](0006-observatory-map-engine.md)
+- [0007 — OpenStreetMap basemap via Leaflet (supersedes 0006)](0007-openstreetmap-basemap.md)
