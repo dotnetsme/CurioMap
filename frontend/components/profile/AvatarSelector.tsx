@@ -17,9 +17,9 @@ export function AvatarSelector({
           key={avatar.id}
           type="button"
           onClick={() => onChange(avatar.id)}
-          className={`cursor-pointer rounded-xl p-1 transition ${
+          className={`min-h-11 min-w-11 inline-flex items-center justify-center cursor-pointer rounded-xl p-1 transition ${
             value === avatar.id
-              ? "bg-accent/15 ring-2 ring-accent"
+              ? "bg-accent/20 ring-2 ring-accent shadow-[0_0_12px_rgba(139,92,246,0.3)]"
               : "hover:bg-white/5"
           }`}
           aria-label={avatar.id}

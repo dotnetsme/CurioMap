@@ -5,6 +5,7 @@ import { Flame, Search, Users } from "lucide-react";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CircleList } from "@/components/circles/CircleList";
 import { NewCircleForm } from "@/components/circles/NewCircleForm";
+import { EmptyState } from "@/components/ui/Feedback";
 import { listCircles } from "@/lib/api/circles";
 import type { Circle } from "@/types";
 
@@ -39,36 +40,42 @@ export default function CirclesPage() {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative flex-1">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3" />
+          <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search circles…"
-            className="w-full rounded-full border border-ink-3/30 bg-surface py-2 pl-10 pr-4 text-sm text-ink placeholder:text-ink-3 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+            placeholder="Search circles by name, topic, or book…"
+            className="w-full min-h-11 rounded-full border border-line bg-stage-2/80 py-2 pl-10 pr-4 text-sm text-ink placeholder:text-ink-faint outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setSort("recent")}
-            className={`rounded-full px-4 py-2 text-sm transition ${
-              sort === "recent" ? "bg-accent text-white" : "bg-surface text-ink-2 hover:bg-accent/10"
+            className={`min-h-10 cursor-pointer rounded-full px-4 py-2 text-xs transition focus-visible:ring-2 focus-visible:ring-accent ${
+              sort === "recent"
+                ? "bg-accent text-accent-ink font-semibold shadow-sm"
+                : "border border-line bg-stage-2 text-ink-muted hover:border-line-2 hover:text-ink"
             }`}
           >
             Recent
           </button>
           <button
             onClick={() => setSort("members")}
-            className={`rounded-full px-4 py-2 text-sm transition ${
-              sort === "members" ? "bg-accent text-white" : "bg-surface text-ink-2 hover:bg-accent/10"
+            className={`min-h-10 cursor-pointer rounded-full px-4 py-2 text-xs transition focus-visible:ring-2 focus-visible:ring-accent ${
+              sort === "members"
+                ? "bg-accent text-accent-ink font-semibold shadow-sm"
+                : "border border-line bg-stage-2 text-ink-muted hover:border-line-2 hover:text-ink"
             }`}
           >
             Most members
           </button>
           <button
             onClick={() => setSort("streak")}
-            className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm transition focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-              sort === "streak" ? "bg-accent text-white" : "bg-surface text-ink-2 hover:bg-accent/10"
+            className={`inline-flex min-h-10 cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-xs transition focus-visible:ring-2 focus-visible:ring-accent ${
+              sort === "streak"
+                ? "bg-accent text-accent-ink font-semibold shadow-sm"
+                : "border border-line bg-stage-2 text-ink-muted hover:border-line-2 hover:text-ink"
             }`}
           >
             <Flame size={14} /> Hottest streaks
@@ -83,14 +90,16 @@ export default function CirclesPage() {
       {status === "loading" && circles.length === 0 ? (
         <CircleList circles={[]} status="loading" />
       ) : circles.length === 0 && status === "idle" ? (
-        <div className="card flex flex-col items-center gap-3 p-8 text-center">
-          <Users size={48} className="text-ink-3" />
-          <h3 className="text-lg font-semibold text-ink">No circles found</h3>
-          <p className="text-sm text-ink-3">
-            {query
-              ? "Try a different search term."
-              : "Be the first to start a reading circle!"}
-          </p>
+        <div className="card p-6">
+          <EmptyState
+            icon={Users}
+            title="No reading circles found"
+            hint={
+              query
+                ? "Try a different search term or genre."
+                : "Be the first to start a reading circle for your favorite book!"
+            }
+          />
         </div>
       ) : (
         <CircleList circles={circles} status={status} />

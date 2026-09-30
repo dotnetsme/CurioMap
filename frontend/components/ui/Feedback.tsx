@@ -29,10 +29,12 @@ export function PageLoading() {
 }
 
 export function EmptyState({
+  icon: Icon = Compass,
   title,
   hint,
   action,
 }: {
+  icon?: typeof Compass;
   title: string;
   hint?: string;
   action?: React.ReactNode;
@@ -40,7 +42,7 @@ export function EmptyState({
   return (
     <div className="glass flex flex-col items-center px-6 py-10 text-center">
       <span className="grid h-11 w-11 place-items-center rounded-2xl bg-signal/10 text-signal">
-        <Compass size={20} />
+        <Icon size={20} />
       </span>
       <p className="mt-4 font-display text-lg font-semibold text-ink">
         {title}

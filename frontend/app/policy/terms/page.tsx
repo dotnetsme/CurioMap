@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function TermsOfUsePage() {
   return (
     <div className="mx-auto max-w-2xl py-4">
@@ -7,13 +9,13 @@ export default function TermsOfUsePage() {
         maintainers. The full formal text lives in the repository
         (<code className="text-xs">docs/terms-of-use.md</code>); this page carries the
         operative substance, with cross-links to the{" "}
-        <a href="/policy/privacy" className="font-medium text-accent-strong hover:text-accent">
+        <Link href="/policy/privacy" className="font-medium text-accent-strong hover:text-accent">
           Privacy Policy
-        </a>{" "}
+        </Link>{" "}
         and{" "}
-        <a href="/policy/affiliates" className="font-medium text-accent-strong hover:text-accent">
+        <Link href="/policy/affiliates" className="font-medium text-accent-strong hover:text-accent">
           Affiliate &amp; Ads Policy
-        </a>
+        </Link>
         .
       </p>
 

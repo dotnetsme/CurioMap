@@ -59,11 +59,13 @@ export function ShelfGlance() {
     );
   }
 
-  const reading = entries.filter((e) => e.status === "reading").slice(0, 3);
-  const rest = [...entries.filter((e) => e.status === "wishlist"), ...entries.filter((e) => e.status === "finished")].slice(
-    0,
-    2,
-  );
+  const reading = entries
+    .filter((e) => e.status?.toLowerCase() === "reading")
+    .slice(0, 3);
+  const rest = [
+    ...entries.filter((e) => e.status?.toLowerCase() === "wishlist"),
+    ...entries.filter((e) => e.status?.toLowerCase() === "finished"),
+  ].slice(0, 2);
   const shown = [...reading, ...rest];
 
   return (
@@ -84,7 +86,9 @@ export function ShelfGlance() {
               <p className="truncate text-[11.5px] text-ink-faint">{entry.book.author}</p>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1">
-              <Badge tone={statusTone[entry.status]}>{entry.status}</Badge>
+              <Badge tone={statusTone[entry.status?.toLowerCase() as keyof typeof statusTone] ?? "accent"}>
+                {entry.status}
+              </Badge>
               {entry.visibility === "private" ? (
                 <span className="inline-flex items-center gap-1 text-[10.5px] font-medium text-ink-3">
                   <Lock size={10} /> private

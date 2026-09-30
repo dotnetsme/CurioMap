@@ -48,7 +48,7 @@ export function Modal({
   return (
     <div
       role="presentation"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/45 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-stage/80 p-4 backdrop-blur-md"
       onClick={onClose}
     >
       <div

@@ -119,13 +119,14 @@ function SettingsForm() {
     <div className="mx-auto flex max-w-2xl flex-col gap-6 py-4">
       <h1 className="font-display text-3xl font-bold tracking-tight text-ink">Settings</h1>
       {message ? (
-        <div className="rounded-xl border border-signal/40 bg-signal/10 p-3 text-sm text-ink">
+        <div className="flex items-center gap-2.5 rounded-xl border border-signal/40 bg-signal/15 p-3.5 text-sm font-medium text-ink shadow-[0_0_14px_rgba(6,182,212,0.15)]">
+          <span className="h-2 w-2 rounded-full bg-signal" />
           {message}
         </div>
       ) : null}
 
       <section className="glass flex flex-col gap-4 p-6">
-        <h2 className="font-semibold text-ink">Identity</h2>
+        <h2 className="font-display font-bold text-ink-strong">Identity</h2>
         <div>
           <Label>Avatar (curated set — uploads are intentionally not supported)</Label>
           <AvatarSelector value={avatarId} onChange={setAvatarId} />
@@ -152,8 +153,8 @@ function SettingsForm() {
           <Label>Bio</Label>
           <Textarea value={bio} onChange={(e) => setBio(e.target.value)} maxLength={1000} />
         </div>
-        <Button onClick={() => void saveIdentity()} disabled={savingIdentity}>
-          {savingIdentity ? "Saving…" : "Save identity"}
+        <Button onClick={() => void saveIdentity()} isLoading={savingIdentity}>
+          Save identity
         </Button>
       </section>
 
@@ -202,16 +203,16 @@ function SettingsForm() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Button onClick={() => void saveLocation()} disabled={savingLocation}>
-            {savingLocation ? "Saving…" : "Save location"}
+          <Button onClick={() => void saveLocation()} isLoading={savingLocation}>
+            Save location
           </Button>
           {settings.location ? (
-            <span className="text-xs text-ink-3">
+            <span className="text-xs text-ink-faint">
               stored (fuzzed): lat {settings.location.latFuzzed ?? "—"}, lng {settings.location.lngFuzzed ?? "—"}
             </span>
           ) : null}
         </div>
-        <p className="text-xs text-ink-3">
+        <p className="text-xs text-ink-faint">
           We never store exact coordinates. On the map, your city shows only fuzzed to a ~15 km
           grid — and only if visibility allows.
         </p>

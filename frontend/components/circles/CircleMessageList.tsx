@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { Send, Loader2 } from "lucide-react";
+import { Send } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Avatar } from "@/components/profile/Avatar";
@@ -132,11 +132,11 @@ export function CircleMessageList({
                         key={r.kind}
                         onClick={() => canPost && react(msg.id, r.kind)}
                         disabled={!canPost}
-                        className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition ${
+                        className={`flex min-h-7 cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition focus-visible:ring-2 focus-visible:ring-accent ${
                           reacted?.reactedByMe
-                            ? "border-accent bg-accent/10 text-accent"
-                            : "border-ink-3/30 text-ink-3 hover:border-accent/50 hover:text-accent"
-                        } ${!canPost ? "cursor-not-allowed opacity-60" : ""}`}
+                            ? "border-accent bg-accent/15 text-accent font-semibold"
+                            : "border-line bg-stage-2 text-ink-muted hover:border-accent/50 hover:text-accent"
+                        } ${!canPost ? "cursor-not-allowed opacity-50" : ""}`}
                       >
                         {r.label}
                         {reacted ? <span className="font-medium">{reacted.count}</span> : null}
@@ -159,8 +159,13 @@ export function CircleMessageList({
             placeholder="Share your thoughts…"
             maxLength={2000}
           />
-          <Button type="submit" disabled={busy || !content.trim()}>
-            {busy ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+          <Button
+            type="submit"
+            disabled={busy || !content.trim()}
+            isLoading={busy}
+            aria-label="Send message to circle"
+          >
+            <Send size={16} />
           </Button>
         </form>
       ) : (

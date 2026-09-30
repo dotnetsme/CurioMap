@@ -1,56 +1,57 @@
 @import "tailwindcss";
 
 @theme {
-  /* Ink, paper, coral and chartreuse keep the observatory expressive without
-   * letting one hue dominate every surface. */
-  --color-stage: #0b1011;
-  --color-stage-2: #101819;
-  --color-stage-3: #182322;
-  --color-glass: 22 31 29 / 86%;
-  --color-glass-2: 22 31 29 / 68%;
-  --color-ink: #f4f0e8;
-  --color-ink-strong: #fffdf8;
-  --color-ink-muted: #b8c2bb;
-  --color-ink-faint: #82918a;
-  --color-line: 71 91 83 / 48%;
-  --color-line-2: 116 139 124 / 68%;
-  --color-accent: #f27d68;
-  --color-accent-strong: #ff9a7e;
-  --color-accent-soft: 112 45 37 / 48%;
-  --color-accent-ink: #1b1210;
-  --color-signal: #c4e86b;
-  --color-signal-strong: #d8f58b;
-  --color-signal-soft: 52 72 25 / 52%;
-  --color-heat-cold: #83d8d0;
-  --color-heat-warm: #f2b36b;
-  --color-heat-hot: #f27d68;
-  --color-heat-hot-2: #ffb29d;
-  --color-amber: #f2b36b;
-  --color-amber-strong: #dc8c3e;
-  --color-amber-soft: 75 52 24 / 58%;
+  /* Direction A: Cosmic Aurora & Curiosity Sparks.
+   * Deep obsidian space void, electric nebula violet, hyper cyan aurora,
+   * supernova amber flames, and crisp starlight typography. */
+  --color-stage: #07090e;
+  --color-stage-2: #0d111a;
+  --color-stage-3: #151b28;
+  --color-glass: 15 20 32 / 78%;
+  --color-glass-2: 15 20 32 / 55%;
+  --color-ink: #f8fafc;
+  --color-ink-strong: #ffffff;
+  --color-ink-muted: #94a3b8;
+  --color-ink-faint: #64748b;
+  --color-line: 99 102 241 / 20%;
+  --color-line-2: 139 92 246 / 36%;
+  --color-accent: #8b5cf6;
+  --color-accent-strong: #a855f7;
+  --color-accent-soft: 139 92 246 / 24%;
+  --color-accent-ink: #ffffff;
+  --color-signal: #06b6d4;
+  --color-signal-strong: #22d3ee;
+  --color-signal-soft: 6 182 212 / 24%;
+  --color-heat-cold: #06b6d4;
+  --color-heat-warm: #8b5cf6;
+  --color-heat-hot: #f43f5e;
+  --color-heat-hot-2: #fb7185;
+  --color-amber: #f59e0b;
+  --color-amber-strong: #d97706;
+  --color-amber-soft: 245 158 11 / 24%;
   /* Legacy aliases — keep old utility classes compiling during the migration
    * (bg-canvas, bg-night, bg-surface, text-ink-2/3, bg-reading, ...). */
-  --color-canvas: #0b1011;
-  --color-night: #0b1011;
-  --color-night-2: #101819;
-  --color-night-3: #182322;
-  --color-night-line: 116 139 124 / 68%;
-  --color-glow: #f27d68;
-  --color-glow-soft: #ff9a7e;
-  --color-surface: #17211f;
-  --color-surface-2: #1b2926;
-  --color-ink-2: #b8c2bb;
-  --color-ink-3: #82918a;
-  --color-ink-soft: #b8c2bb;
-  --color-reading: #83d8d0;
-  --color-reading-soft: 36 76 70 / 52%;
-  --color-violet: #f27d68;
-  --color-cyan: #83d8d0;
-  --font-sans: var(--font-dm-sans), ui-sans-serif, sans-serif;
-  --font-display: var(--font-newsreader), ui-serif, Georgia, serif;
+  --color-canvas: #07090e;
+  --color-night: #07090e;
+  --color-night-2: #0d111a;
+  --color-night-3: #151b28;
+  --color-night-line: 139 92 246 / 36%;
+  --color-glow: #8b5cf6;
+  --color-glow-soft: #a855f7;
+  --color-surface: #0d111a;
+  --color-surface-2: #151b28;
+  --color-ink-2: #94a3b8;
+  --color-ink-3: #64748b;
+  --color-ink-soft: #94a3b8;
+  --color-reading: #06b6d4;
+  --color-reading-soft: 6 182 212 / 24%;
+  --color-violet: #8b5cf6;
+  --color-cyan: #06b6d4;
+  --font-sans: var(--font-plus-jakarta), ui-sans-serif, sans-serif;
+  --font-display: var(--font-outfit), ui-sans-serif, sans-serif;
   --font-mono: var(--font-mono), ui-monospace, monospace;
   --spacing-grid: 8px;
-  --radius-card: 12px;
+  --radius-card: 14px;
   --radius-pill: 9999px;
 }
 
@@ -82,14 +83,19 @@ body {
   background-color: var(--color-stage);
   background-image:
     radial-gradient(
-      900px 420px at 8% -8%,
-      rgba(242, 125, 104, 0.12),
+      1100px 520px at 15% -10%,
+      rgba(139, 92, 246, 0.16),
       transparent 70%
     ),
     radial-gradient(
-      760px 460px at 96% 18%,
-      rgba(131, 216, 208, 0.08),
+      900px 500px at 85% 15%,
+      rgba(6, 182, 212, 0.12),
       transparent 68%
+    ),
+    radial-gradient(
+      800px 600px at 50% 90%,
+      rgba(245, 158, 11, 0.05),
+      transparent 70%
     );
   background-attachment: fixed;
   color: var(--color-ink);
@@ -122,8 +128,8 @@ body {
 
 .display {
   font-family: var(--font-display);
-  font-weight: 500;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  letter-spacing: -0.03em;
   line-height: 1.1;
 }
 
@@ -140,22 +146,24 @@ body {
   background:
     linear-gradient(
       145deg,
-      rgba(255, 255, 255, 0.08),
-      rgba(255, 255, 255, 0.025) 46%,
-      rgba(0, 0, 0, 0.14)
+      rgba(255, 255, 255, 0.07),
+      rgba(255, 255, 255, 0.02) 46%,
+      rgba(0, 0, 0, 0.25)
     ),
     var(--color-glass);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-card);
-  box-shadow: 0 18px 42px -30px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 18px 42px -28px rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 .surface {
   background:
     linear-gradient(
       145deg,
-      rgba(255, 255, 255, 0.07),
-      rgba(255, 255, 255, 0.02) 46%,
-      rgba(0, 0, 0, 0.12)
+      rgba(255, 255, 255, 0.06),
+      rgba(255, 255, 255, 0.015) 46%,
+      rgba(0, 0, 0, 0.2)
     ),
     var(--color-glass);
   border: 1px solid var(--color-line);
@@ -165,15 +173,16 @@ body {
   background: color-mix(in srgb, white 6%, transparent);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-card);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .text-gradient {
   background: linear-gradient(
     135deg,
-    var(--color-accent-strong),
-    var(--color-accent)
+    #ffffff 0%,
+    var(--color-signal-strong) 45%,
+    var(--color-accent-strong) 90%
   );
   -webkit-background-clip: text;
   background-clip: text;
@@ -195,6 +204,8 @@ body {
 /* Field / input */
 .field {
   width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
   border-radius: 12px;
   border: 1px solid var(--color-line);
   background: var(--color-glass);
@@ -217,6 +228,8 @@ body {
 /* Buttons */
 .btn-primary {
   display: inline-flex;
+  min-height: 44px;
+  cursor: pointer;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -239,6 +252,8 @@ body {
 
 .btn-accent {
   display: inline-flex;
+  min-height: 44px;
+  cursor: pointer;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -258,6 +273,8 @@ body {
 
 .btn-ghost {
   display: inline-flex;
+  min-height: 44px;
+  cursor: pointer;
   align-items: center;
   justify-content: center;
   gap: 8px;

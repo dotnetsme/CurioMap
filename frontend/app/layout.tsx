@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
-import { DM_Sans, JetBrains_Mono, Newsreader } from "next/font/google";
+import { JetBrains_Mono, Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 
-const dmSans = DM_Sans({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-dm-sans",
+  variable: "--font-plus-jakarta",
   display: "swap",
 });
 
-const newsreader = Newsreader({
+const outfit = Outfit({
   subsets: ["latin"],
-  variable: "--font-newsreader",
+  variable: "--font-outfit",
   display: "swap",
 });
 
@@ -24,12 +24,37 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://curiomap.app"),
   title: {
     default: "CurioMap — a live map of human curiosity",
     template: "%s · CurioMap",
   },
   description:
     "A global, open-source, geolocation-based reading graph. Anonymous identities, coarse-location discovery, and short book conversations — privacy-first.",
+  openGraph: {
+    title: "CurioMap — a live map of human curiosity",
+    description:
+      "See what the world is reading right now. Privacy-first, fuzzed coordinates.",
+    url: "https://curiomap.app",
+    siteName: "CurioMap",
+    images: [
+      {
+        url: "/api/og",
+        width: 1200,
+        height: 630,
+        alt: "CurioMap — a live map of human curiosity",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CurioMap — a live map of human curiosity",
+    description:
+      "See what the world is reading right now. Privacy-first, fuzzed coordinates.",
+    images: ["/api/og"],
+  },
 };
 
 export default function RootLayout({
@@ -40,7 +65,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${newsreader.variable} ${jetbrains.variable}`}
+      className={`${plusJakarta.variable} ${outfit.variable} ${jetbrains.variable}`}
     >
       <body
         suppressHydrationWarning

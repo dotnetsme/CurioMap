@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check } from "lucide-react";
 import * as followApi from "@/lib/api/follow";
 import { Button } from "@/components/ui/Button";
 
@@ -38,8 +39,19 @@ export function FollowButton({
 
   return (
     <span className="inline-flex flex-col items-start gap-1">
-      <Button variant={following ? "ghost" : "primary"} onClick={toggle} disabled={busy}>
-        {following ? "Following ✓" : "Follow"}
+      <Button
+        variant={following ? "ghost" : "primary"}
+        onClick={toggle}
+        isLoading={busy}
+        className="min-h-11"
+      >
+        {following ? (
+          <span className="inline-flex items-center gap-1.5">
+            Following <Check size={14} className="text-signal" />
+          </span>
+        ) : (
+          "Follow"
+        )}
       </Button>
       {error ? <span className="text-xs text-heat-hot">{error}</span> : null}
     </span>

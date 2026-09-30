@@ -59,11 +59,15 @@ export function StreakCard({ userId }: { userId?: string }) {
       >
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center">
           <Flame
-            className={`size-8 ${stats.activeToday ? "text-amber-500" : "text-ink-muted"}`}
+            className={`size-8 transition-transform duration-300 ${
+              stats.activeToday
+                ? "text-amber drop-shadow-[0_0_12px_rgba(245,158,11,0.65)] animate-pulse"
+                : "text-ink-muted"
+            }`}
             aria-hidden
           />
           <div className="text-center sm:text-left">
-            <h3 className="text-base font-semibold text-ink">
+            <h3 className="font-display text-base font-bold text-ink-strong">
               {stats.currentStreak}-day streak
             </h3>
             <p className="text-sm text-ink-muted">
@@ -71,14 +75,14 @@ export function StreakCard({ userId }: { userId?: string }) {
               {stats.freezeCount > 0 ? (
                 <span
                   title="Freezes shield your streak across a missed day"
-                  className="ml-1.5 inline-flex items-center gap-0.5 text-sky-500"
+                  className="ml-1.5 inline-flex items-center gap-0.5 font-medium text-signal"
                 >
                   <Snowflake className="size-3.5" aria-hidden /> {stats.freezeCount}
                 </span>
               ) : null}{" "}
               ·{" "}
               {stats.activeToday ? (
-                <span className="font-medium text-signal">Active today</span>
+                <span className="font-semibold text-signal">Active today</span>
               ) : (
                 "Read something to keep it alive"
               )}
@@ -97,17 +101,17 @@ export function StreakCard({ userId }: { userId?: string }) {
               <div
                 key={kind}
                 title={earned ? `${meta.name} — ${meta.description}` : `${meta.description} (locked)`}
-                className={`flex flex-col items-center gap-1 rounded-xl border px-1 py-2 text-center ${
+                className={`flex flex-col items-center gap-1 rounded-xl border px-1 py-2 text-center transition-all ${
                   earned
-                    ? "border-amber-500/30 bg-amber-500/10"
-                    : "border-ink/10 bg-surface opacity-50"
+                    ? "border-amber/40 bg-amber-soft/20 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+                    : "border-line bg-stage-2 opacity-50"
                 }`}
               >
                 <Icon
-                  className={`size-4 ${earned ? "text-amber-500" : "text-ink-muted"}`}
+                  className={`size-4 ${earned ? "text-amber" : "text-ink-muted"}`}
                   aria-hidden
                 />
-                <span className="text-[10px] leading-tight text-ink-soft">{meta.name}</span>
+                <span className="text-[10px] leading-tight text-ink-muted">{meta.name}</span>
               </div>
             );
           })}
@@ -153,8 +157,8 @@ function ReadingHeatmap({ activeDays, days }: { activeDays: string[]; days: numb
         <p className="label-sm text-ink-muted">Last {Math.round(days / 7)} weeks of reading</p>
         <p className="flex items-center gap-1 text-[10px] text-ink-faint">
           less
-          <span className="size-[9px] rounded-[2px] bg-ink/10" aria-hidden />
-          <span className="size-[9px] rounded-[2px] bg-amber-500" aria-hidden />
+          <span className="size-[9px] rounded-[2px] bg-stage-3 border border-line/40" aria-hidden />
+          <span className="size-[9px] rounded-[2px] bg-amber shadow-[0_0_4px_rgba(245,158,11,0.5)]" aria-hidden />
           more
         </p>
       </div>
@@ -166,7 +170,11 @@ function ReadingHeatmap({ activeDays, days }: { activeDays: string[]; days: numb
           <span
             key={c.iso}
             title={c.iso}
-            className={`size-[10px] rounded-[2px] ${c.active ? "bg-amber-500" : "bg-ink/10"}`}
+            className={`size-[10px] rounded-[2px] transition-colors ${
+              c.active
+                ? "bg-amber shadow-[0_0_6px_rgba(245,158,11,0.55)]"
+                : "bg-stage-3 border border-line/30 hover:border-line"
+            }`}
           />
         ))}
       </div>

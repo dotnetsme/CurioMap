@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { Ring } from "@/components/ui/Progress";
+import { Button } from "@/components/ui/Button";
 import { getChallengeStats, setChallengeTarget } from "@/lib/api/challenge";
 import type { ChallengeStats as ChallengeStatsType } from "@/types";
 import { Target, Flame, TrendingUp } from "lucide-react";
@@ -69,20 +70,20 @@ export function ChallengeCard() {
     >
       <Ring value={stats.finished} max={stats.target} size={96} stroke={9}>
         <div className="flex flex-col items-center">
-          <span className="text-lg font-bold text-ink">{stats.finished}</span>
+          <span className="font-display text-lg font-bold text-ink-strong">{stats.finished}</span>
           <span className="text-[10px] uppercase tracking-wide text-ink-muted">of {stats.target}</span>
         </div>
       </Ring>
 
       <div className="flex flex-1 flex-col gap-2 text-center sm:text-left">
         <div className="flex items-center justify-center gap-2 sm:justify-start">
-          <Flame className="size-4 text-amber-500" />
-          <h3 className="text-base font-semibold text-ink">{stats.year} Reading Challenge</h3>
+          <Flame className="size-4 text-amber drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+          <h3 className="font-display text-base font-bold text-ink-strong">{stats.year} Reading Challenge</h3>
         </div>
 
         <p className="text-sm text-ink-muted">
           {stats.aheadOfPace ? (
-            <span className="inline-flex items-center gap-1 font-medium text-signal">
+            <span className="inline-flex items-center gap-1 font-semibold text-signal">
               <TrendingUp className="size-3.5" />
               Ahead of pace
             </span>
@@ -93,41 +94,43 @@ export function ChallengeCard() {
         </p>
 
         {editing ? (
-          <div className="flex items-center justify-center gap-2 sm:justify-start">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
             <input
               type="number"
               min={1}
               max={1000}
               value={targetInput}
               onChange={(e) => setTargetInput(Math.max(1, Number(e.target.value)))}
-              className="w-20 rounded-lg border border-ink/15 bg-surface px-2 py-1 text-sm text-ink outline-none focus:border-accent"
+              className="w-24 min-h-11 rounded-xl border border-line bg-glass px-3 py-2 text-sm text-ink outline-none focus:border-accent"
               aria-label="Challenge target"
             />
-            <button
+            <Button
               onClick={saveTarget}
-              disabled={saving}
-              className="btn-primary px-3 py-1 text-sm disabled:opacity-50"
+              isLoading={saving}
+              className="px-4 text-sm"
             >
-              {saving ? "Saving" : "Save"}
-            </button>
-            <button
+              Save
+            </Button>
+            <Button
+              variant="ghost"
               onClick={() => {
                 setEditing(false);
                 setTargetInput(stats.target);
               }}
-              className="btn-ghost px-3 py-1 text-sm"
+              className="px-4 text-sm"
             >
               Cancel
-            </button>
+            </Button>
           </div>
         ) : (
-          <button
+          <Button
+            variant="ghost"
             onClick={() => setEditing(true)}
-            className="btn-ghost inline-flex w-fit items-center gap-1 px-3 py-1 text-sm"
+            className="inline-flex w-fit items-center gap-1.5 px-3.5 text-sm"
           >
             <Target className="size-3.5" />
             {stats.target === 50 ? "Set target" : "Edit target"}
-          </button>
+          </Button>
         )}
       </div>
     </motion.div>

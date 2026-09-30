@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Input";
@@ -17,8 +18,12 @@ export function BookshelfEntryCard({
   editable?: boolean;
   onChanged?: () => void;
 }) {
-  const [status, setStatus] = useState<BookStatus>(entry.status);
-  const [visibility, setVisibility] = useState<ShelfVisibility>(entry.visibility);
+  const [status, setStatus] = useState<BookStatus>(
+    (entry.status?.toLowerCase() as BookStatus) || "reading",
+  );
+  const [visibility, setVisibility] = useState<ShelfVisibility>(
+    (entry.visibility?.toLowerCase() as ShelfVisibility) || "public",
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,13 +57,16 @@ export function BookshelfEntryCard({
 
   return (
     <div className="flex items-center gap-4 rounded-xl border border-line bg-white/5 p-4 transition hover:border-line-2">
-      <a href={`/books/${entry.bookId}`} className="shrink-0">
+      <Link href={`/books/${entry.bookId}`} className="shrink-0 transition hover:scale-105">
         <BookCover book={entry.book} size={48} />
-      </a>
+      </Link>
       <div className="min-w-0 flex-1">
-        <a href={`/books/${entry.bookId}`} className="font-medium text-ink hover:text-accent">
+        <Link
+          href={`/books/${entry.bookId}`}
+          className="font-medium text-ink hover:text-accent"
+        >
           {entry.book.title}
-        </a>
+        </Link>
         <p className="text-sm text-ink-muted">{entry.book.author}</p>
         <div className="mt-1 flex items-center gap-2">
           <Badge tone={status === "reading" ? "accent" : status === "finished" ? "reading" : "slate"}>
@@ -69,13 +77,13 @@ export function BookshelfEntryCard({
         {error ? <p className="mt-1 text-xs text-heat-hot">{error}</p> : null}
       </div>
       {editable ? (
-        <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+        <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
           <Select
             value={status}
             disabled={saving}
             onChange={(e) => void apply(e.target.value as BookStatus, visibility)}
             className="w-32"
-            aria-label="Status"
+            aria-label="Reading status"
           >
             <option value="reading">Reading</option>
             <option value="finished">Finished</option>
@@ -86,12 +94,18 @@ export function BookshelfEntryCard({
             disabled={saving}
             onChange={(e) => void apply(status, e.target.value as ShelfVisibility)}
             className="w-28"
-            aria-label="Visibility"
+            aria-label="Shelf visibility"
           >
             <option value="public">Public</option>
             <option value="private">Private</option>
           </Select>
-          <Button variant="subtle" onClick={() => void removeBook()} disabled={saving}>
+          <Button
+            variant="ghost"
+            onClick={() => void removeBook()}
+            disabled={saving}
+            isLoading={saving}
+            className="text-heat-hot hover:border-heat-hot/50 hover:bg-heat-hot/10 hover:text-heat-hot-2"
+          >
             Remove
           </Button>
         </div>

@@ -110,7 +110,7 @@ export function NearbyReadersList({
               <div className="min-w-0 flex-1">
                 <Link
                   href={`/users/${reader.user.id}`}
-                  className="font-semibold text-ink hover:text-accent-ink"
+                  className="font-semibold text-ink hover:text-accent-strong transition-colors"
                 >
                   {reader.user.displayName}
                 </Link>

@@ -13,9 +13,10 @@ export function RegionTopBooks({ books, regionLabel }: { books: TopBook[]; regio
         <BookCard
           key={book.id}
           book={book}
+          rank={index + 1}
           footer={
-            <span className="text-xs text-accent-ink">
-              #{index + 1} — {book.readerCount} {book.readerCount === 1 ? "reader" : "readers"}{" "}
+            <span className="text-xs font-semibold text-signal">
+              #{index + 1} · {book.readerCount} {book.readerCount === 1 ? "reader" : "readers"}{" "}
               {regionLabel ? `in ${regionLabel}` : ""}
             </span>
           }

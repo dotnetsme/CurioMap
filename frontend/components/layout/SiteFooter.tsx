@@ -39,15 +39,15 @@ export function SiteFooter() {
           </div>
           <div className="flex flex-col gap-2">
             <span className="mono-label text-ink-faint">Project</span>
-            <a href="/policy/terms" className="text-ink-muted hover:text-ink">
+            <Link href="/policy/terms" className="text-ink-muted hover:text-ink">
               Terms of use
-            </a>
-            <a href="/policy/privacy" className="text-ink-muted hover:text-ink">
+            </Link>
+            <Link href="/policy/privacy" className="text-ink-muted hover:text-ink">
               Privacy policy
-            </a>
-            <a href="/policy/affiliates" className="text-ink-muted hover:text-ink">
+            </Link>
+            <Link href="/policy/affiliates" className="text-ink-muted hover:text-ink">
               Affiliate policy
-            </a>
+            </Link>
             <a
               href="https://github.com/curiomap/curiomap"
               target="_blank"
@@ -63,13 +63,13 @@ export function SiteFooter() {
         <div className="flex flex-col gap-2 border-t border-line pt-6 text-xs text-ink-faint sm:flex-row sm:items-center sm:justify-between">
           <span>
             © 2026 CurioMap. Apache 2.0. Use of this site is subject to the{" "}
-            <a href="/policy/terms" className="underline underline-offset-2 hover:text-ink">
+            <Link href="/policy/terms" className="underline underline-offset-2 hover:text-ink">
               Terms of Use
-            </a>{" "}
+            </Link>{" "}
             and{" "}
-            <a href="/policy/privacy" className="underline underline-offset-2 hover:text-ink">
+            <Link href="/policy/privacy" className="underline underline-offset-2 hover:text-ink">
               Privacy Policy
-            </a>
+            </Link>
             .
           </span>
           <span className="flex items-center gap-1.5">

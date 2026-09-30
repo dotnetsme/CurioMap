@@ -29,9 +29,9 @@ export function BookshelfList({ ownerId }: { ownerId?: string }) {
   if (!entries) return <PageLoading />;
 
   const grouped = {
-    reading: entries.filter((e) => e.status === "reading"),
-    finished: entries.filter((e) => e.status === "finished"),
-    wishlist: entries.filter((e) => e.status === "wishlist"),
+    reading: entries.filter((e) => e.status?.toLowerCase() === "reading"),
+    finished: entries.filter((e) => e.status?.toLowerCase() === "finished"),
+    wishlist: entries.filter((e) => e.status?.toLowerCase() === "wishlist"),
   };
 
   return (

@@ -70,10 +70,11 @@ export function AddToBookshelf({ book }: { book: BookStub }) {
           <Button
             key={status.value}
             variant="ghost"
+            isLoading={busy === status.value}
             disabled={busy !== null}
             onClick={() => void addBook(status.value)}
           >
-            {busy === status.value ? "…" : status.label}
+            {status.label}
           </Button>
         ))}
       </div>

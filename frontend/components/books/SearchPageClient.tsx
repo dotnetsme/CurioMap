@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BookOpen } from "lucide-react";
 import { BookCard } from "@/components/books/BookCard";
 import { BookSearchBar } from "@/components/books/BookSearchBar";
 import { EmptyState, ErrorState, PageLoading } from "@/components/ui/Feedback";
@@ -39,30 +40,34 @@ export function SearchPageClient({ initialQuery }: { initialQuery: string }) {
 
   return (
     <div className="flex flex-col gap-6 py-4">
-      <h1 className="text-2xl font-bold text-ink">Search books</h1>
+      <div>
+        <h1 className="font-display text-3xl font-bold tracking-tight text-ink-strong">Search books</h1>
+        <p className="mt-1 text-sm text-ink-muted">Find books and discover who is reading them around the world.</p>
+      </div>
       <BookSearchBar initialQuery={query} />
       {fromExternal ? (
-        <p className="text-xs text-ink-soft">
-          No exact catalog match — we imported these results from Open Library.{" "}
+        <div className="flex items-center justify-between rounded-xl border border-signal/30 bg-signal/10 px-4 py-2.5 text-xs text-ink-muted">
+          <span>No exact local catalog match — imported live from Open Library.</span>
           <button
             type="button"
-            className="text-accent underline decoration-accent/50 underline-offset-2 hover:decoration-accent"
+            className="cursor-pointer font-semibold text-signal hover:underline"
             onClick={() => setFromExternal(false)}
           >
             Acknowledge
           </button>
-        </p>
+        </div>
       ) : null}
       {error ? <ErrorState message={error} /> : null}
       {query.trim().length < 2 ? (
         <EmptyState
+          icon={BookOpen}
           title="Search the catalog"
           hint="Try a title, author, or ISBN — like “Meditations”, “Harari”, or 9780140449334"
         />
       ) : loading ? (
         <PageLoading />
       ) : !results || results.items.length === 0 ? (
-        <EmptyState title="No books found" hint="Try different keywords or an ISBN." />
+        <EmptyState icon={BookOpen} title="No books found" hint="Try different keywords or an ISBN." />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {results.items.map((b) => (

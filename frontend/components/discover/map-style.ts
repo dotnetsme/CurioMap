@@ -73,11 +73,11 @@ function clampNum(v: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, v));
 }
 
-/** Heat gradient: cyan → violet → magenta, matching the Observatory palette. */
+/** Heat gradient: cyan aurora → electric violet → supernova rose flame. */
 export function heatColor(intensity: number): string {
   const t = clampNum(intensity, 0, 1);
-  if (t < 0.5) return mix("#22d3ee", "#7c3aed", t / 0.5);
-  return mix("#7c3aed", "#ec4899", (t - 0.5) / 0.5);
+  if (t < 0.5) return mix("#06b6d4", "#8b5cf6", t / 0.5);
+  return mix("#8b5cf6", "#f43f5e", (t - 0.5) / 0.5);
 }
 
 function mix(a: string, b: string, k: number): string {

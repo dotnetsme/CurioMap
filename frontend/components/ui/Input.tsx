@@ -3,7 +3,7 @@
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 
 export function Input({ className = "", ...props }: InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={`field ${className}`} {...props} />;
+  return <input className={`field min-h-11 ${className}`} {...props} />;
 }
 
 export function Textarea({ className = "", ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
@@ -12,7 +12,7 @@ export function Textarea({ className = "", ...props }: TextareaHTMLAttributes<HT
 
 export function Select({ className = "", children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <select className={`field ${className}`} {...props}>
+    <select className={`field min-h-11 cursor-pointer ${className}`} {...props}>
       {children}
     </select>
   );

@@ -9,7 +9,6 @@ import {
   Calendar,
   LogIn,
   LogOut,
-  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -97,17 +96,16 @@ export function CircleDetail({ handle }: { handle: Promise<string> | string }) {
             <Button
               onClick={toggleMembership}
               disabled={joining}
+              isLoading={joining}
               variant={membership ? "ghost" : "primary"}
             >
-              {joining ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : membership ? (
+              {membership ? (
                 <>
-                  <LogOut size={16} /> Leave
+                  <LogOut size={16} /> Leave circle
                 </>
               ) : (
                 <>
-                  <LogIn size={16} /> Join
+                  <LogIn size={16} /> Join circle
                 </>
               )}
             </Button>

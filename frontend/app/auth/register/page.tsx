@@ -104,15 +104,15 @@ function RegisterForm() {
             minimum age).
           </span>
         </label>
-        {error ? <p className="text-sm text-heat-hot">{error}</p> : null}
-        <Button type="submit" disabled={busy}>
-          {busy ? "Creating…" : "Create my identity"}
+        {error ? <p className="text-sm font-medium text-heat-hot">{error}</p> : null}
+        <Button type="submit" isLoading={busy}>
+          Create my identity
         </Button>
         <p className="text-center text-sm text-ink-muted">
           Already exploring?{" "}
           <Link
             href="/auth/login"
-            className="font-medium text-accent-strong hover:text-accent"
+            className="font-medium text-accent-strong underline underline-offset-2 hover:text-accent"
           >
             Sign in
           </Link>

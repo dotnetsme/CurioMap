@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Sparkles } from "lucide-react";
 import { backfillBadges } from "@/lib/api/admin";
+import { Button } from "@/components/ui/Button";
 
 /**
  * Admin one-shot: awards every badge readers already qualify for from
@@ -30,16 +31,17 @@ export function BackfillButton() {
 
   return (
     <div className="flex flex-col items-start gap-2">
-      <button
+      <Button
+        variant="ghost"
         onClick={run}
-        disabled={busy}
-        className="btn-ghost text-sm disabled:opacity-50"
+        isLoading={busy}
+        className="text-sm"
       >
-        <Sparkles size={16} className={busy ? "animate-pulse" : ""} aria-hidden />
-        {busy ? "Backfilling…" : "Run badge backfill"}
-      </button>
-      {result ? <p className="text-xs text-signal">{result}</p> : null}
-      {error ? <p className="text-xs text-heat-hot">{error}</p> : null}
+        <Sparkles size={16} aria-hidden />
+        Run badge backfill
+      </Button>
+      {result ? <p className="text-xs font-semibold text-signal">{result}</p> : null}
+      {error ? <p className="text-xs font-medium text-heat-hot">{error}</p> : null}
     </div>
   );
 }

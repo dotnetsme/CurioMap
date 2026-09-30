@@ -67,8 +67,13 @@ export default function FeedPage() {
           <FeedList events={events} />
           {nextOffset ? (
             <div className="mt-6 text-center">
-              <Button variant="ghost" onClick={() => void loadMore()} disabled={loadingMore}>
-                {loadingMore ? "Loading…" : "Load more"}
+              <Button
+                variant="ghost"
+                onClick={() => void loadMore()}
+                disabled={loadingMore}
+                isLoading={loadingMore}
+              >
+                Load more
               </Button>
             </div>
           ) : null}

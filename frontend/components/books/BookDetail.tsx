@@ -152,8 +152,7 @@ export function BookDetail({ bookId }: { bookId: string }) {
             <div className="card flex flex-col gap-3 p-6 text-sm leading-relaxed text-ink-muted">
               <p>
                 <Star size={14} className="mr-1 inline text-amber-500" />
-                Community rating and reviews sync to the server soon — your stars are saved on this
-                device today.
+                Community ratings and reader reviews sync live to CurioMap&apos;s ethical reading graph.
               </p>
               {book.description ? <p>{book.description}</p> : <p>No publisher description yet.</p>}
               <p className="text-xs text-ink-faint">

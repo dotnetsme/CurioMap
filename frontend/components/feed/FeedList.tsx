@@ -75,7 +75,7 @@ function describe(event: FeedEvent): React.ReactNode {
       return (
         <>
           shelved <strong>{book}</strong>
-          {event.shelfStatus && event.shelfStatus !== "reading"
+          {event.shelfStatus && event.shelfStatus.toLowerCase() !== "reading"
             ? ` · marked ${event.shelfStatus}`
             : " · now reading"}
         </>

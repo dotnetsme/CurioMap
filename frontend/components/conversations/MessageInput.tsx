@@ -59,9 +59,9 @@ export function MessageInput({
       />
       {error ? <p className="text-sm text-heat-hot">{error}</p> : null}
       <div className="flex items-center justify-between">
-        <span className="text-xs text-ink-3">{content.length}/2000</span>
-        <Button type="submit" disabled={busy || !content.trim()}>
-          {busy ? "Posting…" : "Post"}
+        <span className="text-xs text-ink-faint">{content.length}/2000</span>
+        <Button type="submit" isLoading={busy} disabled={!content.trim()}>
+          Post
         </Button>
       </div>
     </form>

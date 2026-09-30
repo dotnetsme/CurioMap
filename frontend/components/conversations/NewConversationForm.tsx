@@ -51,17 +51,17 @@ export function NewConversationForm({
 
   if (!user) {
     return (
-      <div className="card border-amber-300/30 bg-amber-50/70 p-4 text-sm text-ink-2">
-        <p className="font-semibold text-ink">
-          Join CurioMap to start a conversation.
+      <div className="card border-amber/30 bg-amber-soft/20 p-5 text-sm text-ink backdrop-blur-md">
+        <p className="font-display text-base font-bold text-ink-strong">
+          Join CurioMap to start a conversation
         </p>
-        <p className="mt-1 text-xs text-ink-faint">
-          You can read the discussion now, or create an anonymous identity to
-          ask a question.
+        <p className="mt-1 text-xs text-ink-muted">
+          You can read discussions anytime, or create an anonymous identity to
+          ask a question and share thoughts.
         </p>
         <Link
           href={`/auth/register?returnTo=${encodeURIComponent(`/books/${bookId}/conversations`)}`}
-          className="mt-3 inline-flex rounded-full bg-ink px-4 py-2 text-xs font-semibold text-white transition hover:bg-ink-2"
+          className="btn-primary mt-4 inline-flex min-h-11 px-5 text-xs font-bold text-accent-ink"
         >
           Join CurioMap
         </Link>
@@ -135,8 +135,8 @@ export function NewConversationForm({
       </Select>
       {error ? <p className="text-sm text-heat-hot">{error}</p> : null}
       <div className="flex gap-2">
-        <Button type="submit" disabled={busy}>
-          {busy ? "…" : "Create"}
+        <Button type="submit" isLoading={busy}>
+          Create
         </Button>
         <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
           Cancel

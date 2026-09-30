@@ -98,7 +98,7 @@ export function HomeDashboard() {
         <ErrorState message="CurioMap couldn't load your dashboard — the API may be unreachable. Refresh to retry." />
       ) : null}
 
-      <div className="grid gap-6 xl:grid-cols-[1.7fr_0.95fr]">
+      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
         <Reveal>
           <section className="card overflow-hidden">
             <div className="relative h-[320px] border-b border-line sm:h-[410px]">
@@ -119,24 +119,28 @@ export function HomeDashboard() {
           </section>
         </Reveal>
 
+        <div className="flex flex-col gap-6">
+          <StreakCard />
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         <DashboardPanel
-          icon={TrendingUp}
-          title="Trending books"
-          hint="What readers are shelving now"
+          icon={BookMarked}
+          title="My bookshelf"
+          hint="Private rows stay private — only you see them"
           action={
             <Link
-              href="/discover/top-books"
-              className="text-[11px] font-semibold text-accent hover:text-accent-strong"
+              href="/me/bookshelf"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent hover:text-accent-strong"
             >
-              All →
+              Full shelf →
             </Link>
           }
         >
-          <TrendingPanel books={summary?.topBooks ?? []} loading={!settled} />
+          <ShelfGlance />
         </DashboardPanel>
-      </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[0.95fr_1.2fr_1fr]">
         <DashboardPanel
           icon={MapPin}
           title="Nearby readers"
@@ -180,21 +184,35 @@ export function HomeDashboard() {
           icon={MessagesSquare}
           title="Book discussion"
           hint="From readers you follow"
+          action={
+            <Link
+              href="/circles"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent hover:text-accent-strong"
+            >
+              Circles →
+            </Link>
+          }
         >
           <DiscussionPanel />
-        </DashboardPanel>
-
-        <DashboardPanel
-          icon={BookMarked}
-          title="My bookshelf"
-          hint="Private rows stay private — only you see them"
-        >
-          <ShelfGlance />
         </DashboardPanel>
       </div>
 
       <div className="mt-6">
-        <StreakCard />
+        <DashboardPanel
+          icon={TrendingUp}
+          title="Trending books"
+          hint="What readers are shelving worldwide"
+          action={
+            <Link
+              href="/discover/top-books"
+              className="text-[11px] font-semibold text-accent hover:text-accent-strong"
+            >
+              All →
+            </Link>
+          }
+        >
+          <TrendingPanel books={summary?.topBooks ?? []} loading={!settled} />
+        </DashboardPanel>
       </div>
     </div>
   );

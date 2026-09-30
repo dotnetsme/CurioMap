@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
 import { badgeMeta } from "@/lib/badges";
+import { fireStardust } from "@/lib/stardust";
 
 const SEEN_KEY = "curiomap.seenBadges";
 
@@ -39,6 +40,7 @@ export function BadgeToast({ kinds, onDismiss }: { kinds: string[]; onDismiss: (
 
   useEffect(() => {
     if (count === 0) return;
+    fireStardust();
     const timer = setTimeout(onDismiss, 6000 + count * 800);
     return () => clearTimeout(timer);
   }, [count, onDismiss]);
@@ -51,14 +53,14 @@ export function BadgeToast({ kinds, onDismiss }: { kinds: string[]; onDismiss: (
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 24, scale: 0.96 }}
           transition={{ type: "spring", stiffness: 320, damping: 26 }}
-          className="fixed bottom-4 right-4 z-50 w-72"
+          className="fixed bottom-4 right-4 z-50 w-76"
           role="status"
           aria-live="polite"
         >
-          <div className="glass flex flex-col gap-2.5 rounded-2xl border border-amber-500/40 p-4 shadow-xl">
+          <div className="flex flex-col gap-2.5 rounded-2xl border border-amber/40 bg-stage/95 p-4 shadow-[0_0_32px_rgba(245,158,11,0.2)] backdrop-blur-md">
             <div className="flex items-center justify-between">
-              <span className="label-sm text-amber-500">
-                {count === 1 ? "Badge earned!" : `${count} badges earned!`}
+              <span className="label-sm font-bold text-amber">
+                {count === 1 ? "★ Badge earned!" : `★ ${count} badges earned!`}
               </span>
               <button
                 onClick={onDismiss}
@@ -73,11 +75,11 @@ export function BadgeToast({ kinds, onDismiss }: { kinds: string[]; onDismiss: (
               const Icon = meta.icon;
               return (
                 <div key={kind} className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-500">
-                    <Icon className="size-4" aria-hidden />
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-soft/20 text-amber shadow-[0_0_12px_rgba(245,158,11,0.25)]">
+                    <Icon className="size-5" aria-hidden />
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-ink">{meta.name}</p>
+                    <p className="truncate text-sm font-semibold text-ink-strong">{meta.name}</p>
                     <p className="truncate text-xs text-ink-muted">{meta.description}</p>
                   </div>
                 </div>

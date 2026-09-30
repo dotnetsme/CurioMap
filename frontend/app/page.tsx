@@ -183,7 +183,7 @@ export default async function LandingPage() {
           <SectionHeading
             eyebrow="Heatmap"
             title="The curiosity map"
-            hint="Heat runs teal → coral → amber. Every glow is a fuzzed region; avatars below are real personas reading right now."
+            hint="Heat blooms from cyan aurora → electric violet → supernova flame. Every glow is a fuzzed region (~15 km grid); avatars below are active readers."
             action={
               <Link
                 href="/discover/global"

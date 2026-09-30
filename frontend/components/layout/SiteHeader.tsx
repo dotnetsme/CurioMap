@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   BookMarked,
@@ -10,12 +10,14 @@ import {
   House,
   LibraryBig,
   LogOut,
+  Search,
   Settings,
   ShieldCheck,
   User,
 } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Avatar } from "@/components/profile/Avatar";
+import { CommandSearchModal } from "@/components/layout/CommandSearchModal";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -41,8 +43,8 @@ const mobileNavItems = [
 export function SiteHeader() {
   const { user, loading, logout } = useAuth();
   const pathname = usePathname();
-  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,17 +56,17 @@ export function SiteHeader() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // ⌘K / Ctrl+K jumps to book search — matches the hint shown in the header field.
+  // ⌘K / Ctrl+K opens quick command search modal
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        router.push("/books/search");
+        setSearchOpen(true);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -117,6 +119,19 @@ export function SiteHeader() {
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              className="flex min-h-10 cursor-pointer items-center gap-2 rounded-full border border-line bg-stage-2/80 px-3 py-1.5 text-xs text-ink-muted transition hover:border-accent hover:bg-white/5 hover:text-ink focus-visible:ring-2 focus-visible:ring-accent"
+              aria-label="Quick search books and navigation (Press Cmd+K or Ctrl+K)"
+            >
+              <Search size={14} className="text-ink-faint" />
+              <span className="hidden md:inline">Quick search...</span>
+              <kbd className="hidden rounded bg-white/10 px-1.5 py-0.5 font-mono text-[10px] text-ink-faint sm:inline-block">
+                ⌘K
+              </kbd>
+            </button>
+
             {loading ? (
               <div className="h-9 w-9 animate-pulse rounded-full bg-white/10" />
             ) : user ? (
@@ -215,6 +230,11 @@ export function SiteHeader() {
           </div>
         </div>
       </header>
+
+      <CommandSearchModal
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+      />
 
       {user ? (
         <nav
