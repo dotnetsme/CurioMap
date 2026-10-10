@@ -16,6 +16,7 @@ export interface Conversation {
   createdAt: string;
   lastActivityAt: string;
   book: BookStub | null;
+  topic?: string | null;
 }
 
 export interface ConversationListResponse {
@@ -29,4 +30,6 @@ export interface CreateConversationPayload {
   title: string;
   topicType: TopicType;
   promptKey?: string;
+  topic?: string;
+  bookId?: string;
 }

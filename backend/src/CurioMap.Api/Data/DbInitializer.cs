@@ -2,14 +2,11 @@ using System.Reflection;
 using CurioMap.Api.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Npgsql;
 
 namespace CurioMap.Api.Data;
 
 /// <summary>
-/// Applies ordered embedded SQL migrations at startup, tracked in schema_migrations.
-/// Uses a Postgres advisory lock so concurrent instances (Fly multi-machine) are safe.
-/// Simple, reviewable SQL — no design-time tooling required, Neon compatible.
+/// Applies EF Core migrations and initial catalog/demo seed data at startup.
 ///
 /// Seed gating: scripts whose filename contains "_seed_demo_" or that live in the
 /// demo range (0013-0014) are SKIPPED unless Seed:DemoReaders is true. The book
@@ -41,10 +38,88 @@ public static class DbInitializer
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var seedDemoReaders = scope.ServiceProvider
             .GetRequiredService<IOptions<SeedOptions>>().Value.DemoReaders;
-        var assembly = Assembly.GetExecutingAssembly();
 
+        if (!db.Database.IsNpgsql())
+        {
+            await db.Database.EnsureCreatedAsync();
+            return;
+        }
+
+        await BaselineExistingDatabaseIfNecessaryAsync(db, logger);
+
+        logger.LogInformation("Applying pending EF Core database migrations...");
+        await db.Database.MigrateAsync();
+        logger.LogInformation("EF Core migrations applied successfully.");
+
+        // Check if initial book seed is needed
+        var hasBooks = await db.Books.AnyAsync();
+        if (!hasBooks)
+        {
+            logger.LogInformation("No books detected. Seeding initial catalog...");
+            await ApplySeedScriptsAsync(db, seedDemoReaders, logger);
+        }
+    }
+
+    private static async Task BaselineExistingDatabaseIfNecessaryAsync(AppDbContext db, ILogger logger)
+    {
+        var connection = (Npgsql.NpgsqlConnection)db.Database.GetDbConnection();
+        if (connection.State != System.Data.ConnectionState.Open)
+        {
+            await connection.OpenAsync();
+        }
+
+        // Check if books table already exists from legacy raw SQL scripts
+        await using var checkCmd = connection.CreateCommand();
+        checkCmd.CommandText = """
+            SELECT 1 FROM information_schema.tables 
+            WHERE table_schema = 'public' AND table_name = 'books';
+            """;
+        var booksExist = await checkCmd.ExecuteScalarAsync() is not null;
+
+        if (booksExist)
+        {
+            // Ensure topic column exists on books and conversations if baselining legacy database
+            await using var syncColumnsCmd = connection.CreateCommand();
+            syncColumnsCmd.CommandText = """
+                ALTER TABLE books ADD COLUMN IF NOT EXISTS topic text;
+                ALTER TABLE conversations ADD COLUMN IF NOT EXISTS topic text;
+                CREATE INDEX IF NOT EXISTS ix_books_topic_lower ON books (lower(topic));
+                CREATE INDEX IF NOT EXISTS ix_conversations_topic_lower ON conversations (lower(topic), last_activity_at DESC);
+                """;
+            await syncColumnsCmd.ExecuteNonQueryAsync();
+
+            // Create __EFMigrationsHistory if it doesn't exist (using snake_case convention)
+            await using var initHistoryCmd = connection.CreateCommand();
+            initHistoryCmd.CommandText = """
+                CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+                    migration_id character varying(150) NOT NULL,
+                    product_version character varying(32) NOT NULL,
+                    CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY (migration_id)
+                );
+                """;
+            await initHistoryCmd.ExecuteNonQueryAsync();
+
+            // Record InitialCreate in __EFMigrationsHistory so EF Core doesn't try to re-create existing tables
+            await using var insertCmd = connection.CreateCommand();
+            insertCmd.CommandText = """
+                INSERT INTO "__EFMigrationsHistory" (migration_id, product_version)
+                VALUES ('20261010000943_InitialCreate', '10.0.3')
+                ON CONFLICT (migration_id) DO NOTHING;
+                """;
+            var inserted = await insertCmd.ExecuteNonQueryAsync();
+            if (inserted > 0)
+            {
+                logger.LogInformation("Baselined existing database schema into __EFMigrationsHistory for InitialCreate.");
+            }
+        }
+    }
+
+    public static async Task ApplySeedScriptsAsync(AppDbContext db, bool seedDemoReaders, ILogger logger)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
         var scripts = assembly.GetManifestResourceNames()
             .Where(n => n.StartsWith(ResourcePrefix, StringComparison.Ordinal) && n.EndsWith(".sql", StringComparison.Ordinal))
+            .Where(n => n.Contains("_seed_"))
             .Where(n => seedDemoReaders || !IsDemoSeedScript(n))
             .OrderBy(n => n, StringComparer.Ordinal)
             .ToList();
@@ -54,84 +129,17 @@ public static class DbInitializer
             logger.LogInformation("Seed:DemoReaders=false — skipping demo-reader seed scripts.");
         }
 
-        await db.Database.OpenConnectionAsync();
-        if (!db.Database.IsNpgsql())
-        {
-            await db.Database.EnsureCreatedAsync();
-            await db.Database.CloseConnectionAsync();
-            return;
-        }
-        var connection = (NpgsqlConnection)db.Database.GetDbConnection();
-
-        await using (var cmd = connection.CreateCommand())
-        {
-            cmd.CommandText = """
-                CREATE TABLE IF NOT EXISTS schema_migrations (
-                    id text PRIMARY KEY,
-                    applied_at timestamptz NOT NULL DEFAULT now()
-                );
-                SELECT pg_advisory_xact_lock(742019);
-                """;
-            await cmd.ExecuteNonQueryAsync();
-        }
-
         foreach (var script in scripts)
         {
+            await using var stream = assembly.GetManifestResourceStream(script);
+            if (stream == null) continue;
+
+            using var reader = new StreamReader(stream);
+            var sql = await reader.ReadToEndAsync();
+
+            await db.Database.ExecuteSqlRawAsync(sql);
             var id = script[ResourcePrefix.Length..].Replace(".sql", "", StringComparison.Ordinal);
-
-            // Each migration runs in its own transaction that also holds the
-            // transaction-scoped advisory lock, so concurrent Fly machines
-            // serialize on the lock and the lock is always released on commit.
-            await using var tx = await connection.BeginTransactionAsync();
-            try
-            {
-                bool applied;
-                await using (var lockCmd = connection.CreateCommand())
-                {
-                    // Re-acquire inside the tx: blocks until any concurrent applier commits.
-                    lockCmd.Transaction = (NpgsqlTransaction)tx;
-                    lockCmd.CommandText = "SELECT pg_advisory_xact_lock(742019)";
-                    await lockCmd.ExecuteNonQueryAsync();
-                }
-                await using (var check = connection.CreateCommand())
-                {
-                    check.Transaction = (NpgsqlTransaction)tx;
-                    check.CommandText = "SELECT 1 FROM schema_migrations WHERE id = @id";
-                    check.Parameters.AddWithValue("id", id);
-                    applied = await check.ExecuteScalarAsync() is not null;
-                }
-
-                if (!applied)
-                {
-                    var sql = await new StreamReader(assembly.GetManifestResourceStream(script)!).ReadToEndAsync();
-
-                    await using (var apply = connection.CreateCommand())
-                    {
-                        apply.Transaction = (NpgsqlTransaction)tx;
-                        apply.CommandText = sql;
-                        await apply.ExecuteNonQueryAsync();
-                    }
-
-                    await using (var record = connection.CreateCommand())
-                    {
-                        record.Transaction = (NpgsqlTransaction)tx;
-                        record.CommandText = "INSERT INTO schema_migrations (id) VALUES (@id)";
-                        record.Parameters.AddWithValue("id", id);
-                        await record.ExecuteNonQueryAsync();
-                    }
-
-                    logger.LogInformation("Applied migration {Migration}", id);
-                }
-
-                await tx.CommitAsync();
-            }
-            catch
-            {
-                await tx.RollbackAsync();
-                throw;
-            }
+            logger.LogInformation("Applied seed script {SeedScript}", id);
         }
-
-        await db.Database.CloseConnectionAsync();
     }
 }

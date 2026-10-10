@@ -4,6 +4,7 @@ using CurioMap.Api.Auth;
 using CurioMap.Api.Common;
 using CurioMap.Api.Data;
 using CurioMap.Api.Services;
+using CurioMap.Api.Services.Email;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -98,6 +99,7 @@ builder.Services.AddHttpClient<GeoResolveService>(client =>
 });
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<AffiliateOptions>(builder.Configuration.GetSection("Affiliate"));
 builder.Services.Configure<OpenLibraryOptions>(builder.Configuration.GetSection("OpenLibrary"));
 builder.Services.Configure<GoogleBooksOptions>(builder.Configuration.GetSection("GoogleBooks"));
@@ -105,6 +107,18 @@ builder.Services.Configure<ConversationOptions>(builder.Configuration.GetSection
 builder.Services.Configure<AdminOptions>(builder.Configuration.GetSection("Admin"));
 builder.Services.Configure<SeedOptions>(builder.Configuration.GetSection("Seed"));
 builder.Services.Configure<ProxyOptions>(builder.Configuration.GetSection("Proxy"));
+
+builder.Services.AddHttpClient<ResendEmailSender>();
+builder.Services.AddTransient<SmtpEmailSender>();
+builder.Services.AddTransient<IEmailSender>(sp =>
+{
+    var emailOpts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<EmailOptions>>().Value;
+    if (string.Equals(emailOpts.Provider, "Resend", StringComparison.OrdinalIgnoreCase))
+    {
+        return sp.GetRequiredService<ResendEmailSender>();
+    }
+    return sp.GetRequiredService<SmtpEmailSender>();
+});
 
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<RefreshTokenService>();

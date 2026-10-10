@@ -101,13 +101,13 @@ export function ChallengeCard() {
               max={1000}
               value={targetInput}
               onChange={(e) => setTargetInput(Math.max(1, Number(e.target.value)))}
-              className="w-24 min-h-11 rounded-xl border border-line bg-glass px-3 py-2 text-sm text-ink outline-none focus:border-accent"
+              className="w-24 min-h-11 rounded-xl border border-line bg-glass px-3 py-2 text-base sm:text-sm text-ink outline-none focus:border-accent"
               aria-label="Challenge target"
             />
             <Button
               onClick={saveTarget}
               isLoading={saving}
-              className="px-4 text-sm"
+              className="min-h-11 px-4 text-sm font-semibold cursor-pointer"
             >
               Save
             </Button>
@@ -117,7 +117,7 @@ export function ChallengeCard() {
                 setEditing(false);
                 setTargetInput(stats.target);
               }}
-              className="px-4 text-sm"
+              className="min-h-11 px-4 text-sm cursor-pointer"
             >
               Cancel
             </Button>
@@ -126,7 +126,7 @@ export function ChallengeCard() {
           <Button
             variant="ghost"
             onClick={() => setEditing(true)}
-            className="inline-flex w-fit items-center gap-1.5 px-3.5 text-sm"
+            className="inline-flex min-h-11 w-fit items-center gap-1.5 px-3.5 text-sm cursor-pointer"
           >
             <Target className="size-3.5" />
             {stats.target === 50 ? "Set target" : "Edit target"}

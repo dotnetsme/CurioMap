@@ -9,6 +9,7 @@ public class Book
     public string? Isbn { get; set; }
     public string? CoverUrl { get; set; }
     public string? Description { get; set; }
+    public string? Topic { get; set; }
 
     /// <summary>Curated/overriding affiliate links; runtime service merges computed links on read.</summary>
     public BookAffiliateLinks AffiliateLinks { get; set; } = new();

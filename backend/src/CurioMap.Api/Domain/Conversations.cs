@@ -11,6 +11,7 @@ public class Conversation
     public Book? Book { get; set; }
     public Guid? DraftId { get; set; }
     public Draft? Draft { get; set; }
+    public string? Topic { get; set; }
     public TopicType TopicType { get; set; } = TopicType.General;
     public string Title { get; set; } = null!;
     public string? PromptKey { get; set; }

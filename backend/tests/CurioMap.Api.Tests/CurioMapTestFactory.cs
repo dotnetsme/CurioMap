@@ -1,5 +1,6 @@
 using CurioMap.Api.Data;
 using CurioMap.Api.Services;
+using CurioMap.Api.Services.Email;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -90,6 +91,10 @@ public class CurioMapTestFactory : WebApplicationFactory<Program>
             }
             services.AddScoped<ICacheService, InMemoryTestCacheService>();
 
+            // Replace email sender with an in-memory test email sender
+            services.RemoveAll<IEmailSender>();
+            services.AddSingleton<IEmailSender, TestEmailSender>();
+
             // Rate limiting is neutralized for hermetic tests. Program.cs registers its
             // policies through services.Configure(...), and they partition anonymous
             // traffic by RemoteIpAddress - which is identical (null -> "anon") for every
@@ -171,5 +176,16 @@ public class TestRateLimiter : IRedisRateLimiter
     public Task<bool> IsAllowedAsync(string bucket, string identity, int limit, TimeSpan window)
     {
         return Task.FromResult(true);
+    }
+}
+
+public class TestEmailSender : IEmailSender
+{
+    public List<(string To, string Subject, string Body)> SentEmails { get; } = [];
+
+    public Task SendEmailAsync(string to, string subject, string htmlContent, CancellationToken ct = default)
+    {
+        SentEmails.Add((to, subject, htmlContent));
+        return Task.CompletedTask;
     }
 }

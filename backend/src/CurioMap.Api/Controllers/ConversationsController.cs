@@ -69,9 +69,128 @@ public class ConversationsController(
             counts.GetValueOrDefault(c.Id),
             c.CreatedAt,
             c.LastActivityAt,
-            Mapping.ToStub(book))).ToList();
+            Mapping.ToStub(book),
+            c.Topic ?? book.Topic)).ToList();
 
         return Ok(new PagedResult<ConversationDto>(items, total, limit, offset));
+    }
+
+    [HttpGet("conversations")]
+    [AllowAnonymous]
+    public async Task<ActionResult<PagedResult<ConversationDto>>> List(
+        [FromQuery] string? topic = null,
+        [FromQuery] bool includeArchived = false,
+        [FromQuery] int limit = 30,
+        [FromQuery] int offset = 0)
+    {
+        limit = PageBounds.ClampPageSize(limit);
+        offset = PageBounds.ClampOffset(offset);
+        topic = topic?.Trim();
+
+        var query = db.Conversations.AsNoTracking()
+            .Include(c => c.Creator)
+            .Include(c => c.Book)
+            .Where(c => includeArchived || !c.IsArchived);
+
+        if (!string.IsNullOrEmpty(topic))
+        {
+            var lowered = topic.ToLower();
+            query = query.Where(c => (c.Topic != null && c.Topic.ToLower() == lowered)
+                                  || (c.Book != null && c.Book.Topic != null && c.Book.Topic.ToLower() == lowered));
+        }
+
+        var total = await query.CountAsync();
+        var conversations = await query
+            .OrderByDescending(c => c.LastActivityAt)
+            .Skip(offset).Take(limit)
+            .ToListAsync();
+
+        var ids = conversations.Select(c => c.Id).ToList();
+        var counts = await db.Messages.AsNoTracking()
+            .Where(m => ids.Contains(m.ConversationId) && m.Status == MessageStatus.Visible)
+            .GroupBy(m => m.ConversationId)
+            .Select(g => new { ConversationId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.ConversationId, x => x.Count);
+
+        var cutoff = Cutoff;
+        var items = conversations.Select(c => new ConversationDto(
+            c.Id, c.BookId, c.DraftId,
+            c.TopicType.ToApi(),
+            c.Title,
+            c.PromptKey,
+            c.Creator is null ? new UserStubDto(c.CreatedBy, "unknown", "curio-01", "Reader", false) : Mapping.ToStub(c.Creator),
+            c.IsArchived || c.LastActivityAt < cutoff,
+            counts.GetValueOrDefault(c.Id),
+            c.CreatedAt,
+            c.LastActivityAt,
+            c.Book is null ? null : Mapping.ToStub(c.Book),
+            c.Topic ?? c.Book?.Topic)).ToList();
+
+        return Ok(new PagedResult<ConversationDto>(items, total, limit, offset));
+    }
+
+    [HttpPost("conversations")]
+    [Authorize]
+    [EnableRateLimiting("write")]
+    public async Task<ActionResult<ConversationDto>> Create(CreateConversationRequest? request)
+    {
+        if (request is null)
+        {
+            throw new AppException(400, "A title and topic type are required.");
+        }
+        if (!EnumStrings.TryParseEnum<TopicType>(request.TopicType, out var topicType))
+        {
+            throw new AppException(400, "Unknown topic type. Use general, chapter, theme or question.");
+        }
+        if (request.PromptKey is not null && !Prompts.Exists(request.PromptKey))
+        {
+            throw new AppException(400, "Unknown prompt key.");
+        }
+
+        var title = request.Title.Trim();
+        if (title.Length < 3 || title.Length > 200)
+        {
+            throw new AppException(400, "Title must be 3–200 characters.");
+        }
+        if (profanity.ContainsProfanity(title))
+        {
+            throw new AppException(400, "Conversation title was flagged by the auto-filter. Please rephrase.");
+        }
+
+        Book? book = null;
+        if (request.BookId.HasValue)
+        {
+            book = await db.Books.FirstOrDefaultAsync(b => b.Id == request.BookId.Value)
+                ?? throw new AppException(404, "Book not found.");
+        }
+
+        var topic = request.Topic?.Trim() ?? book?.Topic;
+        if (string.IsNullOrEmpty(topic) && book is null)
+        {
+            throw new AppException(400, "Conversations must be linked to either a topic or a book.");
+        }
+
+        var userId = me.RequireUserId();
+        var author = await db.Users.FirstAsync(u => u.Id == userId);
+
+        var conversation = new Conversation
+        {
+            BookId = book?.Id,
+            Topic = topic,
+            TopicType = topicType,
+            Title = title,
+            PromptKey = request.PromptKey,
+            CreatedBy = author.Id,
+        };
+        db.Conversations.Add(conversation);
+        activity.RecordConversationCreated(author, book, conversation);
+        await db.SaveChangesAsync();
+
+        return Ok(new ConversationDto(
+            conversation.Id, book?.Id, null, topicType.ToApi(), title, request.PromptKey,
+            Mapping.ToStub(author), false, 0, conversation.CreatedAt, conversation.LastActivityAt,
+            book is null ? null : Mapping.ToStub(book),
+            topic));
     }
 
     [HttpPost("/books/{bookId:guid}/conversations")]
@@ -108,9 +227,11 @@ public class ConversationsController(
         var userId = me.RequireUserId();
         var author = await db.Users.FirstAsync(u => u.Id == userId);
 
+        var topic = request.Topic?.Trim() ?? book.Topic;
         var conversation = new Conversation
         {
             BookId = bookId,
+            Topic = topic,
             TopicType = topicType,
             Title = title,
             PromptKey = request.PromptKey,
@@ -123,7 +244,8 @@ public class ConversationsController(
         return Ok(new ConversationDto(
             conversation.Id, bookId, null, topicType.ToApi(), title, request.PromptKey,
             Mapping.ToStub(author), false, 0, conversation.CreatedAt, conversation.LastActivityAt,
-            Mapping.ToStub(book)));
+            Mapping.ToStub(book),
+            topic));
     }
 
     [HttpGet("conversations/{id:guid}")]
@@ -152,7 +274,8 @@ public class ConversationsController(
             count,
             conversation.CreatedAt,
             conversation.LastActivityAt,
-            conversation.Book is null ? null : Mapping.ToStub(conversation.Book)));
+            conversation.Book is null ? null : Mapping.ToStub(conversation.Book),
+            conversation.Topic ?? conversation.Book?.Topic));
     }
 
     [HttpGet("conversations/{id:guid}/messages")]

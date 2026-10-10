@@ -22,6 +22,8 @@
 *.token
 secrets.json
 appsettings.*.local.json
+.secrets
+!.secrets.example
 
 # -----------------------------------------------------------------------------
 # .NET / C# Build Outputs

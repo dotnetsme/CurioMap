@@ -2,14 +2,14 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
-import { BookOpen, Flame, Sparkles, TrendingUp, Users, X } from "lucide-react";
+import { BookOpen, Compass, Flame, Sparkles, TrendingUp, Users, X } from "lucide-react";
 import { CuriosityMapShell } from "@/components/discover/CuriosityMapShell";
 import { ObservatoryLegend } from "@/components/discover/ObservatoryLegend";
 import type { MapMode } from "@/components/discover/ObservatoryMap";
 import { NearbyReadersList } from "@/components/discover/NearbyReadersList";
 import { BookCover } from "@/components/books/BookCover";
 import { ErrorState } from "@/components/ui/Feedback";
-import { globalDiscovery, stats, nearby, mapReaders } from "@/lib/api/discover";
+import { globalDiscovery, stats, nearby, mapReaders, topics } from "@/lib/api/discover";
 import { useAuth } from "@/components/providers/AuthProvider";
 import type {
   GlobalDiscovery,
@@ -18,6 +18,7 @@ import type {
   StatsSummary,
   Nearby,
   NearbyReader,
+  TopicStat,
 } from "@/types";
 import { cn } from "@/lib/utils";
 import { CountUp } from "@/components/ui/CountUp";
@@ -30,6 +31,8 @@ export default function GlobalMapPage() {
   const [mode, setMode] = useState<MapMode>("heat");
   const [selected, setSelected] = useState<RegionStat | null>(null);
   const [personas, setPersonas] = useState<MapReader[]>([]);
+  const [topicList, setTopicList] = useState<TopicStat[]>([]);
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [nearbyReaders, setNearbyReaders] = useState<NearbyReader[]>([]);
   const [nearbyScope, setNearbyScope] = useState<Nearby["scope"] | null>(null);
   const [nearbyLoading, setNearbyLoading] = useState(false);
@@ -39,11 +42,23 @@ export default function GlobalMapPage() {
 
   useEffect(() => {
     let cancelled = false;
+    topics()
+      .then((t) => {
+        if (!cancelled) setTopicList(t);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
-        const result = await globalDiscovery();
+        const result = await globalDiscovery(selectedTopic ?? undefined);
         const sum = await stats().catch(() => null);
-        const readers = await mapReaders(undefined, undefined, 50).catch(
+        const readers = await mapReaders(undefined, undefined, selectedTopic ?? undefined, 50).catch(
           () => null,
         );
         if (!cancelled) {
@@ -59,7 +74,7 @@ export default function GlobalMapPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [selectedTopic]);
 
   useEffect(() => {
     if (!data) return;
@@ -214,9 +229,68 @@ export default function GlobalMapPage() {
         </div>
       </header>
 
+      {/* Curiosity Vectors / Theme Selector */}
+      <nav
+        aria-label="Curiosity vectors"
+        className="pointer-events-none absolute top-14 left-0 right-0 z-[500] px-3 sm:px-5"
+      >
+        <div className="no-scrollbar pointer-events-auto flex items-center gap-1.5 overflow-x-auto py-1">
+          <button
+            type="button"
+            onClick={() => setSelectedTopic(null)}
+            className={cn(
+              "flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-xs font-semibold backdrop-blur-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+              selectedTopic === null
+                ? "border-accent bg-accent/20 text-ink shadow-sm shadow-accent/20"
+                : "border-line bg-stage/75 text-ink-muted hover:border-line-strong hover:text-ink",
+            )}
+          >
+            <Compass size={13} className={selectedTopic === null ? "text-accent" : "text-ink-muted"} />
+            <span>All Curiosities</span>
+          </button>
+          {(topicList.length > 0 ? topicList : [
+            { topic: "Philosophy", readerCount: 0 },
+            { topic: "Psychology", readerCount: 0 },
+            { topic: "Science & Nature", readerCount: 0 },
+            { topic: "History & Society", readerCount: 0 },
+            { topic: "Technology", readerCount: 0 },
+            { topic: "Sci-Fi", readerCount: 0 },
+            { topic: "Speculative & Magical", readerCount: 0 },
+            { topic: "Literary Fiction", readerCount: 0 },
+          ]).map((t) => {
+            const active = selectedTopic === t.topic;
+            return (
+              <button
+                key={t.topic}
+                type="button"
+                onClick={() => setSelectedTopic(active ? null : t.topic)}
+                className={cn(
+                  "flex min-h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-xs font-semibold backdrop-blur-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+                  active
+                    ? "border-accent bg-accent/20 text-ink shadow-sm shadow-accent/20"
+                    : "border-line bg-stage/75 text-ink-muted hover:border-line-strong hover:text-ink",
+                )}
+              >
+                <span>{t.topic}</span>
+                {t.readerCount > 0 ? (
+                  <span
+                    className={cn(
+                      "rounded-full px-1.5 py-0.5 text-[10px]",
+                      active ? "bg-accent/30 text-ink" : "bg-white/5 text-ink-faint",
+                    )}
+                  >
+                    {t.readerCount}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
       {/* Selected region panel */}
       {activeRegion && (
-        <aside className="absolute left-0 top-14 bottom-0 z-[500] w-full max-w-xs pointer-events-none">
+        <aside className="absolute left-0 top-26 sm:top-24 bottom-0 z-[500] w-full max-w-xs pointer-events-none">
           <div className="p-4">
             <section className="pointer-events-auto rounded-2xl border border-line bg-stage/85 p-4 backdrop-blur-md">
               <div className="flex items-center gap-2 text-xs font-semibold text-signal">

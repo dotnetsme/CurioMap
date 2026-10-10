@@ -19,7 +19,9 @@ public record RegionStatDto(
 
 public record GlobalDiscoveryDto(IReadOnlyList<RegionStatDto> Regions, int TotalRegions, DateTime GeneratedAt);
 
-public record TopBookDto(Guid Id, string Title, string Author, string? Isbn, string? CoverUrl, int ReaderCount);
+public record TopicStatDto(string Topic, int ReaderCount);
+
+public record TopBookDto(Guid Id, string Title, string Author, string? Isbn, string? CoverUrl, int ReaderCount, string? Topic = null);
 
 public record TopBooksDto(string? Country, string? Region, IReadOnlyList<TopBookDto> Books);
 

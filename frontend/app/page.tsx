@@ -7,17 +7,17 @@ import { BookSearchBar } from "@/components/books/BookSearchBar";
 import { Avatar } from "@/components/profile/Avatar";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { stats, globalDiscovery, globalMapReaders } from "@/lib/server-api";
+import { stats, globalDiscovery, globalMapReaders, topics } from "@/lib/server-api";
 import {
   Compass,
   ArrowUpRight,
-  BookOpen,
   LibraryBig,
   MapPin,
   MessagesSquare,
   ShieldCheck,
   Sparkles,
   Users,
+  Orbit,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -27,38 +27,51 @@ const features = [
     icon: ShieldCheck,
     tint: "text-signal bg-signal/10",
     title: "Anonymous by default",
-    body: "Curated avatars and generated handles. A real name is opt-in and reversible — never required.",
+    body: "Curated vector avatars and generated handles. A real name is opt-in and reversible — never required.",
   },
   {
     icon: MapPin,
     tint: "text-heat-hot bg-heat-hot/10",
-    title: "Fuzzy by design",
-    body: "We store country, region, city and a coordinate fuzzed to a ~15 km grid. Never your exact location.",
+    title: "Fuzzy by design (~15 km)",
+    body: "Coordinates are snapped to a ~15 km grid prior to persistence. Your exact GPS or home address is never stored.",
+  },
+  {
+    icon: Orbit,
+    tint: "text-amber bg-amber/10",
+    title: "Curiosity vectors",
+    body: "Thematic taxonomy mapping global intellectual currents across philosophy, science, fiction, and ideas.",
   },
   {
     icon: MessagesSquare,
     tint: "text-accent bg-accent/10",
-    title: "Reading circles",
-    body: "Prompt-driven conversations with reactions instead of noise. Quiet threads archive themselves.",
+    title: "Reading circles & salons",
+    body: "Prompt-driven conversations with domain reactions (insightful, funny, helpful). Quiet threads archive gracefully.",
   },
 ];
 
-const quickGenres = [
-  "Fiction",
-  "Fantasy",
-  "History",
-  "Science fiction",
-  "Biography",
-  "Mystery",
+const fallbackVectors = [
+  "Philosophy",
+  "Psychology",
+  "Science & Nature",
+  "History & Society",
+  "Technology",
+  "Sci-Fi",
+  "Speculative & Magical",
+  "Literary Fiction",
 ];
 
 export default async function LandingPage() {
-  const [summary, map, personas] = await Promise.all([
+  const [summary, map, personas, topicList] = await Promise.all([
     stats().catch(() => null),
     globalDiscovery().catch(() => null),
     globalMapReaders(50).catch(() => null),
+    topics().catch(() => []),
   ]);
   const readers = personas?.readers ?? [];
+  const displayVectors = topicList.length > 0 
+    ? topicList.map(t => ({ name: t.topic, count: t.readerCount }))
+    : fallbackVectors.map(v => ({ name: v, count: null }));
+
 
   return (
     <div className="flex flex-col gap-10 sm:gap-14">
@@ -116,38 +129,55 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+      <section className="grid gap-4 lg:grid-cols-[1.25fr_0.75fr]">
         <div className="card p-5 sm:p-6">
-          <p className="label-sm text-accent">Start with a feeling</p>
+          <div className="flex items-center justify-between">
+            <p className="label-sm inline-flex items-center gap-1.5 text-accent">
+              <Orbit size={13} /> Curiosity Vectors
+            </p>
+            <Link
+              href="/discover/global"
+              className="text-xs font-semibold text-accent hover:text-accent-strong"
+            >
+              Thematic map →
+            </Link>
+          </div>
           <h2 className="mt-2 max-w-xl font-display text-2xl font-semibold text-ink sm:text-3xl">
-            What are you in the mood to read?
+            What ideas are calling to you?
           </h2>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-muted">
-            Browse a familiar doorway, then follow the people and conversations
-            that make a book worth opening.
+            Explore curated curiosity vectors across philosophy, science, fiction, and society — map what curious minds are reading without algorithmic ads.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
-            {quickGenres.map((genre) => (
+            {displayVectors.map((v) => (
               <Link
-                key={genre}
-                href={`/books/search?q=${encodeURIComponent(genre)}`}
-                className="chip min-h-11 px-4 text-sm hover:border-accent hover:text-ink"
+                key={v.name}
+                href={`/discover/global?topic=${encodeURIComponent(v.name)}`}
+                className="chip min-h-11 px-3.5 py-2 text-xs sm:text-sm hover:border-accent hover:text-ink transition-all duration-200 hover:-translate-y-0.5"
               >
-                <BookOpen size={14} /> {genre}
+                <Sparkles size={13} className="text-accent" />
+                <span className="font-medium">{v.name}</span>
+                {v.count ? (
+                  <span className="ml-1 rounded-full bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold text-accent">
+                    {v.count}
+                  </span>
+                ) : null}
               </Link>
             ))}
           </div>
         </div>
 
-        <div className="card flex flex-col justify-between bg-accent/10 p-5 sm:p-6">
+        <div className="card flex flex-col justify-between border-accent/20 bg-accent/5 p-5 sm:p-6 backdrop-blur-md">
           <div>
-            <p className="label-sm text-signal">Readers are here</p>
+            <p className="label-sm inline-flex items-center gap-1.5 text-signal">
+              <Users size={13} /> Live community
+            </p>
             <h2 className="mt-2 font-display text-2xl font-semibold text-ink sm:text-3xl">
               Find your next conversation.
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-muted">
               {summary
-                ? `${summary.readers.toLocaleString()} readers are mapping their shelves across ${summary.activeRegions.toLocaleString()} regions.`
+                ? `${summary.readers.toLocaleString()} readers are mapping their shelves across ${summary.activeRegions.toLocaleString()} regions worldwide.`
                 : "Readers are mapping their shelves across the world."}
             </p>
           </div>
@@ -169,7 +199,7 @@ export default async function LandingPage() {
             </div>
             <Link
               href="/discover/global"
-              className="btn-ghost min-h-11 shrink-0 px-3 text-sm"
+              className="btn-ghost min-h-11 shrink-0 px-3.5 text-sm font-semibold hover:border-accent"
             >
               Explore <ArrowUpRight size={15} />
             </Link>
@@ -245,7 +275,7 @@ export default async function LandingPage() {
           title="Built for readers, not advertisers"
           align="center"
         />
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((f, i) => (
             <Reveal key={f.title} delay={i * 0.08}>
               <div className="card card-hover h-full p-6">

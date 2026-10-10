@@ -4,6 +4,7 @@ export interface BookStub {
   author: string;
   isbn: string | null;
   coverUrl: string | null;
+  topic?: string | null;
 }
 
 export interface Book extends BookStub {
@@ -12,9 +13,9 @@ export interface Book extends BookStub {
   metadata: Record<string, string>;
   readersCount: number;
   conversationsCount: number;
-      averageRating: number;
-    ratingCount: number;
-    createdAt: string;
+  averageRating: number;
+  ratingCount: number;
+  createdAt: string;
 }
 
 export interface SearchResponse {
@@ -30,4 +31,5 @@ export interface TopBook {
   isbn: string | null;
   coverUrl: string | null;
   readerCount: number;
+  topic?: string | null;
 }

@@ -193,5 +193,6 @@ public class BooksController(
         conversations,
         avgRating,
         ratingCount,
-        book.CreatedAt);
+        book.CreatedAt,
+        book.Topic);
 }

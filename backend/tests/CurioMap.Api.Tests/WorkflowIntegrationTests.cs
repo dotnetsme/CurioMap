@@ -308,7 +308,8 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         LocationVisibility locationVisibility,
         ShelfVisibility bookshelfVisibility = ShelfVisibility.Public,
         DisplayMode displayMode = DisplayMode.Anonymous,
-        bool withReadingBook = false)
+        bool withReadingBook = false,
+        string? topic = null)
     {
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -338,7 +339,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         var bookId = Guid.Empty;
         if (withReadingBook)
         {
-            var book = new Book { Title = "Seeded Reading Book", Author = "Seeded Author" };
+            var book = new Book { Title = "Seeded Reading Book", Author = "Seeded Author", Topic = topic };
             bookId = book.Id;
             db.Books.Add(book);
             db.BookshelfEntries.Add(new BookshelfEntry
@@ -441,6 +442,53 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         var payload = await res.Content.ReadFromJsonAsync<MapReadersDto>();
         Assert.NotNull(payload);
         Assert.True(payload.Readers.Count <= 50);
+    }
+
+    [Fact]
+    public async Task Discover_Topics_Returns_Active_Curiosity_Vectors()
+    {
+        var topic = $"Curiosity_{Guid.NewGuid():N}"[..18];
+        var country = $"TopicLand_{Guid.NewGuid():N}"[..20];
+        SeedReader(country, "TopicRegion", "TopicCity", LocationVisibility.RegionCity, withReadingBook: true, topic: topic);
+
+        var client = _factory.CreateClient();
+        var res = await client.GetAsync("/discover/topics");
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+
+        var topics = await res.Content.ReadFromJsonAsync<List<TopicStatDto>>();
+        Assert.NotNull(topics);
+        Assert.Contains(topics, t => t.Topic == topic && t.ReaderCount >= 1);
+    }
+
+    [Fact]
+    public async Task Discover_Global_And_MapReaders_Filter_By_Curiosity_Topic()
+    {
+        var targetTopic = $"Target_{Guid.NewGuid():N}"[..18];
+        var otherTopic = $"Other_{Guid.NewGuid():N}"[..18];
+
+        var targetCountry = $"TargetLand_{Guid.NewGuid():N}"[..22];
+        var otherCountry = $"OtherLand_{Guid.NewGuid():N}"[..22];
+
+        SeedReader(targetCountry, "TargetRegion", "TargetCity", LocationVisibility.RegionCity, withReadingBook: true, topic: targetTopic);
+        SeedReader(otherCountry, "OtherRegion", "OtherCity", LocationVisibility.RegionCity, withReadingBook: true, topic: otherTopic);
+
+        var client = _factory.CreateClient();
+
+        // 1. Global topic filter
+        var globalRes = await client.GetAsync($"/discover/global?topic={Uri.EscapeDataString(targetTopic)}");
+        Assert.Equal(HttpStatusCode.OK, globalRes.StatusCode);
+        var global = await globalRes.Content.ReadFromJsonAsync<GlobalDiscoveryDto>();
+        Assert.NotNull(global);
+        Assert.Contains(global.Regions, r => r.Country == targetCountry);
+        Assert.DoesNotContain(global.Regions, r => r.Country == otherCountry);
+
+        // 2. Map-readers topic filter
+        var mapRes = await client.GetAsync($"/discover/map-readers?topic={Uri.EscapeDataString(targetTopic)}");
+        Assert.Equal(HttpStatusCode.OK, mapRes.StatusCode);
+        var map = await mapRes.Content.ReadFromJsonAsync<MapReadersDto>();
+        Assert.NotNull(map);
+        Assert.Contains(map.Readers, r => r.Country == targetCountry);
+        Assert.DoesNotContain(map.Readers, r => r.Country == otherCountry);
     }
 
     [Fact]
@@ -566,6 +614,50 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         Assert.Equal(1, page.Total);
         Assert.Single(page.Items);
         Assert.Equal("visible one", page.Items[0].Content);
+    }
+
+    [Fact]
+    public async Task Conversations_Create_Salon_And_Filter_By_Curiosity_Topic()
+    {
+        var topic = $"Salon_{Guid.NewGuid():N}"[..18];
+        var otherTopic = $"OtherSalon_{Guid.NewGuid():N}"[..18];
+
+        var client = _factory.CreateClient();
+        var email = $"salon_creator_{Guid.NewGuid():N}@curiomap.local";
+        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!"));
+        var auth = await reg.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.NotNull(auth);
+
+        var authClient = _factory.CreateClient();
+        authClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", auth.AccessToken);
+
+        // 1. Create open curiosity salon without a book
+        var createRes = await authClient.PostAsJsonAsync("/conversations", new CreateConversationRequest(
+            Title: "Exploring the Nature of Curiosity",
+            TopicType: "general",
+            PromptKey: null,
+            Topic: topic));
+        Assert.Equal(HttpStatusCode.OK, createRes.StatusCode);
+        var created = await createRes.Content.ReadFromJsonAsync<ConversationDto>();
+        Assert.NotNull(created);
+        Assert.Equal(topic, created.Topic);
+        Assert.Null(created.BookId);
+
+        // 2. Create another salon under a different topic
+        var otherRes = await authClient.PostAsJsonAsync("/conversations", new CreateConversationRequest(
+            Title: "Different Topic Salon",
+            TopicType: "general",
+            PromptKey: null,
+            Topic: otherTopic));
+        Assert.Equal(HttpStatusCode.OK, otherRes.StatusCode);
+
+        // 3. Query GET /conversations?topic={topic}
+        var listRes = await client.GetAsync($"/conversations?topic={Uri.EscapeDataString(topic)}");
+        Assert.Equal(HttpStatusCode.OK, listRes.StatusCode);
+        var paged = await listRes.Content.ReadFromJsonAsync<PagedResult<ConversationDto>>();
+        Assert.NotNull(paged);
+        Assert.Contains(paged.Items, c => c.Id == created.Id && c.Topic == topic);
+        Assert.DoesNotContain(paged.Items, c => c.Topic == otherTopic);
     }
 
     [Fact]

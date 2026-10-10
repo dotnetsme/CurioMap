@@ -46,6 +46,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(u => u.LocationVisibility).HasConversion<string>().HasMaxLength(20);
             e.Property(u => u.BookshelfVisibility).HasConversion<string>().HasMaxLength(20);
             e.Property(u => u.TermsVersion).HasMaxLength(20);
+            e.HasIndex(u => u.Email).IsUnique();
+            e.HasIndex(u => u.Handle).IsUnique();
             e.HasOne(u => u.Location).WithMany(l => l.Users)
                 .HasForeignKey(u => u.LocationId).OnDelete(DeleteBehavior.SetNull);
         });
@@ -64,6 +66,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(b => b.Isbn).HasMaxLength(20);
             e.Property(b => b.CoverUrl).HasMaxLength(1000);
             e.Property(b => b.Description).HasMaxLength(4000);
+            e.Property(b => b.Topic).HasMaxLength(100);
             if (Database.IsNpgsql())
             {
                 e.Property(b => b.Metadata).HasColumnType("jsonb");
@@ -80,10 +83,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
             e.Property(x => x.Visibility).HasConversion<string>().HasMaxLength(20);
+            e.HasIndex(x => new { x.UserId, x.BookId }).IsUnique();
             e.HasOne(x => x.User).WithMany(u => u.BookshelfEntries)
                 .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(x => x.Book).WithMany(b => b.Entries)
-    .HasForeignKey(x => x.BookId).OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(x => x.BookId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Rating>(e =>
@@ -103,6 +107,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(c => c.TopicType).HasConversion<string>().HasMaxLength(20);
             e.Property(c => c.Title).HasMaxLength(200).IsRequired();
             e.Property(c => c.PromptKey).HasMaxLength(60);
+            e.Property(c => c.Topic).HasMaxLength(100);
             e.HasOne(c => c.Book).WithMany(b => b.Conversations)
                 .HasForeignKey(c => c.BookId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(c => c.Draft).WithMany()
@@ -124,6 +129,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<MessageReaction>(e =>
         {
             e.Property(r => r.Kind).HasConversion<string>().HasMaxLength(20);
+            e.HasIndex(r => new { r.MessageId, r.UserId, r.Kind }).IsUnique();
             e.HasOne(r => r.Message).WithMany(m => m.Reactions)
                 .HasForeignKey(r => r.MessageId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(r => r.User).WithMany()
@@ -134,6 +140,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.Property(r => r.Reason).HasMaxLength(500).IsRequired();
             e.Property(r => r.Status).HasConversion<string>().HasMaxLength(30);
+            e.HasIndex(r => new { r.MessageId, r.ReporterId }).IsUnique();
             e.HasOne(r => r.Message).WithMany()
                 .HasForeignKey(r => r.MessageId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(r => r.Reporter).WithMany()
@@ -142,6 +149,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<Follow>(e =>
         {
+            e.ToTable(t => t.HasCheckConstraint("ck_follow_no_self", "follower_id <> followed_id"));
+            e.HasIndex(f => new { f.FollowerId, f.FollowedId }).IsUnique();
+            e.HasIndex(f => f.FollowedId);
             e.HasOne(f => f.Follower).WithMany()
                 .HasForeignKey(f => f.FollowerId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(f => f.Followed).WithMany()
@@ -177,6 +187,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<RefreshToken>(e =>
         {
             e.Property(r => r.TokenHash).HasMaxLength(64).IsRequired();
+            e.HasIndex(r => r.TokenHash).IsUnique();
             e.HasOne(r => r.User).WithMany()
                 .HasForeignKey(r => r.UserId).OnDelete(DeleteBehavior.Cascade);
         });

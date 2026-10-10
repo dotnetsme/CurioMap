@@ -18,6 +18,11 @@ export interface GlobalDiscovery {
   generatedAt: string;
 }
 
+export interface TopicStat {
+  topic: string;
+  readerCount: number;
+}
+
 export interface NearbyReader {
   user: UserStub;
   location: LocationDto;

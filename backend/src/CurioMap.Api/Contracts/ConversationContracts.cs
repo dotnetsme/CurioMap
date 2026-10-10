@@ -5,7 +5,9 @@ namespace CurioMap.Api.Contracts;
 public record CreateConversationRequest(
     [Required, MinLength(3), MaxLength(200)] string Title,
     [Required, MaxLength(20)] string TopicType,
-    [MaxLength(60)] string? PromptKey);
+    [MaxLength(60)] string? PromptKey,
+    [MaxLength(100)] string? Topic = null,
+    Guid? BookId = null);
 
 public record ConversationDto(
     Guid Id,
@@ -19,7 +21,8 @@ public record ConversationDto(
     int MessageCount,
     DateTime CreatedAt,
     DateTime LastActivityAt,
-    BookStubDto? Book);
+    BookStubDto? Book,
+    string? Topic = null);
 
 public record CreateMessageRequest(
     [Required, MinLength(1), MaxLength(2000)] string Content);

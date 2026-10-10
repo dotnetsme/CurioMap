@@ -34,6 +34,17 @@ services:
       timeout: 3s
       retries: 10
 
+  smtp4dev:
+    image: rnwood/smtp4dev:v3
+    container_name: curiomap-smtp4dev
+    restart: unless-stopped
+    ports:
+      - "5000:80"     # Web UI for inspecting captured emails
+      - "2525:25"     # SMTP port for app email capture
+    environment:
+      - ServerOptions__HostName=smtp4dev
+
+
 volumes:
   curiomap_pgdata:
   curiomap_redisdata:

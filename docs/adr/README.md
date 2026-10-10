@@ -82,3 +82,6 @@ the code wins and the doc gets flagged for correction.
 - [0005 — Home dashboard and auth gate](0005-home-dashboard-and-auth-gate.md)
 - [0006 — Observatory map engine (supersedes 0003 rule 9)](0006-observatory-map-engine.md)
 - [0007 — OpenStreetMap basemap via Leaflet (supersedes 0006)](0007-openstreetmap-basemap.md)
+- [0008 — Curiosity vectors and discovery query hardening](0008-curiosity-vectors-and-discovery-hardening.md)
+- [0009 — EF Core code-first migrations, hybrid email delivery, Neon database separation, and Fly.io CI/CD](0009-efcore-migrations-resend-smtp4dev-fly-cicd.md)
+

@@ -1,0 +1,3 @@
+# Configuration for running GitHub Actions locally using nektos/act with Docker
+-P ubuntu-latest=catthehacker/ubuntu:act-22.04
+--secret-file .secrets

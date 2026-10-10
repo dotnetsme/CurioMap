@@ -158,11 +158,13 @@ export function CircleMessageList({
             onChange={(e) => setContent(e.target.value)}
             placeholder="Share your thoughts…"
             maxLength={2000}
+            className="text-base sm:text-sm min-h-11"
           />
           <Button
             type="submit"
             disabled={busy || !content.trim()}
             isLoading={busy}
+            className="min-h-11 min-w-11 shrink-0 cursor-pointer"
             aria-label="Send message to circle"
           >
             <Send size={16} />

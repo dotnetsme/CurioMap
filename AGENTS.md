@@ -16,11 +16,36 @@ This document establishes non-negotiable architectural rules, domain invariants,
   - Think holistically end-to-end across the entire stack:
     `backend/src/CurioMap.Api/Domain` $\rightarrow$ `Services/` / `Auth/` $\rightarrow$ `Controllers/ (ASP.NET Core 10 / NO MediatR)` $\rightarrow$ `Postgres (Neon SQL Migrations) / Redis (Upstash)` $\rightarrow$ `frontend (Next.js 16 App Router / React 19 / TypeScript / Tailwind CSS v4)`.
   - Zero tolerance for broken workflows, unhandled edge cases, mock placeholders, unhandled promise rejections, unstyled native browser alerts, or leaky location APIs.
-- **Mandatory Code Formatting & Lint Discipline (NON-NEGOTIABLE)**:
-  - After **EVERY code modification** across frontend (`frontend/`) or backend (`backend/`), run formatting and lint checks (`dotnet format --verify-no-changes`, `npm run lint` in `frontend/`) before completing tasks.
+- **Mandatory Prettier & Code Formatting Discipline (NON-NEGOTIABLE)**:
+  - After **EVERY code modification** across frontend (`frontend/`) or backend (`backend/`), run formatting and lint checks (`dotnet format backend/ --verify-no-changes`, `npm --prefix frontend run lint` or `npm run lint` in `frontend/`) before completing tasks.
 - **Mandatory UTF-8 (No BOM) File Encoding (NON-NEGOTIABLE)**:
   - All created or modified source files (`.cs`, `.ts`, `.tsx`, `.json`, `.sql`, `.md`) MUST be saved strictly in **UTF-8 without BOM**.
   - Never emit or preserve UTF-8 byte order marks (`0xEF, 0xBB, 0xBF`), especially in SQL migrations, to prevent parser and CI/CD failures.
+- **Modern Language & Idiomatic Code Discipline (C# 13 / .NET 10 & TypeScript)**:
+  - **Idiomatic Modern Syntax, Zero Novelty Churn**: Leverage stable, modern language idioms that enhance readability, immutability, and performance (e.g., file-scoped namespaces, primary constructors for immutable services/records, collection expressions `[...]`, pattern matching, pattern guards, strict nullability, TS `satisfies` operator, and discriminated unions).
+  - **Prohibit Feature Tourism**: Do not adopt experimental/preview compiler flags or overly clever syntax constructs that degrade code clarity, IDE type-checking speed, or Next.js HMR cycles.
+  - **EF Core SQL Translation Invariant**: Never use C# language constructs or BCL methods inside EF Core LINQ query predicates (`.Where()`, `.Select()`, etc.) that cannot be translated into PostgreSQL SQL, preventing runtime translation exceptions or forced client-side evaluation.
+- **Mandatory Proactive Code Smell, Anti-Pattern, Security & Performance Audit (NON-NEGOTIABLE)**:
+  - Whenever code changes across frontend or backend, proactively audit and eliminate:
+    1. **Code Smells & Layer Bleed**: Enforce clean boundaries (HTTP concerns in Controllers only; domain logic in Services/Common), eliminate dead/zombie code, ensure exhaustive switch/match expression branches, and prohibit mock placeholders or unhandled edge cases.
+    2. **Architectural & Design Anti-Patterns**: Prevent unbounded in-memory collection processing, prevent synchronous blocking calls (`.Result`, `.Wait()`), guarantee cancellation token propagation (`ct`), and eliminate concurrency collisions.
+    3. **Security & Authorization Vulnerabilities**: Verify object-level scoping on every query/mutation via `CurrentUser`, ensure secret/token redaction (refresh tokens, passwords) in DTOs and logs, block SSRF on outbound HTTP clients, and sanitize user-generated content to eliminate XSS.
+    4. **Performance & Scalability Bottlenecks**: Mandate `.AsNoTracking()` on read-only queries, apply `.AsSplitQuery()` on queries loading multiple collection navigations, ensure query filters are backed by indexes, strictly enforce pagination caps via `PageBounds` (`MaxPageSize = 50`), and avoid Cartesian explosions.
+- **Mandatory 4-Tier Error & Warning Handling Discipline (NON-NEGOTIABLE)**:
+  - Whenever code changes across frontend or backend, enforce the 4-tier error and warning classification:
+    1. **Tier 1 (Direct User Mutation Failures)**: Domain rules, validation errors, concurrency collisions, or permission denials MUST throw typed exceptions, map through exception handling into RFC 7807 `ProblemDetails`, and be extracted via frontend API helpers into actionable inline form errors or toasts. Discarding error payloads or displaying uninformative generic messages (e.g., "Failed to update") is strictly prohibited.
+    2. **Tier 2 (Defensive Client Degradations)**: Local storage fallbacks, cache purges, and speculative in-flight computations MUST fall back gracefully to in-memory state or safe empty values without surfacing disruptive alerts or warnings to the user (anti-alert fatigue). Emit structured debug telemetry (`console.debug` / `console.warn`).
+    3. **Tier 3 (Transient Background Operations)**: Autosaves and background synchronizations retry with exponential backoff and render non-blocking status indicators, NEVER disruptive toast storms.
+    4. **Tier 4 (System Invariants & Infrastructure Faults)**: 500s, DB pool outages, and encryption/hashing failures log full diagnostics with `TraceIdentifier` via structured logging. The client presents sanitized messages ("We encountered an unexpected issue. Ref: {traceId}") to eliminate CWE-209 information disclosure.
+- **Mandatory Zero Stack Trace & Information Disclosure Containment (CWE-209) (NON-NEGOTIABLE)**:
+  - Raw stack traces, database driver exceptions (`Npgsql`, `EF Core`), connection strings, table/column names, and internal file paths (`C:\...`, `/var/...`) MUST NEVER leak to end users or be returned in HTTP response payloads, even in development environments.
+  - The backend MUST log full exception details with `TraceIdentifier` on the server using structured logging.
+  - All unhandled 500 exceptions MUST resolve to sanitized RFC 7807 `ProblemDetails` with `extensions["traceId"]` and a friendly support reference message.
+  - The frontend client MUST sanitize sensitive stack frames and internal file paths, replacing unhandled crashes with calm messages and support reference codes (`Ref: {traceId}`).
+- **Mandatory Direct Execution & Sub-Agent Prohibition (NON-NEGOTIABLE)**:
+  - The agent MUST NEVER spawn sub-agents or background delegators for routine code searches (`grep_search`), file views/inspections (`view_file`, `list_dir`), or terminal commands (`run_command`).
+  - All searching, file reading, and command executions MUST be executed directly by the primary agent in the current session to minimize token consumption and eliminate redundant context overhead.
+  - Sub-agent spawning is strictly prohibited except when the user explicitly requests delegated sub-agents or for tasks requiring multi-step interactive browser automation (`browser_subagent`).
 - **Explicit Operational Truth (NON-NEGOTIABLE)**:
   - The rules in this document are **requirements, not a description of the current codebase**. A green `dotnet test`, a successful `npm run build`, or a passing smoke run is NOT evidence that a rule is satisfied.
   - Agents MUST NOT describe a workflow as "done", "production ready", "privacy safe", "race-free", "self-healing", or "covered by tests" unless the enforcement (code, test, CI check, or an explicitly documented manual gate) exists and is verifiable by file path.
@@ -35,7 +60,7 @@ This document establishes non-negotiable architectural rules, domain invariants,
 - **Geolocation Discovery with Radical Privacy**: Coarse location (~15 km grid / 0.15°), no exact coordinates stored. Country/region/city visibility controls with complete opt-out.
 - **Micro-conversations, Circles & Streaks**: Book-focused discussions, lightweight reactions (`insightful`, `funny`, `helpful`), reading circles, and reading streak gamification.
 - **Ethical Monetization**: Transparent affiliate links based on ISBN (Bookshop.org, Kobo, Amazon); no data brokerage, no behavioral ad profiling.
-- **Simplicity, Greppability & Zero Ceremony**: Explicit controllers, plain services, a single Leaflet map engine over an OpenStreetMap basemap with screen-space fuzzed region markers, and raw SQL migrations.
+- **Simplicity, Greppability & Zero Ceremony**: Explicit controllers, plain services, a single Leaflet map engine over an OpenStreetMap basemap with screen-space fuzzed region markers, and EF Core code-first migrations with Fly.io release command bundles.
 
 ---
 
@@ -46,7 +71,9 @@ This document establishes non-negotiable architectural rules, domain invariants,
 - **Backend (`backend/src/CurioMap.Api`)**:
   - ASP.NET Core 10 Web API host, attribute-routed controllers.
   - **Controllers only, NO MediatR**: Each HTTP domain maps to a single controller; shared logic lives in plain services (`Services/`, `Auth/`, `Common/`). Explicit, greppable, boring.
-  - **Data Access & Schema**: EF Core 10 + Npgsql targeting Neon Postgres. Schema is strictly owned by ordered SQL migration scripts (`backend/src/CurioMap.Api/Data/Migrations/*.sql`) applied at startup by `DbInitializer` with per-migration transaction-scoped PostgreSQL advisory locks (`pg_advisory_xact_lock`). Never edit already-applied migrations in production. Non-Npgsql providers (hermetic SQLite tests) short-circuit to `EnsureCreatedAsync`.
+  - **Data Access & Schema (ADR 0009)**: EF Core 10 + Npgsql targeting Neon Postgres. Schema is managed via EF Core code-first migrations (`backend/src/CurioMap.Api/Migrations/`). In production, migrations are compiled into an executable bundle (`efbundle`) and executed in Fly.io's `release_command` against Neon's direct unpooled connection (`DATABASE_MIGRATION_URL`, port 5432) to prevent startup race conditions across auto-scaled machines. Runtime queries connect via Neon's pooled connection (`DATABASE_URL`, port 6543). Non-Npgsql providers (hermetic SQLite tests) short-circuit to `EnsureCreatedAsync`.
+  - **Email Delivery (ADR 0009)**: Defined via `IEmailSender`. Local development routes through `smtp4dev:v3` running in Docker (`docker-compose.yml`, port 2525 for SMTP, port 5000 for web UI). Production routes through Resend HTTPS API (`POST https://api.resend.com/emails`) via `ResendEmailSender`. Hermetic tests inject in-memory `TestEmailSender`.
+  - **CI/CD & Local Runner (ADR 0009)**: GitHub Actions workflow (`.github/workflows/ci.yml`) builds, formats, tests, audits, verifies EF Core migration bundles, and deploys to Fly.io. Workflows are testable locally via Docker using `nektos/act` (`.actrc` with `catthehacker/ubuntu:act-22.04` runner image and `.secrets.example`).
   - **Async Cancellation & Ownership**: Asynchronous controller, service, EF Core, and outbound HTTP operations MUST accept and propagate `CancellationToken`. Request-scoped work MUST be awaited; never detach it with fire-and-forget `Task.Run` or `async void`. Longer-running work belongs in an existing hosted worker or another explicitly durable mechanism.
   - **Caching & Rate Limiting**: Redis (Upstash / Redis Cloud) cache-aside with in-memory compute fallback. Dual rate limiting: fixed-window policies (`auth`, `write`, `search`) plus Redis-backed limits for message posting.
   - **Auth**: JWT bearer access tokens (15 min) + rotating refresh tokens (httpOnly cookie, SHA-256 hashed in DB). Passwords hashed with PBKDF2-SHA256 (100k iterations).
@@ -77,6 +104,9 @@ This document establishes non-negotiable architectural rules, domain invariants,
    - Public user profile endpoints (`/users/:id`) MUST NEVER expose email addresses, password hashes, or exact coordinates.
 6. **Identity & Display Name Separation**:
    - `DisplayName.Resolve` must be respected in all public endpoints and feeds: anonymous display mode must never leak handle or real name.
+7. **Physical Asset Safety Guardrail (ADR 0008)**:
+   - High-value physical goods (coins, jewelry, fine art, luxury collectibles) are strictly excluded from the catalog and discovery engine to prevent coordinate-based burglary or asset targeting against ~15 km fuzzed locations. Platform curiosity is strictly bounded to intellectual media (books, open research papers, documentary films) with active consumption lifecycles.
+
 
 ### 3. Gamification, Streak & Challenge Invariants
 
@@ -129,10 +159,15 @@ This document establishes non-negotiable architectural rules, domain invariants,
   - All interactive controls must support keyboard navigation, visible focus rings (`focus-visible:ring-2 focus-visible:ring-indigo-500`), and accessible labels (`aria-label`).
 - **Dark Glass Aesthetic & Styling**:
   - Tailwind CSS v4 CSS-first configuration, dark glass aesthetic (`backdrop-blur`, subtle borders, curated HSL color schemes).
+- **Mobile-First & Touch Ergonomics**:
+  - Enforce touch target sizes of at least **44x44 px** (primary action targets prefer **48px × 48px** / `min-h-[48px]`) with ≥8px spacing for interactive elements.
+  - Form inputs must specify `text-base sm:text-sm` (minimum 16px font size on mobile viewports) to prevent iOS Safari auto-zoom.
+  - Zero horizontal overflow (`overflow-x-hidden`) at 375 px baseline viewport width.
 - **Zero Native Browser Dialogs**:
   - **NEVER use `window.alert()`, `window.confirm()`, or `window.prompt()`**. Always use modern UI dialogs, modals, or accessible toast notifications.
-- **Iconography Anti-Patterns**:
-  - **NEVER use raw emojis as UI icons**. Use standard SVG icon libraries (`lucide-react`).
+- **Iconography Standard & Zero Raw Emojis Rule (NON-NEGOTIABLE)**:
+  - **NEVER use raw emojis as UI icons** (e.g., 📅, 📁, 🚀, ⚡, 🟢, 🔵, 🔒, 💡, ✓, ✦ in buttons, badges, tabs, card labels, dropdowns, headers, empty states, toasts, or toolbars). Emojis render inconsistently across OSs and platforms, break baselines, and violate accessibility standards.
+  - All UI elements MUST use Lucide React SVG icons (`lucide-react`) styled with semantic tokens (`size-3.5`, `size-4`, `size-5`), stroke widths (`1.75px` or `2px`), semantic color classes, and accessible attributes (`aria-hidden="true"`).
 - **RSC & Client Boundary Discipline**:
   - Server components for landing page and static boundaries; push `'use client'` down to interactive leaves.
   - Client state hydrated safely without SSR hydration mismatches (use mounted guards for browser-dependent projections).
@@ -198,10 +233,19 @@ After EVERY code modification, execute the verification pipeline before concludi
      ```
    - Validates live services end-to-end: Health -> Auth -> Geo -> Search -> Shelf -> Conversations -> Circles -> Streaks -> Discovery -> Frontend SSR Pages (`/`, `/home`, `/books/:id`, `/circles`, `/discover/global`).
    - **Single Source of Truth (NON-NEGOTIABLE)**: `scripts/smoke.ps1` (wired to `npm run smoke`) is the only maintained runner. There is no root-level `smoke.ps1`; do not recreate a second runner. Divergent smoke runners hide real regressions.
-4. **Mandatory Systematic Code Review Protocol**:
+4. **Mandatory Systematic Code Review & Self-Healing Protocol**:
    - **Privacy Check**: Ensure no unfuzzed coordinates, emails, or private shelf items leak through new or modified DTOs.
    - **Authorization Check**: Confirm the `[Authorize]`/`[AllowAnonymous]` posture of every touched action, and that object-level scoping uses the authenticated `CurrentUser` (`backend/src/CurioMap.Api/Auth/CurrentUser.cs`) rather than a route/body identifier.
-   - **Next.js Audit**: Check for missing `'use client'` directives, SSR hydration risks, broken imports, or missing keys in `.map()`.
+   - **Next.js & App Router Error Audit**:
+     - *Directives & Hooks*: Verify all components using client-side React hooks (`useState`, `useEffect`, `useMemo`, `useCallback`, `useRouter`) or event listeners have explicit `"use client";` directives at the very top.
+     - *Hydration & SSR Safety*: Prevent SSR hydration mismatches by ensuring browser globals (`window`, `document`, `localStorage`) and non-deterministic values (`Date.now()`, `Math.random()`) are only accessed inside `useEffect` or behind mounted state guards.
+     - *Key Discipline*: Ensure all `.map()` iterators use unique, stable, and deterministic keys (never plain array indices on dynamic lists).
+     - *Interactive Nesting*: Disallow invalid nested interactive elements (e.g. `<button>` inside `<Link>` or `<a>`).
+   - **Bugs, Smells & Edge Cases**:
+     - Eliminate impure renders, missing React hook dependencies, and unhandled promise rejections.
+     - Disallow raw browser dialogs (`window.alert`, `window.confirm`), raw emojis as icons, or unhandled loading/error states.
+     - Ensure defensive null/undefined checks, array fallback values, and clean effect teardown handlers for all listeners, intervals, and subscriptions.
+   - **Immediate Self-Healing Action**: If ANY Next.js error, hydration warning, code smell, or edge-case bug is discovered during review, fix it immediately and re-verify all tests and linting before completing the task.
    - **SQL Migration Audit**: Verify any schema change is accompanied by an ordered, idempotent `.sql` script in `backend/src/CurioMap.Api/Data/Migrations/`.
    - **Contract Audit**: Verify every touched endpoint is reflected in `frontend/lib/api/*`, `docs/api.md`, the integration suite, and `scripts/smoke.ps1` (see §4B).
    - **Honesty Audit**: Update the §8 audit snapshot whenever a rule moves between unimplemented and enforced. Stale gap lists are worse than no gap list.
@@ -363,7 +407,15 @@ Beyond the boundary suites in §4C, these invariants MUST be asserted automatica
 21. **Bounded Queries & Pagination**:
     - All collection endpoints (conversations, messages, feed, discover) must enforce strict maximum page sizes (`MaxPageSize = 50` or `100`). Unbounded queries are strictly prohibited.
 
-22. **Security Headers**:
+22. **SSRF Prevention on Outbound Integrations**:
+    - Any external URL resolved or fetched by the server (e.g. geocoding, book covers, partner lookups) MUST validate the target against private/internal IP address ranges (RFC 1918 `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, loopback `127.0.0.1`, `localhost`, `[::1]`, and cloud metadata `169.254.169.254`). Outbound HTTP calls MUST enforce strict timeouts (3-5s).
+23. **File & Avatar Upload Security (Magic Header Validation)**:
+    - Any uploaded files or avatar images MUST validate actual file headers (magic bytes), never trusting client-supplied `ContentType` or file extensions alone.
+    - Disallow executable, scriptable, or macro files (`.exe`, `.dll`, `.bat`, `.ps1`, `.vbs`, `.js`, `.svg` with nested scripts).
+24. **PostgreSQL Indexing & Trigram Search Discipline**:
+    - Every foreign key used in joins or cascade paths MUST be backed by an explicit index in `AppDbContext.OnModelCreating`.
+    - Text search across catalogs, handles, and books MUST utilize PostgreSQL trigram indexes (`gin_trgm_ops`) or full-text indexes to prevent full-table scans.
+25. **Security Headers & Error Containment**:
     - **DTO boundary**: endpoints MUST bind validated request contracts and return explicit response contracts, never domain entities or EF Core entities. Server-owned identity, authorization, moderation, and persistence fields MUST NOT be client-bindable.
     - **Error response contract**: HTTP errors MUST use RFC 7807 ProblemDetails with `application/problem+json` and an opaque `traceId` for correlation. Non-Development responses MUST NOT expose raw exception messages, stack traces, internal type names, database details, or secrets. Expected application errors may include only deliberately authored, safe user-facing messages; logs retain diagnostic detail without credentials or unnecessary PII.
     - Every response carries `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, and a `Content-Security-Policy` (`default-src 'none'` for the JSON API; a scoped policy for the dev-only `/docs` viewer), plus `Strict-Transport-Security` outside Development. Enforced by `Common/SecurityHeadersMiddleware.cs`.
@@ -405,10 +457,11 @@ Status: `frontend/app/robots.ts`, `frontend/public/robots.txt`, and `frontend/ap
 
 Per §0 (Explicit Operational Truth), this snapshot records what is actually enforced today versus what is merely required. "Enforced" means a file path proves it. Everything else is an open gap that agents MUST name in task summaries instead of implying compliance.
 
-Snapshot date: 2026-09-30 (map engine: ADR 0007 superseded ADR 0006).
+Snapshot date: 2026-10-09 (discovery aggregation & curiosity vectors: ADR 0008; map engine: ADR 0007).
 
 ### Enforced today
 
+- **Database-level discovery aggregation & Curiosity Vectors (ADR 0008)**: `backend/src/CurioMap.Api/Controllers/DiscoverController.cs` (`ComputeGlobalAsync` and `ComputeTopBooksAsync` delegate aggregations, `GroupBy`, and region projections directly to SQL, dropping memory footprint from $O(U+S)$ to $O(R+B)$ while maintaining in-query country-only location redaction), `Domain/Books.cs` + `Domain/Conversations.cs` (`Topic` property with B-tree indexes via migrations `0018_book_topics.sql` and `0019_conversation_topics.sql`), topic filtering in `/discover/global?topic=...`, and hermetic tests in `backend/tests/CurioMap.Api.Tests/WorkflowIntegrationTests.cs`.
 - **Location fuzzing and public location redaction**: `backend/src/CurioMap.Api/Services/GeoFuzz.cs`, `backend/src/CurioMap.Api/Contracts/Mapping.cs` (`ToPublicLocation`), and `backend/tests/CurioMap.Api.Tests/Services/PrivacyMappingTests.cs` plus `WorkflowIntegrationTests.Location_Privacy_Coordinates_Are_Fuzzed_And_Redacted_In_Public_Profiles`.
 - **Hermetic HTTP integration coverage**: `backend/tests/CurioMap.Api.Tests/CurioMapTestFactory.cs` plus `WorkflowIntegrationTests.cs` (auth lifecycle, privacy, bookshelf 403, streaks, circles).
 - **CI build/test/lint/build gates**: `.github/workflows/ci.yml` runs `dotnet build`, `dotnet test`, `npm run lint`, `npm run build`, and all four are green on 2026-09-22 (`npx tsc --noEmit`, `npm run lint` and `npm run build` compile all 24 routes). History: commit `2929a44` left the SVG `frontend/components/discover/ObservatoryMap.tsx` half-refactored (dangling `clampViewbox` reference, missing `useCallback` import, React-19 `useRef` arity error, dropped `PersonaPopover`), which was repaired on 2026-09-21; that engine was then replaced wholesale by ADR 0007, so the SVG-specific defects no longer exist in the tree.
@@ -440,7 +493,7 @@ Legacy cross-references in the preceding proxy/map audit paragraphs use prior ga
 10. No inbound webhook exists today, so §5.6 is forward-looking guidance; it becomes a hard requirement the moment any inbound callback is added.
 11. Seed/demo scripts still write lowercase enum spellings (e.g. `0013_seed_demo_readers.sql` literals `'pseudonymous'`, `'region_city'`, `'public'`): harmless on databases that run 0017+, because the migration rewrites them and the CHECKs accept only the PascalCase members, but the stale literals invite confusion and any future seed bypassing the migration would reintroduce drift. Updating the seed literals is accepted cleanup - normalize them to the PascalCase `Enums.cs` members, and unit/update `gen_seed_demo.py` + `fix_seed_script.py` so regeneration does not recreate the drift.
 
-12. EF query translation and query-shape rules (§7.7) are not comprehensively enforced by a fitness suite; `AsNoTracking`, lightweight projections, split-query use, and cancellation propagation still require targeted review beyond existing pagination bounds.
+12. EF query translation and query-shape rules (§7.7) are not comprehensively enforced by a fitness suite; `AsNoTracking`, lightweight projections, split-query use, and cancellation propagation still require targeted review beyond existing pagination bounds (note: `DiscoverController` aggregations now strictly run at the database level with EF Core SQL translation per ADR 0008, eliminating in-memory table scans for top books and global discovery regions).
 13. `Common/Exceptions.cs` masks unhandled exception details, but responses are currently anonymous JSON rather than RFC 7807 `ProblemDetails`, lack an opaque `traceId`, and expected `AppException.Message` values are returned directly. Add focused production-pipeline tests before claiming the complete §5.22 error contract is enforced.
 14. Effect cleanup is implemented in individual components (for example `frontend/components/ui/CountUp.tsx`), but no workspace-wide fitness check verifies cleanup of listeners, timers, abort controllers, and subscriptions.
 15. CI (`.github/workflows/ci.yml`) does not run NuGet or npm vulnerability audits; dependency vulnerability review is a required manual gate until automated scanning is added.

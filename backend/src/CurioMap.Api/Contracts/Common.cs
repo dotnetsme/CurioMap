@@ -19,7 +19,8 @@ public record BookStubDto(
     string Title,
     string Author,
     string? Isbn,
-    string? CoverUrl);
+    string? CoverUrl,
+    string? Topic = null);
 
 public record PagedResult<T>(
     IReadOnlyList<T> Items,

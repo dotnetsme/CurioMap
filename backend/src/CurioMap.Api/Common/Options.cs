@@ -61,3 +61,27 @@ public class ProxyOptions
     /// <summary>Headers consulted, in order, once the peer is trusted.</summary>
     public string[] ClientIpHeaders { get; set; } = ["Fly-Client-IP", "X-Forwarded-For"];
 }
+
+public class EmailOptions
+{
+    public string Provider { get; set; } = "Smtp";
+    public string FromEmail { get; set; } = "noreply@curiomap.com";
+    public string FromName { get; set; } = "CurioMap";
+    public SmtpOptions Smtp { get; set; } = new();
+    public ResendOptions Resend { get; set; } = new();
+}
+
+public class SmtpOptions
+{
+    public string Host { get; set; } = "localhost";
+    public int Port { get; set; } = 2525;
+    public bool EnableSsl { get; set; }
+    public string? Username { get; set; }
+    public string? Password { get; set; }
+}
+
+public class ResendOptions
+{
+    public string ApiKey { get; set; } = string.Empty;
+}
+

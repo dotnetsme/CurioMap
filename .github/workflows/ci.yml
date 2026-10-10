@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   api:
-    name: API (build + test)
+    name: API (build + test + migrations)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +26,10 @@ jobs:
         run: dotnet test backend/CurioMap.slnx --no-build --nologo
       - name: Route coverage audit (AGENTS.md §4B — controllers are the source of truth)
         run: npm run audit:routes:strict
+      - name: Verify EF Core Migration Bundle
+        run: |
+          dotnet tool install --global dotnet-ef --version 10.0.10
+          dotnet ef migrations bundle --project backend/src/CurioMap.Api/CurioMap.Api.csproj -o /tmp/efbundle --nologo
 
   web:
     name: Web (lint + build)
@@ -57,7 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - name: Deploy API
+      - name: Deploy API (EF Core migrations executed via Fly release_command)
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: flyctl deploy --config fly.api.toml --remote-only

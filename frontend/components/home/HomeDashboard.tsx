@@ -7,6 +7,7 @@ import {
   Globe2,
   MapPin,
   MessagesSquare,
+  Orbit,
   Sparkles,
   TrendingUp,
 } from "lucide-react";
@@ -22,8 +23,19 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { StreakCard } from "@/components/profile/StreakCard";
 import { ErrorState } from "@/components/ui/Feedback";
 import { Reveal } from "@/components/ui/Reveal";
-import { globalDiscovery, nearby, stats } from "@/lib/api/discover";
-import type { GlobalDiscovery, Nearby, StatsSummary } from "@/types";
+import { globalDiscovery, nearby, stats, topics } from "@/lib/api/discover";
+import type { GlobalDiscovery, Nearby, StatsSummary, TopicStat } from "@/types";
+
+const FALLBACK_VECTORS = [
+  "Philosophy",
+  "Psychology",
+  "Science & Nature",
+  "History & Society",
+  "Technology",
+  "Sci-Fi",
+  "Speculative & Magical",
+  "Literary Fiction",
+];
 
 /**
  * The signed-in dashboard body. Rendered only behind <AuthGate>, so every call
@@ -34,6 +46,7 @@ export function HomeDashboard() {
   const [summary, setSummary] = useState<StatsSummary | null>(null);
   const [map, setMap] = useState<GlobalDiscovery | null>(null);
   const [near, setNear] = useState<Nearby | null>(null);
+  const [topicList, setTopicList] = useState<TopicStat[]>([]);
   const [settled, setSettled] = useState(false);
 
   useEffect(() => {
@@ -41,15 +54,17 @@ export function HomeDashboard() {
     (async () => {
       // Each call degrades on its own: a hidden location or a cold cache must
       // never blank the whole dashboard.
-      const [s, g, n] = await Promise.all([
+      const [s, g, n, t] = await Promise.all([
         stats().catch(() => null),
         globalDiscovery().catch(() => null),
         nearby().catch(() => null),
+        topics().catch(() => []),
       ]);
       if (cancelled) return;
       setSummary(s);
       setMap(g);
       setNear(n);
+      setTopicList(t);
       setSettled(true);
     })();
     return () => {
@@ -60,6 +75,9 @@ export function HomeDashboard() {
   if (!user) return null;
 
   const unreachable = settled && !summary && !map;
+  const displayVectors = topicList.length > 0
+    ? topicList.map((t) => ({ name: t.topic, count: t.readerCount }))
+    : FALLBACK_VECTORS.map((v) => ({ name: v, count: null }));
 
   return (
     <div className="mx-auto max-w-[1280px] py-2 sm:py-4">
@@ -123,6 +141,45 @@ export function HomeDashboard() {
           <StreakCard />
         </div>
       </div>
+
+      {/* Curiosity Vectors Pulse */}
+      <Reveal>
+        <section className="mt-6 card p-5 sm:p-6 border-line-2/30 bg-stage-2/70 backdrop-blur-md transition-all duration-300 hover:border-accent/30">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="label-sm inline-flex items-center gap-1.5 text-accent">
+                <Orbit size={13} /> Curiosity Vectors
+              </p>
+              <h2 className="mt-1 font-display text-lg font-bold text-ink">
+                What readers are exploring worldwide
+              </h2>
+            </div>
+            <Link
+              href="/discover/global"
+              className="inline-flex min-h-11 items-center gap-1 text-xs font-semibold text-accent hover:text-accent-strong transition"
+            >
+              Thematic map →
+            </Link>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {displayVectors.map((v) => (
+              <Link
+                key={v.name}
+                href={`/discover/global?topic=${encodeURIComponent(v.name)}`}
+                className="chip min-h-11 px-3.5 py-2 text-xs sm:text-sm hover:border-accent hover:text-ink transition-all duration-200 hover:-translate-y-0.5"
+              >
+                <Sparkles size={13} className="text-accent" />
+                <span className="font-medium">{v.name}</span>
+                {v.count ? (
+                  <span className="ml-1 rounded-full bg-accent/20 px-1.5 py-0.5 text-[10px] font-semibold text-accent">
+                    {v.count}
+                  </span>
+                ) : null}
+              </Link>
+            ))}
+          </div>
+        </section>
+      </Reveal>
 
       <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         <DashboardPanel

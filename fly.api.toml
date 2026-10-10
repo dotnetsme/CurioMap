@@ -5,6 +5,12 @@ primary_region = "fra"
 [build]
   dockerfile = "infra/api.Dockerfile"
 
+[deploy]
+  # Runs once per release in an isolated ephemeral machine before rolling out new instances.
+  # Executes EF Core migration bundle. Direct unpooled connection port 5432 is preferred for DDL
+  # (DATABASE_MIGRATION_URL); falls back to DATABASE_URL if unconfigured.
+  release_command = "sh -c './efbundle --connection \"${DATABASE_MIGRATION_URL:-$DATABASE_URL}\"'"
+
 [http_service]
   internal_port = 8080
   force_https = true
@@ -18,9 +24,13 @@ primary_region = "fra"
 
 # Fly private networking: web app talks to the API over the internal network.
 # Provide via `fly secrets set`:
-#   DATABASE_URL  (Neon postgres:// URL or libpq key=value)
-#   REDIS_URL     (redis:// or rediss:// URL, e.g. Upstash)
-#   JWT__SECRET   (long random string; overrides appsettings)
+#   DATABASE_URL            (Neon pooled connection string, port 6543)
+#   DATABASE_MIGRATION_URL  (Neon direct unpooled connection string, port 5432 for DDL)
+#   REDIS_URL               (redis:// or rediss:// URL, e.g. Upstash)
+#   JWT__SECRET             (long random string; overrides appsettings)
+#   EMAIL__PROVIDER         ("Resend")
+#   EMAIL__RESEND__APIKEY   (Resend API key: re_...)
+#   EMAIL__FROMEMAIL        ("noreply@yourdomain.com")
 
 [env]
   PORT = "8080"

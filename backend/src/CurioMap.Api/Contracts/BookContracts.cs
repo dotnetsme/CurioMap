@@ -15,7 +15,8 @@ public record BookDto(
     int ConversationsCount,
     double? AverageRating,
     int RatingCount,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    string? Topic = null);
 
 public record SearchResponse(IReadOnlyList<BookDto> Items, int Total, bool FromExternal);
 

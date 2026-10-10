@@ -69,5 +69,5 @@ public static class Mapping
     public static string ToPublicHandle(User user, bool isSelf) =>
         isSelf || user.DisplayNameMode != DisplayMode.Anonymous ? user.Handle : "anonymous";
 
-    public static BookStubDto ToStub(Book book) => new(book.Id, book.Title, book.Author, book.Isbn, book.CoverUrl);
+    public static BookStubDto ToStub(Book book) => new(book.Id, book.Title, book.Author, book.Isbn, book.CoverUrl, book.Topic);
 }

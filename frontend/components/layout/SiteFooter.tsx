@@ -21,6 +21,9 @@ export function SiteFooter() {
             <Link href="/discover/global" className="text-ink-muted hover:text-ink">
               Curiosity map
             </Link>
+            <Link href="/discover/global" className="text-ink-muted hover:text-ink">
+              Curiosity vectors
+            </Link>
             <Link href="/discover/nearby" className="text-ink-muted hover:text-ink">
               Nearby readers
             </Link>
@@ -32,6 +35,9 @@ export function SiteFooter() {
             <span className="mono-label text-ink-faint">Platform</span>
             <Link href="/books/search" className="text-ink-muted hover:text-ink">
               Book search
+            </Link>
+            <Link href="/circles" className="text-ink-muted hover:text-ink">
+              Reading circles
             </Link>
             <Link href="/feed" className="text-ink-muted hover:text-ink">
               Activity feed

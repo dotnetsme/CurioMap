@@ -1,5 +1,4 @@
-// Server-side data helpers (landing page). Calls the API directly, not via the browser proxy.
-import type { GlobalDiscovery, MapReaders, StatsSummary } from "@/types";
+import type { GlobalDiscovery, MapReaders, StatsSummary, TopicStat } from "@/types";
 
 const base = process.env.API_INTERNAL_URL ?? "http://localhost:8080";
 
@@ -19,8 +18,13 @@ export function stats(): Promise<StatsSummary> {
   return getJson<StatsSummary>(`${base}/stats/summary`, "stats");
 }
 
-export function globalDiscovery(): Promise<GlobalDiscovery> {
-  return getJson<GlobalDiscovery>(`${base}/discover/global`, "global");
+export function globalDiscovery(topic?: string): Promise<GlobalDiscovery> {
+  const suffix = topic ? `?topic=${encodeURIComponent(topic)}` : "";
+  return getJson<GlobalDiscovery>(`${base}/discover/global${suffix}`, "global");
+}
+
+export function topics(): Promise<TopicStat[]> {
+  return getJson<TopicStat[]>(`${base}/discover/topics`, "topics");
 }
 
 /**
@@ -28,9 +32,13 @@ export function globalDiscovery(): Promise<GlobalDiscovery> {
  * paint on first byte). No country/region filter → readers worldwide.
  * API clamps limit ≤ 50; Redis-cached 2 min.
  */
-export function globalMapReaders(limit = 50): Promise<MapReaders> {
+export function globalMapReaders(limit = 50, topic?: string): Promise<MapReaders> {
+  const q = new URLSearchParams();
+  q.set("limit", String(limit));
+  if (topic) q.set("topic", topic);
   return getJson<MapReaders>(
-    `${base}/discover/map-readers?limit=${limit}`,
+    `${base}/discover/map-readers?${q.toString()}`,
     "map-readers",
   );
 }
+
