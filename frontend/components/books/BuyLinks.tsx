@@ -32,7 +32,7 @@ export function BuyLinks({ links }: { links: Record<string, string> }) {
           </a>
         ))}
       </div>
-      <p className="mt-2 text-[11px] text-ink-faint">
+      <p className="mt-2 text-xs text-ink-faint">
         Affiliate links support CurioMap at no extra cost to you.{" "}
         <Link href="/policy/affiliates" className="underline hover:text-ink">
           How it works

@@ -30,7 +30,7 @@ export function ProfileHeader({
       <Avatar avatarId={profile.avatarId} name={profile.displayName} size={72} />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-semibold text-ink">{profile.displayName}</h1>
+          <h1 className="display text-3xl text-ink-strong">{profile.displayName}</h1>
           <Badge tone="violet">{modeLabels[profile.displayNameMode] ?? profile.displayNameMode}</Badge>
           {profile.isAuthor ? <Badge tone="accent">Author</Badge> : null}
         </div>

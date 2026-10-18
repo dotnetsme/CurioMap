@@ -25,7 +25,7 @@ export function BookCover({ book, size = 56 }: { book: BookStub | Book; size?: n
   ];
   return (
     <div
-      className={`flex items-center justify-center rounded-md bg-gradient-to-br p-1 text-center text-[10px] font-semibold leading-tight text-white/95 ${palettes[hue]}`}
+      className={`flex items-center justify-center rounded-md bg-gradient-to-br p-1 text-center text-xs font-semibold leading-tight text-white/95 ${palettes[hue]}`}
       style={{ width: size, height: size * 1.5, boxShadow: "0 8px 20px -8px rgba(0,0,0,0.55)" }}
       aria-label={`Cover of ${book.title}`}
     >

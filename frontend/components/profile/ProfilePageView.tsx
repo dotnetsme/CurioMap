@@ -90,7 +90,7 @@ export function ProfilePageView({ userId }: { userId: string }) {
           { label: "Followers", value: profile.followersCount },
         ].map((s) => (
           <div key={s.label} className="glass p-4 text-center">
-            <p className="text-2xl font-bold text-gradient">{s.value}</p>
+            <p className="text-2xl font-semibold text-gradient">{s.value}</p>
             <p className="text-xs text-ink-faint">{s.label}</p>
           </div>
         ))}

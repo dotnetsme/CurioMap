@@ -30,7 +30,7 @@ export function AuthGate({
 
   if (!user) {
     return (
-      <div className="night-panel mx-auto flex max-w-xl flex-col items-center gap-4 rounded-3xl px-8 py-14 text-center">
+      <div className="card mx-auto flex max-w-xl flex-col items-center gap-4 rounded-3xl px-8 py-14 text-center">
         <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/15 text-accent">
           <Icon size={26} />
         </span>

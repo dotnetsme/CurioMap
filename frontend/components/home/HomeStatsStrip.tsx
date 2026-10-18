@@ -27,7 +27,7 @@ export function HomeStatsStrip({ stats }: { stats: StatsSummary | null }) {
             <dd className="font-mono text-lg font-semibold leading-none tabular-nums text-ink">
               {values[d.key] === null ? "—" : <CountUp value={values[d.key] as number} />}
             </dd>
-            <dt className="mt-1 truncate text-[11px] font-medium text-ink-faint">{d.label}</dt>
+            <dt className="mt-1 truncate text-xs font-medium text-ink-faint">{d.label}</dt>
           </div>
         </div>
       ))}

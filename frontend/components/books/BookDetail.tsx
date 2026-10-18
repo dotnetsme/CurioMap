@@ -80,13 +80,13 @@ export function BookDetail({ bookId }: { bookId: string }) {
   return (
     <div className="flex flex-col gap-6">
       <Reveal>
-        <div className="night-panel relative overflow-hidden rounded-3xl p-6 sm:p-8">
+        <div className="card relative overflow-hidden rounded-[28px] p-6 sm:p-10">
           <div className="flex flex-col gap-6 sm:flex-row">
-            <div className="shrink-0 transition duration-300 hover:-rotate-2 hover:scale-[1.03]">
+            <div className="shrink-0 transition duration-300 hover:scale-[1.03]">
               <BookCover book={book} size={150} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="label-sm text-signal/80">Book · {book.conversationsCount} circles</p>
+              <p className="text-sm font-medium text-signal">Book · {book.conversationsCount} circles</p>
               <h1 className="mt-1 display text-4xl text-ink-strong">
                 {book.title}
               </h1>
@@ -98,7 +98,7 @@ export function BookDetail({ bookId }: { bookId: string }) {
                     {rating ? `You rated ${rating}/5` : "Rate it"}
                   </span>
                   {ratingStats ? (
-                    <span className="ml-2 rounded-full bg-fill px-2 py-0.5 text-[10px] text-ink-faint">
+                    <span className="ml-2 rounded-full bg-fill px-2 py-0.5 text-xs text-ink-faint">
                       {ratingStats.average.toFixed(2)} · {ratingStats.count} ratings
                     </span>
                   ) : null}
@@ -125,16 +125,16 @@ export function BookDetail({ bookId }: { bookId: string }) {
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <section className="flex min-w-0 flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-1 rounded-full border border-line bg-surface p-1 text-sm font-semibold">
+            <div className="flex items-center gap-1 rounded-full bg-fill p-1 text-sm font-semibold">
               <button
                 onClick={() => setTab("circles")}
-                className={`flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-1.5 transition ${tab === "circles" ? "bg-accent text-accent-ink shadow" : "text-ink-faint hover:text-ink"}`}
+                className={`flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-1.5 transition ${tab === "circles" ? "bg-stage-2 text-ink-strong shadow-sm" : "text-ink-faint hover:text-ink"}`}
               >
                 <MessagesSquare size={14} /> Circles ({conversations.length})
               </button>
               <button
                 onClick={() => setTab("about")}
-                className={`flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-1.5 transition ${tab === "about" ? "bg-accent text-accent-ink shadow" : "text-ink-faint hover:text-ink"}`}
+                className={`flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-1.5 transition ${tab === "about" ? "bg-stage-2 text-ink-strong shadow-sm" : "text-ink-faint hover:text-ink"}`}
               >
                 <LibraryBig size={14} /> About
               </button>
@@ -151,7 +151,7 @@ export function BookDetail({ bookId }: { bookId: string }) {
           ) : (
             <div className="card flex flex-col gap-3 p-6 text-sm leading-relaxed text-ink-muted">
               <p>
-                <Star size={14} className="mr-1 inline text-amber-500" />
+                <Star size={14} className="mr-1 inline text-amber" />
                 Community ratings and reader reviews sync live to CurioMap&apos;s ethical reading graph.
               </p>
               {book.description ? <p>{book.description}</p> : <p>No publisher description yet.</p>}

@@ -116,7 +116,7 @@ export function DiscussionPanel() {
                     “{event.messageExcerpt}”
                   </p>
                 ) : null}
-                <p className="mt-0.5 text-[11px] font-medium text-ink-faint">{timeAgo(event.createdAt)}</p>
+                <p className="mt-0.5 text-xs font-medium text-ink-faint">{timeAgo(event.createdAt)}</p>
               </div>
             </li>
           );

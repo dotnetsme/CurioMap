@@ -57,9 +57,9 @@ export function BadgeToast({ kinds, onDismiss }: { kinds: string[]; onDismiss: (
           role="status"
           aria-live="polite"
         >
-          <div className="flex flex-col gap-2.5 rounded-2xl border border-amber/40 bg-material backdrop-blur-xl p-4 backdrop-blur-md">
+          <div className="flex flex-col gap-2.5 rounded-2xl border border-amber/40 bg-material backdrop-blur-xl p-4 backdrop-blur-xl backdrop-saturate-150">
             <div className="flex items-center justify-between">
-              <span className="label-sm font-bold text-amber">
+              <span className="label-sm font-semibold text-amber">
                 {count === 1 ? "★ Badge earned!" : `★ ${count} badges earned!`}
               </span>
               <button

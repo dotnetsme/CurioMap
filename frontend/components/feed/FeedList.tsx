@@ -33,13 +33,13 @@ function EventIcon({ type }: { type: string }) {
       );
     case "message_posted":
       return (
-        <span className={`${cls} bg-amber-500/10 text-amber-600`}>
+        <span className={`${cls} bg-amber-soft text-amber`}>
           <Sparkles size={16} />
         </span>
       );
     case "badge_earned":
       return (
-        <span className={`${cls} bg-amber-500/15 text-amber-500`}>
+        <span className={`${cls} bg-amber-soft text-amber`}>
           <Trophy size={16} />
         </span>
       );
@@ -148,7 +148,7 @@ export function FeedList({ events }: { events: FeedEvent[] }) {
                   </Link>{" "}
                   {describe(event)}
                 </p>
-                <p className="mt-1 text-[11px] font-medium text-ink-faint">
+                <p className="mt-1 text-xs font-medium text-ink-faint">
                   {timeAgo(event.createdAt)}
                 </p>
               </div>
@@ -175,7 +175,7 @@ export function FeedList({ events }: { events: FeedEvent[] }) {
                   <span className="block truncate text-sm font-semibold text-ink">
                     {event.book.title}
                   </span>
-                  <span className="mt-0.5 flex items-center gap-1 text-[11px] text-ink-faint">
+                  <span className="mt-0.5 flex items-center gap-1 text-xs text-ink-faint">
                     <LibraryBig size={11} /> View book & circles →
                   </span>
                 </span>

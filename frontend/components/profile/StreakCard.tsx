@@ -67,7 +67,7 @@ export function StreakCard({ userId }: { userId?: string }) {
             aria-hidden
           />
           <div className="text-center sm:text-left">
-            <h3 className="font-display text-base font-bold text-ink-strong">
+            <h3 className="font-display text-base font-semibold text-ink-strong">
               {stats.currentStreak}-day streak
             </h3>
             <p className="text-sm text-ink-muted">
@@ -111,7 +111,7 @@ export function StreakCard({ userId }: { userId?: string }) {
                   className={`size-4 ${earned ? "text-amber" : "text-ink-muted"}`}
                   aria-hidden
                 />
-                <span className="text-[10px] leading-tight text-ink-muted">{meta.name}</span>
+                <span className="text-xs leading-tight text-ink-muted">{meta.name}</span>
               </div>
             );
           })}
@@ -155,7 +155,7 @@ function ReadingHeatmap({ activeDays, days }: { activeDays: string[]; days: numb
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <p className="label-sm text-ink-muted">Last {Math.round(days / 7)} weeks of reading</p>
-        <p className="flex items-center gap-1 text-[10px] text-ink-faint">
+        <p className="flex items-center gap-1 text-xs text-ink-faint">
           less
           <span className="size-[9px] rounded-[2px] bg-stage-3 border border-line/40" aria-hidden />
           <span className="size-[9px] rounded-[2px] bg-amber" aria-hidden />

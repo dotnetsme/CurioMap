@@ -14,7 +14,7 @@ export function CircleCard({ circle }: { circle: Circle }) {
       whileHover={{ y: -2 }}
       transition={{ type: "spring", stiffness: 300, damping: 24 }}
     >
-      <Link href={`/circles/${circle.handle}`} className="card card-hover flex flex-col gap-3 p-4">
+      <Link href={`/circles/${circle.handle}`} className="card card-hover flex flex-col gap-3 p-5">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-lg font-semibold text-ink hover:text-accent">
@@ -43,7 +43,7 @@ export function CircleCard({ circle }: { circle: Circle }) {
           </span>
           {circle.currentStreak > 0 ? (
             <span
-              className="flex items-center gap-1 text-amber-500"
+              className="flex items-center gap-1 text-amber"
               title={`Group streak — longest ${circle.longestStreak} days`}
             >
               <Flame size={14} aria-hidden />

@@ -70,15 +70,15 @@ export function ChallengeCard() {
     >
       <Ring value={stats.finished} max={stats.target} size={96} stroke={9}>
         <div className="flex flex-col items-center">
-          <span className="font-display text-lg font-bold text-ink-strong">{stats.finished}</span>
-          <span className="text-[10px] uppercase tracking-wide text-ink-muted">of {stats.target}</span>
+          <span className="font-display text-lg font-semibold text-ink-strong">{stats.finished}</span>
+          <span className="text-xs uppercase tracking-wide text-ink-muted">of {stats.target}</span>
         </div>
       </Ring>
 
       <div className="flex flex-1 flex-col gap-2 text-center sm:text-left">
         <div className="flex items-center justify-center gap-2 sm:justify-start">
           <Flame className="size-4 text-amber" />
-          <h3 className="font-display text-base font-bold text-ink-strong">{stats.year} Reading Challenge</h3>
+          <h3 className="font-display text-base font-semibold text-ink-strong">{stats.year} Reading Challenge</h3>
         </div>
 
         <p className="text-sm text-ink-muted">

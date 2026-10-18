@@ -150,7 +150,7 @@ export function HomeDashboard() {
               <p className="inline-flex items-center gap-1.5 text-sm font-medium text-accent">
                 <Orbit size={13} /> Curiosity Vectors
               </p>
-              <h2 className="mt-1 font-display text-lg font-bold text-ink">
+              <h2 className="mt-1 font-display text-lg font-semibold text-ink">
                 What readers are exploring worldwide
               </h2>
             </div>
@@ -171,7 +171,7 @@ export function HomeDashboard() {
                 <Sparkles size={13} className="text-accent" />
                 <span className="font-medium">{v.name}</span>
                 {v.count ? (
-                  <span className="ml-1 rounded-full bg-accent/20 px-1.5 py-0.5 text-[10px] font-semibold text-accent">
+                  <span className="ml-1 rounded-full bg-accent/20 px-1.5 py-0.5 text-xs font-semibold text-accent">
                     {v.count}
                   </span>
                 ) : null}

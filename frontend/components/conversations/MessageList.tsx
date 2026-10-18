@@ -53,7 +53,7 @@ function MessageRow({ message, onReact }: { message: Message; onReact?: (m: Mess
         <Avatar avatarId={message.author.avatarId} name={message.author.displayName} size={28} />
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-ink">{message.author.displayName}</p>
-          <p className="text-[11px] text-ink-faint">
+          <p className="text-xs text-ink-faint">
                         {timeAgo(message.createdAt)}
           </p>
         </div>

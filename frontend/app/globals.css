@@ -410,12 +410,7 @@ body {
   }
 }
 
-/* Observatory map: always a dark canvas, in both themes */
-.night-panel {
-  background: var(--stage-2);
-  border: 1px solid var(--line);
-}
-
+/* Observatory map: always a dark canvas, in both themes (set data-theme="dark" on the element) */
 .map-dark-frame {
   border-radius: var(--radius-card);
   border: 1px solid var(--line);

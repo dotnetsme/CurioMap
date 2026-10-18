@@ -24,7 +24,7 @@ export function BookCard({
       <Link href={`/books/${book.id}`} className="relative block shrink-0 overflow-hidden rounded-md ring-2 ring-stage/85 transition hover:-translate-y-1 hover:ring-accent/50">
         <BookCover book={book} size={64} />
         {rank && rank <= 3 ? (
-          <span className="absolute left-1 top-1 rounded-full border border-signal/40 bg-stage/90 px-1.5 py-0.5 text-[10px] font-bold text-signal shadow-sm backdrop-blur">
+          <span className="absolute left-1 top-1 rounded-full border border-signal/40 bg-stage/90 px-1.5 py-0.5 text-xs font-semibold text-signal shadow-sm backdrop-blur">
             #{rank}
           </span>
         ) : null}
@@ -37,7 +37,7 @@ export function BookCard({
           {book.title}
         </Link>
         <p className="mt-0.5 truncate text-sm text-ink-faint">{book.author}</p>
-        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium">
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium">
           {readers > 0 ? (
             <span className="inline-flex items-center gap-1 text-amber">
               <Flame size={12} className="text-amber" /> {readers} reading

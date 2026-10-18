@@ -31,7 +31,7 @@ export function DashboardPanel({
           </span>
           <div className="min-w-0">
             <h2 className="truncate font-display text-[15px] font-semibold text-ink">{title}</h2>
-            {hint ? <p className="truncate text-[11px] text-ink-faint">{hint}</p> : null}
+            {hint ? <p className="truncate text-xs text-ink-faint">{hint}</p> : null}
           </div>
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}

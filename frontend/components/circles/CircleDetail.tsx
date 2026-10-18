@@ -86,7 +86,7 @@ export function CircleDetail({ handle }: { handle: Promise<string> | string }) {
       <div className="card flex flex-col gap-4 p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-ink">{circle.name}</h1>
+            <h1 className="text-2xl font-semibold text-ink">{circle.name}</h1>
             <p className="text-sm text-ink-faint">/{circle.handle}</p>
           </div>
           <div className="flex items-center gap-2">

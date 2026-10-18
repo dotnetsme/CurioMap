@@ -93,8 +93,8 @@ export function NewConversationForm({
 
   if (!user) {
     return (
-      <div className="card border-amber/30 bg-amber-soft/20 p-5 text-sm text-ink backdrop-blur-md">
-        <p className="font-display text-base font-bold text-ink-strong">
+      <div className="card border-amber/30 bg-amber-soft/20 p-5 text-sm text-ink backdrop-blur-xl backdrop-saturate-150">
+        <p className="font-display text-base font-semibold text-ink-strong">
           Join CurioMap to start a conversation
         </p>
         <p className="mt-1 text-xs text-ink-muted">
@@ -103,7 +103,7 @@ export function NewConversationForm({
         </p>
         <Link
           href={`/auth/register?returnTo=${encodeURIComponent(`/books/${bookId}/conversations`)}`}
-          className="btn-primary mt-4 inline-flex min-h-11 px-5 text-xs font-bold text-accent-ink"
+          className="btn-primary mt-4 inline-flex min-h-11 px-5 text-xs font-semibold text-accent-ink"
         >
           Join CurioMap
         </Link>
@@ -150,11 +150,11 @@ export function NewConversationForm({
   return (
     <form
       onSubmit={submit}
-      className="card border-line-2/40 bg-stage-2/90 flex flex-col gap-4 p-5 backdrop-blur-md transition-all"
+      className="card border-line-2/40 bg-stage-2/90 flex flex-col gap-4 p-5 backdrop-blur-xl backdrop-saturate-150 transition-all"
     >
       <div className="flex items-center justify-between border-b border-line pb-3">
         <div>
-          <h3 className="font-display text-base font-bold text-ink-strong">
+          <h3 className="font-display text-base font-semibold text-ink-strong">
             New Book Discussion
           </h3>
           <p className="text-xs text-ink-muted">

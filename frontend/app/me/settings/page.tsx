@@ -126,7 +126,7 @@ function SettingsForm() {
       ) : null}
 
       <section className="glass flex flex-col gap-4 p-6">
-        <h2 className="font-display font-bold text-ink-strong">Identity</h2>
+        <h2 className="font-display font-semibold text-ink-strong">Identity</h2>
         <div>
           <Label>Avatar (curated set — uploads are intentionally not supported)</Label>
           <AvatarSelector value={avatarId} onChange={setAvatarId} />

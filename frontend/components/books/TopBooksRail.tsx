@@ -50,7 +50,7 @@ export function TopBooksRail({
           {books.map((b, i) => (
             <article key={b.id} className="embla__slide w-[240px] sm:w-[264px]">
               <div className="relative">
-                <span className="pointer-events-none absolute -left-1 -top-4 z-10 font-display text-5xl font-bold text-ink/10">
+                <span className="pointer-events-none absolute -left-1 -top-4 z-10 font-display text-5xl font-semibold text-ink/10">
                   {i + 1}
                 </span>
                 <BookCard book={toStub(b)} rank={i + 1} />

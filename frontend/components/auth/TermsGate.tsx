@@ -57,11 +57,11 @@ export function TermsGate({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="night-panel mx-auto mt-10 flex max-w-xl flex-col items-center gap-4 rounded-3xl px-8 py-12 text-center">
+    <div className="card mx-auto mt-10 flex max-w-xl flex-col items-center gap-4 rounded-3xl px-8 py-12 text-center">
       <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/15 text-accent-strong">
         <ScrollText size={26} />
       </span>
-      <h1 className="font-display text-2xl font-bold text-ink">Terms of Use updated</h1>
+      <h1 className="font-display text-2xl font-semibold text-ink">Terms of Use updated</h1>
       <p className="text-sm leading-relaxed text-ink-muted">
         We&apos;ve revised our Terms of Use (version 1.0). To keep using CurioMap,
         please review and accept the updated terms. Your reading data, streaks,
@@ -80,7 +80,7 @@ export function TermsGate({ children }: { children: ReactNode }) {
         </Link>
       </div>
       {error ? <p className="text-sm text-heat-hot">{error}</p> : null}
-      <p className="text-[11px] text-ink-faint">
+      <p className="text-xs text-ink-faint">
         Don&apos;t want to accept? You can stop using CurioMap and request account
         deletion via security@curiomap.app.
       </p>

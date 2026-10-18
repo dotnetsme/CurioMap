@@ -9,8 +9,8 @@ import { getStreakLeaderboard } from "@/lib/api/streak";
 import type { StreakLeaderboardEntry } from "@/types";
 
 const RANK_STYLES = [
-  "bg-amber-500/15 text-amber-600",
-  "bg-slate-400/20 text-slate-600",
+  "bg-amber-soft text-amber",
+  "bg-fill-2 text-ink-muted",
   "bg-orange-500/15 text-orange-600",
 ];
 
@@ -41,7 +41,7 @@ export function StreakLeaderboard({ limit = 10 }: { limit?: number }) {
       className="glass flex flex-col gap-3 p-5"
     >
       <div className="flex items-center gap-2">
-        <Flame className="size-4 text-amber-500" aria-hidden />
+        <Flame className="size-4 text-amber" aria-hidden />
         <h3 className="text-base font-semibold text-ink">Streak leaderboard</h3>
       </div>
       <ol className="flex flex-col gap-1">
@@ -52,7 +52,7 @@ export function StreakLeaderboard({ limit = 10 }: { limit?: number }) {
               className="flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-surface-2"
             >
               <span
-                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-semibold ${
                   i < 3 ? RANK_STYLES[i] : "bg-surface-2 text-ink-faint"
                 }`}
               >
@@ -63,11 +63,11 @@ export function StreakLeaderboard({ limit = 10 }: { limit?: number }) {
                 <span className="block truncate text-sm font-medium text-ink">
                   {e.displayName}
                 </span>
-                <span className="text-[11px] text-ink-muted">
+                <span className="text-xs text-ink-muted">
                   {e.badgeCount} badge{e.badgeCount === 1 ? "" : "s"}
                 </span>
               </span>
-              <span className="flex items-center gap-1 text-sm font-semibold text-amber-500">
+              <span className="flex items-center gap-1 text-sm font-semibold text-amber">
                 <Flame className="size-3.5" aria-hidden />
                 {e.currentStreak}
               </span>
