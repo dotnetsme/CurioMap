@@ -1,9 +1,9 @@
 # Data model
 
-Schema is owned by the SQL migrations in `backend/src/CurioMap.Api/Data/Migrations/*.sql`
-(applied at startup, advisory-locked, Neon-compatible). EF Core maps to the same names via
-the snake_case naming convention — keep the two in sync by adding a new migration, never
-editing an applied one.
+Schema is owned by the EF Core code-first migrations in `backend/src/CurioMap.Api/Migrations/`
+(see ADR 0009). Seed data is loaded from `backend/src/CurioMap.Api/Data/Migrations/*.sql`
+at startup (advisory-locked, Neon-compatible). Change the schema by adding a new EF
+migration, never by editing an applied one.
 
 ## Users & identity
 

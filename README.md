@@ -24,7 +24,7 @@ conversations — wrapped in privacy-first defaults and radical transparency.
 - **API** — .NET 10, ASP.NET Core controllers (no MediatR), EF Core 10 + Npgsql (Neon Postgres), Redis (cache + distributed rate limiting), JWT auth with rotating refresh tokens
 - **Web** — Next.js (App Router) + React 19 + TypeScript + Tailwind CSS, same-origin `/api` proxy
 - **Infra** — Docker, Fly.io (both apps), GitHub Actions CI/CD
-- **Data** — ordered SQL migrations applied at startup (advisory-locked, Neon-compatible), pg_trgm book search
+- **Data** — EF Core code-first migrations (applied via a Fly release command / migration bundle, Neon-compatible) plus ordered SQL seed scripts applied at startup, pg_trgm book search
 
 ## Repository layout
 

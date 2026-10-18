@@ -32,7 +32,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     {
         base.OnModelCreating(modelBuilder);
 
-        // Schema lives in Data/Migrations/*.sql (applied by DbInitializer).
+        // Schema lives in Migrations/ (EF Core migrations); seed SQL in Data/Migrations/*.sql.
         // The snake_case naming convention must match those scripts exactly.
         modelBuilder.Entity<User>(e =>
         {

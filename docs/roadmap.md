@@ -6,7 +6,7 @@ labels. Status tiers: ✅ shipped · 🔨 in progress · 📋 planned.
 ## Phase 0 — Foundation ✅
 - Repo with Apache 2.0, CONTRIBUTING, CODE_OF_CONDUCT, vision, architecture, roadmap
 - .NET 10 API skeleton (controllers, health check, OpenAPI + Scalar docs)
-- Data models + ordered SQL migrations + seed catalog (16 books by ISBN)
+- Data models + EF Core migrations + seed catalog (16 books by ISBN)
 - Next.js 16 web app scaffold, design system, typed API client
 - docker-compose (Postgres 5433 / Redis 6380), Fly.io configs, GitHub Actions CI/CD
 - **MVP demo**: anonymous register → avatar + handle → bookshelf → conversations → map → feed ✅

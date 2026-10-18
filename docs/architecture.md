@@ -18,7 +18,7 @@
               ┌────────────▼─────┐   ┌─────▼──────────────┐
               │  Neon Postgres   │   │  Redis (Upstash)   │
               │  (schema via     │   │  cache + rate      │
-              │   SQL migrations)│   │  limiting          │
+              │   EF migrations) │   │  limiting          │
               └──────────────────┘   └────────────────────┘
 ```
 
@@ -33,10 +33,10 @@
 
 - **Controllers only, no MediatR.** Each HTTP domain maps to one controller; shared logic
   lives in plain services (`Services/`, `Auth/`, `Common/`). Explicit, greppable, boring.
-- **Data access**: EF Core over an `AppDbContext`; schema is owned by ordered SQL
-  migrations in `Data/Migrations/*.sql` applied at startup by `DbInitializer`
-  (advisory-locked so multiple Fly machines never race; Neon-friendly, reviewable SQL —
-  no design-time tooling required).
+- **Data access**: EF Core over an `AppDbContext`; schema is owned by EF Core
+  code-first migrations in `Migrations/` (see ADR 0009), run on deploy through a migration
+  bundle. Seed data lives in ordered SQL scripts (`Data/Migrations/*.sql`) applied at
+  startup by `DbInitializer` (advisory-locked so multiple Fly machines never race).
 - **Auth**: JWT bearer access token (15 min) + rotating refresh tokens (httpOnly cookie).
   Only the SHA-256 hash of a refresh token is stored; each refresh revokes the previous
   token (reuse detection). Passwords hashed with PBKDF2-SHA256 (100k iterations).
