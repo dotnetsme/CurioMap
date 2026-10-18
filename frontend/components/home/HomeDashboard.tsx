@@ -83,10 +83,10 @@ export function HomeDashboard() {
     <div className="mx-auto max-w-[1280px] py-2 sm:py-4">
       <header className="mb-5 flex flex-col gap-4 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
         <div>
-          <p className="label-sm inline-flex items-center gap-1.5 text-accent">
+          <p className="inline-flex items-center gap-1.5 text-sm font-medium text-accent">
             <Sparkles size={12} /> Home
           </p>
-          <h1 className="mt-2 max-w-2xl font-display text-[2rem] font-bold leading-[1.05] tracking-tight text-ink sm:text-4xl">
+          <h1 className="mt-2 max-w-2xl display text-4xl text-ink-strong sm:text-5xl">
             Welcome back, {user.displayName}
           </h1>
           <p className="mt-1 text-sm text-ink-muted">
@@ -144,10 +144,10 @@ export function HomeDashboard() {
 
       {/* Curiosity Vectors Pulse */}
       <Reveal>
-        <section className="mt-6 card p-5 sm:p-6 border-line-2/30 bg-stage-2/70 backdrop-blur-md transition-all duration-300 hover:border-accent/30">
+        <section className="mt-6 card p-5 sm:p-6 ">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="label-sm inline-flex items-center gap-1.5 text-accent">
+              <p className="inline-flex items-center gap-1.5 text-sm font-medium text-accent">
                 <Orbit size={13} /> Curiosity Vectors
               </p>
               <h2 className="mt-1 font-display text-lg font-bold text-ink">
@@ -166,7 +166,7 @@ export function HomeDashboard() {
               <Link
                 key={v.name}
                 href={`/discover/global?topic=${encodeURIComponent(v.name)}`}
-                className="chip min-h-11 px-3.5 py-2 text-xs sm:text-sm hover:border-accent hover:text-ink transition-all duration-200 hover:-translate-y-0.5"
+                className="chip min-h-11 px-3.5 py-2 text-xs sm:text-sm"
               >
                 <Sparkles size={13} className="text-accent" />
                 <span className="font-medium">{v.name}</span>
@@ -189,7 +189,7 @@ export function HomeDashboard() {
           action={
             <Link
               href="/me/bookshelf"
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent hover:text-accent-strong"
+              className="inline-flex items-center gap-1 text-sm font-medium text-accent hover:text-accent-strong"
             >
               Full shelf →
             </Link>
@@ -209,7 +209,7 @@ export function HomeDashboard() {
           action={
             <Link
               href="/discover/nearby"
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent hover:text-accent-strong"
+              className="inline-flex items-center gap-1 text-sm font-medium text-accent hover:text-accent-strong"
             >
               See all →
             </Link>
@@ -244,7 +244,7 @@ export function HomeDashboard() {
           action={
             <Link
               href="/circles"
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent hover:text-accent-strong"
+              className="inline-flex items-center gap-1 text-sm font-medium text-accent hover:text-accent-strong"
             >
               Circles →
             </Link>
@@ -262,7 +262,7 @@ export function HomeDashboard() {
           action={
             <Link
               href="/discover/top-books"
-              className="text-[11px] font-semibold text-accent hover:text-accent-strong"
+              className="text-sm font-medium text-accent hover:text-accent-strong"
             >
               All →
             </Link>

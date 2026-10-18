@@ -47,7 +47,7 @@ export default function FeedPage() {
     <div className="mx-auto max-w-2xl py-4">
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="label-sm inline-flex items-center gap-1.5 text-accent-strong">
+          <p className="inline-flex items-center gap-1.5 text-sm font-medium text-accent-strong">
             <Flame size={12} /> Activity
           </p>
           <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">

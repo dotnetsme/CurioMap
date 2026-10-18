@@ -7,7 +7,6 @@ export function SectionHeading({
   hint,
   action,
   align = "left",
-  dark = false,
   className = "",
 }: {
   eyebrow: string;
@@ -15,7 +14,6 @@ export function SectionHeading({
   hint?: ReactNode;
   action?: ReactNode;
   align?: "left" | "center";
-  dark?: boolean;
   className?: string;
 }) {
   return (
@@ -26,17 +24,16 @@ export function SectionHeading({
         className,
       )}
     >
-      <p className={cn("label-sm", dark ? "text-signal" : "text-accent")}>{eyebrow}</p>
+      <p className="text-sm font-semibold text-accent">{eyebrow}</p>
       <h2
         className={cn(
-          "font-display text-3xl font-semibold tracking-tight text-balance sm:text-4xl",
-          dark ? "text-ink-strong" : "text-ink",
+          "display text-balance text-4xl text-ink-strong sm:text-5xl",
         )}
       >
         {title}
       </h2>
       {hint ? (
-        <p className={cn("max-w-2xl text-[15px] leading-relaxed", dark ? "text-ink-muted" : "text-ink-muted")}>{hint}</p>
+        <p className={"max-w-2xl text-lg leading-snug text-ink-muted"}>{hint}</p>
       ) : null}
       {action ? <div className="mt-1">{action}</div> : null}
     </div>

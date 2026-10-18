@@ -37,14 +37,14 @@ function LoginForm() {
   }
 
   return (
-    <div className="mx-auto max-w-md py-10">
-      <h1 className="font-display text-3xl font-bold tracking-tight text-ink-strong">
+    <div className="mx-auto max-w-md py-12 sm:py-20">
+      <h1 className="display text-center text-4xl text-ink-strong">
         Welcome back
       </h1>
-      <p className="mt-2 text-sm text-ink-muted">
+      <p className="mt-3 text-center text-base text-ink-muted">
         Sign in to your anonymous reading identity.
       </p>
-      <form onSubmit={submit} className="card mt-8 flex flex-col gap-5 p-6">
+      <form onSubmit={submit} className="card mt-10 flex flex-col gap-5 p-7">
         <div>
           <Label>Email</Label>
           <Input
@@ -73,7 +73,7 @@ function LoginForm() {
           New here?{" "}
           <Link
             href="/auth/register"
-            className="font-medium text-accent-strong underline underline-offset-2 hover:text-accent"
+            className="font-medium text-accent underline-offset-2 hover:underline"
           >
             Create an anonymous identity
           </Link>
@@ -85,7 +85,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="mx-auto max-w-md py-10" />}>
+    <Suspense fallback={<div className="mx-auto max-w-md py-12 sm:py-20" />}>
       <LoginForm />
     </Suspense>
   );

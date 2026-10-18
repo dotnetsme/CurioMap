@@ -44,15 +44,15 @@ function RegisterForm() {
   }
 
   return (
-    <div className="mx-auto max-w-md py-10">
-      <h1 className="font-display text-3xl font-bold tracking-tight text-ink">
+    <div className="mx-auto max-w-md py-12 sm:py-20">
+      <h1 className="display text-center text-4xl text-ink-strong">
         Join CurioMap
       </h1>
-      <p className="mt-2 text-sm text-ink-muted">
+      <p className="mt-3 text-center text-base text-ink-muted">
         You&apos;ll get a generated handle and avatar — anonymous by default,
         fully customizable later.
       </p>
-      <form onSubmit={submit} className="card mt-8 flex flex-col gap-4 p-6">
+      <form onSubmit={submit} className="card mt-10 flex flex-col gap-5 p-7">
         <div>
           <Label>Email</Label>
           <Input
@@ -74,13 +74,13 @@ function RegisterForm() {
             autoComplete="new-password"
           />
         </div>
-        <label className="flex cursor-pointer items-start gap-2.5 text-sm leading-relaxed text-ink-2">
+        <label className="flex cursor-pointer items-start gap-2.5 text-sm leading-relaxed text-ink-muted">
           <input
             type="checkbox"
             checked={acceptTerms}
             onChange={(e) => setAcceptTerms(e.target.checked)}
             required
-            className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-line accent-accent-strong"
+            className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-line accent-accent"
             aria-label="I accept the Terms of Use and Privacy Policy"
           />
           <span>
@@ -88,7 +88,7 @@ function RegisterForm() {
             <Link
               href="/policy/terms"
               target="_blank"
-              className="font-medium text-accent-strong underline underline-offset-2 hover:text-accent"
+              className="font-medium text-accent underline-offset-2 hover:underline"
             >
               Terms of Use
             </Link>{" "}
@@ -96,7 +96,7 @@ function RegisterForm() {
             <Link
               href="/policy/privacy"
               target="_blank"
-              className="font-medium text-accent-strong underline underline-offset-2 hover:text-accent"
+              className="font-medium text-accent underline-offset-2 hover:underline"
             >
               Privacy Policy
             </Link>
@@ -112,12 +112,12 @@ function RegisterForm() {
           Already exploring?{" "}
           <Link
             href="/auth/login"
-            className="font-medium text-accent-strong underline underline-offset-2 hover:text-accent"
+            className="font-medium text-accent underline-offset-2 hover:underline"
           >
             Sign in
           </Link>
         </p>
-        <p className="text-center text-[11px] text-ink-3">
+        <p className="text-center text-xs text-ink-faint">
           We store your email only for sign-in. No tracking, no data selling.
         </p>
       </form>
@@ -127,7 +127,7 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="mx-auto max-w-md py-10" />}>
+    <Suspense fallback={<div className="mx-auto max-w-md py-12 sm:py-20" />}>
       <RegisterForm />
     </Suspense>
   );
