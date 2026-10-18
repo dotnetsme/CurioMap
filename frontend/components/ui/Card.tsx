@@ -28,8 +28,8 @@ export function SectionTitle({
   return (
     <div className="mb-5 flex items-baseline justify-between gap-4">
       <div>
-        <h2 className="text-lg font-semibold text-ink">{children}</h2>
-        {hint ? <span className="mt-0.5 block text-xs text-ink-3">{hint}</span> : null}
+        <h2 className="text-xl font-semibold tracking-tight text-ink">{children}</h2>
+        {hint ? <span className="mt-0.5 block text-sm text-ink-faint">{hint}</span> : null}
       </div>
       {action ?? null}
     </div>
@@ -46,10 +46,10 @@ export function StatBlock({
   hint?: string;
 }) {
   return (
-    <div className="card p-4">
-      <div className="mono-label text-ink-3">{label}</div>
+    <div className="card p-5">
+      <div className="mono-label">{label}</div>
       <div className="stat-num mt-1">{value}</div>
-      {hint ? <div className="mt-1 text-xs text-ink-3">{hint}</div> : null}
+      {hint ? <div className="mt-1 text-xs text-ink-faint">{hint}</div> : null}
     </div>
   );
 }

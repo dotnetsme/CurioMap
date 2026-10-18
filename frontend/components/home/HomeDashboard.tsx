@@ -105,7 +105,7 @@ export function HomeDashboard() {
           </Link>
           <Link
             href="/circles"
-            className="btn-accent col-span-2 min-h-11 text-sm shadow-lg shadow-accent/25 sm:col-span-1"
+            className="btn-accent col-span-2 min-h-11 text-sm sm:col-span-1"
           >
             <MessagesSquare size={15} /> Start a discussion
           </Link>

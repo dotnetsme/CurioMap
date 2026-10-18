@@ -140,7 +140,7 @@ export function NewConversationForm({
     return (
       <Button
         onClick={() => setOpen(true)}
-        className="inline-flex min-h-11 items-center gap-2 shadow-lg shadow-accent/20 cursor-pointer"
+        className="inline-flex min-h-11 items-center gap-2 cursor-pointer"
       >
         <MessageSquarePlus size={16} /> Start a conversation
       </Button>
@@ -164,7 +164,7 @@ export function NewConversationForm({
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="rounded-lg p-1.5 text-ink-muted hover:bg-white/10 hover:text-ink cursor-pointer transition"
+          className="rounded-lg p-1.5 text-ink-muted hover:bg-fill-2 hover:text-ink cursor-pointer transition"
           aria-label="Close"
         >
           <X size={18} />
@@ -186,7 +186,7 @@ export function NewConversationForm({
                 type="button"
                 className={`chip min-h-11 cursor-pointer px-3.5 py-2 text-xs transition-all duration-200 ${
                   active
-                    ? "chip-active border-accent bg-accent/20 text-accent font-semibold shadow-md shadow-accent/20"
+                    ? "chip-active border-accent bg-accent/20 text-accent font-semibold"
                     : "hover:border-accent hover:text-ink"
                 }`}
                 onClick={() => {
@@ -218,7 +218,7 @@ export function NewConversationForm({
                 onClick={() => setTopic(selected ? "" : v)}
                 className={`cursor-pointer rounded-full border px-3 py-1 text-xs transition ${
                   selected
-                    ? "border-accent bg-accent/25 text-accent font-semibold shadow-sm shadow-accent/20"
+                    ? "border-accent bg-accent/25 text-accent font-semibold"
                     : "border-line bg-stage-3/60 text-ink-muted hover:border-line-2 hover:text-ink"
                 }`}
               >

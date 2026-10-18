@@ -18,6 +18,7 @@ import {
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Avatar } from "@/components/profile/Avatar";
 import { CommandSearchModal } from "@/components/layout/CommandSearchModal";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -74,16 +75,16 @@ export function SiteHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-line bg-stage/92 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-line bg-material backdrop-blur-xl backdrop-saturate-150">
         <div className="mx-auto flex h-16 w-full max-w-[1280px] items-center gap-3 px-4 sm:h-18 sm:px-8">
           <Link
             href={user ? "/home" : "/"}
             className="group flex shrink-0 items-center gap-2.5"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-accent via-accent-strong to-signal text-accent-ink shadow-lg shadow-accent/25 transition group-hover:scale-105">
+            <span className="flex h-10 w-10 items-center justify-center rounded-[11px] bg-accent text-accent-ink transition duration-200 group-hover:scale-105 group-active:scale-95">
               <Compass size={18} strokeWidth={2.4} />
             </span>
-            <span className="hidden text-[18px] font-bold tracking-tight text-ink sm:block">
+            <span className="hidden text-[19px] font-semibold tracking-tight text-ink sm:block">
               CurioMap
             </span>
           </Link>
@@ -107,8 +108,8 @@ export function SiteHeader() {
                     className={cn(
                       "flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition",
                       active
-                        ? "bg-accent text-accent-ink shadow-sm"
-                        : "text-ink-muted hover:bg-white/5 hover:text-ink",
+                        ? "bg-fill-2 text-ink-strong"
+                        : "text-ink-muted hover:bg-fill hover:text-ink",
                     )}
                   >
                     <item.icon size={15} />
@@ -122,18 +123,20 @@ export function SiteHeader() {
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="flex min-h-10 cursor-pointer items-center gap-2 rounded-full border border-line bg-stage-2/80 px-3 py-1.5 text-xs text-ink-muted transition hover:border-accent hover:bg-white/5 hover:text-ink focus-visible:ring-2 focus-visible:ring-accent"
+              className="flex min-h-10 cursor-pointer items-center gap-2 rounded-full bg-fill px-3 py-1.5 text-xs text-ink-muted transition hover:bg-fill-2 hover:text-ink focus-visible:ring-2 focus-visible:ring-accent"
               aria-label="Quick search books and navigation (Press Cmd+K or Ctrl+K)"
             >
               <Search size={14} className="text-ink-faint" />
               <span className="hidden md:inline">Quick search...</span>
-              <kbd className="hidden rounded bg-white/10 px-1.5 py-0.5 font-mono text-[10px] text-ink-faint sm:inline-block">
+              <kbd className="hidden rounded bg-fill-2 px-1.5 py-0.5 font-mono text-[10px] text-ink-faint sm:inline-block">
                 ⌘K
               </kbd>
             </button>
 
+            <ThemeToggle />
+
             {loading ? (
-              <div className="h-9 w-9 animate-pulse rounded-full bg-white/10" />
+              <div className="h-9 w-9 animate-pulse rounded-full bg-fill-2" />
             ) : user ? (
               <div className="relative" ref={menuRef}>
                 <button
@@ -149,7 +152,7 @@ export function SiteHeader() {
                   />
                 </button>
                 {menuOpen ? (
-                  <div className="card absolute right-0 mt-2 w-60 overflow-hidden p-1.5 text-sm shadow-2xl">
+                  <div className="card absolute right-0 mt-2 w-60 overflow-hidden p-1.5 text-sm shadow-pop">
                     <div className="flex items-center gap-3 border-b border-line px-3 py-3">
                       <Avatar
                         avatarId={user.avatarId}
@@ -192,7 +195,7 @@ export function SiteHeader() {
                         key={item.href}
                         href={item.href}
                         onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-ink-muted transition hover:bg-white/5 hover:text-ink"
+                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-ink-muted transition hover:bg-fill hover:text-ink"
                       >
                         <item.icon size={15} />
                         {item.label}
@@ -221,7 +224,7 @@ export function SiteHeader() {
                 </Link>
                 <Link
                   href="/auth/register"
-                  className="btn-accent text-sm shadow-lg shadow-accent/25"
+                  className="btn-accent text-sm"
                 >
                   Join CurioMap
                 </Link>
@@ -261,7 +264,7 @@ export function SiteHeader() {
                       "flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold transition",
                       active
                         ? "text-accent"
-                        : "text-ink-faint hover:bg-white/5 hover:text-ink",
+                        : "text-ink-faint hover:bg-fill hover:text-ink",
                     )}
                   >
                     <item.icon size={19} strokeWidth={active ? 2.4 : 1.9} />

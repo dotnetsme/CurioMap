@@ -98,13 +98,13 @@ export default async function LandingPage() {
             <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap sm:justify-center">
               <Link
                 href="/discover/nearby"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink shadow-xl shadow-accent/30 transition hover:bg-accent-strong active:scale-[0.98] sm:w-auto"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink transition hover:bg-accent-strong active:scale-[0.98] sm:w-auto"
               >
                 <Compass size={17} /> See readers near you
               </Link>
               <Link
                 href="/discover/global"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-line-2 bg-white/5 px-5 py-2.5 text-sm font-semibold text-ink backdrop-blur transition hover:border-accent hover:bg-white/10 sm:w-auto"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-line-2 bg-fill px-5 py-2.5 text-sm font-semibold text-ink backdrop-blur transition hover:border-accent hover:bg-fill-2 sm:w-auto"
               >
                 <MapPin size={17} /> Explore the curiosity map
               </Link>
@@ -312,13 +312,13 @@ export default async function LandingPage() {
           <div className="flex flex-wrap justify-center gap-3">
             <Link
               href="/auth/register"
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-accent px-7 py-3 text-[15px] font-bold text-accent-ink shadow-xl shadow-accent/30 transition hover:bg-accent-strong active:scale-[0.98] sm:w-auto"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-accent px-7 py-3 text-[15px] font-bold text-accent-ink transition hover:bg-accent-strong active:scale-[0.98] sm:w-auto"
             >
               <Users size={17} /> Start your shelf
             </Link>
             <Link
               href="/books/search"
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-line-2 px-7 py-3 text-[15px] font-semibold text-ink transition hover:border-accent hover:bg-white/5 sm:w-auto"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-line-2 px-7 py-3 text-[15px] font-semibold text-ink transition hover:border-accent hover:bg-fill sm:w-auto"
             >
               <LibraryBig size={17} /> Find a book
             </Link>

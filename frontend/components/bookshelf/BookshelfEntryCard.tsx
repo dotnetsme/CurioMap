@@ -56,7 +56,7 @@ export function BookshelfEntryCard({
   }
 
   return (
-    <div className="flex items-center gap-4 rounded-xl border border-line bg-white/5 p-4 transition hover:border-line-2">
+    <div className="flex items-center gap-4 rounded-xl border border-line bg-fill p-4 transition hover:border-line-2">
       <Link href={`/books/${entry.bookId}`} className="shrink-0 transition hover:scale-105">
         <BookCover book={entry.book} size={48} />
       </Link>

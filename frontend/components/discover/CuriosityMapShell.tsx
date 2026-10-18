@@ -38,6 +38,7 @@ export function CuriosityMapShell(props: {
   if (!props.regions.some((r) => r.lat !== null && r.lng !== null)) {
     return (
       <div
+        data-theme="dark"
         className={cn(
           "map-dark-frame flex items-center justify-center",
           (props.height ?? 0) <= 0 && "map-fullbleed",

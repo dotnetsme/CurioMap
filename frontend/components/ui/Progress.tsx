@@ -16,7 +16,7 @@ export function Progress({
   const pct = Math.max(0, Math.min(100, (value / max) * 100));
   return (
     <div
-      className={cn("h-2 w-full overflow-hidden rounded-full bg-white/10", className)}
+      className={cn("h-2 w-full overflow-hidden rounded-full bg-fill-2", className)}
       role="progressbar"
       aria-valuenow={Math.round(pct)}
       aria-valuemin={0}
@@ -51,7 +51,7 @@ export function Ring({
   return (
     <div className={cn("relative inline-flex items-center justify-center", className)} style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} className="stroke-white/10" />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} className="stroke-fill-2" />
         <circle
           cx={size / 2}
           cy={size / 2}

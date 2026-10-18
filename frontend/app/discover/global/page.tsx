@@ -192,13 +192,13 @@ export default function GlobalMapPage() {
                 value={statsData.readers}
                 label="readers"
               />
-              <span className="h-3 w-px bg-white/10" />
+              <span className="h-3 w-px bg-fill-2" />
               <StatPill
                 icon={<BookOpen size={13} />}
                 value={statsData.books}
                 label="books"
               />
-              <span className="h-3 w-px bg-white/10" />
+              <span className="h-3 w-px bg-fill-2" />
               <div className="flex items-center gap-1.5">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute h-full w-full rounded-full bg-signal animate-ping" />
@@ -241,7 +241,7 @@ export default function GlobalMapPage() {
             className={cn(
               "flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-xs font-semibold backdrop-blur-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
               selectedTopic === null
-                ? "border-accent bg-accent/20 text-ink shadow-sm shadow-accent/20"
+                ? "border-accent bg-accent/20 text-ink"
                 : "border-line bg-stage/75 text-ink-muted hover:border-line-strong hover:text-ink",
             )}
           >
@@ -267,7 +267,7 @@ export default function GlobalMapPage() {
                 className={cn(
                   "flex min-h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-xs font-semibold backdrop-blur-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
                   active
-                    ? "border-accent bg-accent/20 text-ink shadow-sm shadow-accent/20"
+                    ? "border-accent bg-accent/20 text-ink"
                     : "border-line bg-stage/75 text-ink-muted hover:border-line-strong hover:text-ink",
                 )}
               >
@@ -276,7 +276,7 @@ export default function GlobalMapPage() {
                   <span
                     className={cn(
                       "rounded-full px-1.5 py-0.5 text-[10px]",
-                      active ? "bg-accent/30 text-ink" : "bg-white/5 text-ink-faint",
+                      active ? "bg-accent/30 text-ink" : "bg-fill text-ink-faint",
                     )}
                   >
                     {t.readerCount}
@@ -349,7 +349,7 @@ export default function GlobalMapPage() {
                     "flex-1 rounded-lg px-3 py-2 text-xs font-semibold capitalize transition",
                     mode === m
                       ? "bg-accent text-accent-ink"
-                      : "bg-white/5 text-ink-muted hover:bg-white/10",
+                      : "bg-fill text-ink-muted hover:bg-fill-2",
                   )}
                 >
                   {m}
@@ -378,7 +378,7 @@ export default function GlobalMapPage() {
                   {Array.from({ length: 3 }, (_, i) => (
                     <div
                       key={i}
-                      className="h-12 animate-pulse rounded-lg bg-white/5"
+                      className="h-12 animate-pulse rounded-lg bg-fill"
                     />
                   ))}
                 </div>
@@ -458,7 +458,7 @@ export default function GlobalMapPage() {
                     selected?.country === r.country &&
                       selected?.region === r.region
                       ? "bg-accent/20 text-ink-strong"
-                      : "text-ink-muted hover:bg-white/5 hover:text-ink-strong",
+                      : "text-ink-muted hover:bg-fill hover:text-ink-strong",
                   )}
                 >
                   <span className="truncate text-sm">
@@ -487,7 +487,7 @@ export default function GlobalMapPage() {
               <Link
                 key={b.id}
                 href={`/books/${b.id}`}
-                className="flex shrink-0 items-center gap-2 rounded-full border border-line bg-stage/80 px-3 py-1.5 text-xs font-semibold text-ink transition hover:border-accent hover:bg-white/5"
+                className="flex shrink-0 items-center gap-2 rounded-full border border-line bg-stage/80 px-3 py-1.5 text-xs font-semibold text-ink transition hover:border-accent hover:bg-fill"
               >
                 <BookCover book={b} size={20} />
                 <span className="max-w-[120px] truncate">{b.title}</span>

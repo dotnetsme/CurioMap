@@ -29,7 +29,7 @@ export function AvatarSelector({
             className={`group relative inline-flex min-h-12 min-w-12 cursor-pointer items-center justify-center rounded-2xl p-1.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
               isSelected
                 ? "bg-accent/20 ring-2 ring-accent shadow-[0_0_16px_rgba(139,92,246,0.4)] scale-105"
-                : "hover:bg-white/10 hover:scale-102 border border-transparent hover:border-white/15"
+                : "hover:bg-fill-2 hover:scale-102 border border-transparent hover:border-line-2"
             }`}
             aria-label={`Avatar ${avatar.id} (${avatar.mark})`}
             title={`Avatar ${avatar.id} (${avatar.mark})`}

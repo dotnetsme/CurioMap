@@ -45,7 +45,7 @@ function EventIcon({ type }: { type: string }) {
       );
     default:
       return (
-        <span className={`${cls} bg-white/5 text-ink-faint`}>
+        <span className={`${cls} bg-fill text-ink-faint`}>
           <Flame size={16} />
         </span>
       );
@@ -157,7 +157,7 @@ export function FeedList({ events }: { events: FeedEvent[] }) {
             {event.book ? (
               <Link
                 href={`/books/${event.book.id}`}
-                className="mt-3 flex items-center gap-3 rounded-2xl border border-line bg-white/5 p-3 transition hover:border-accent"
+                className="mt-3 flex items-center gap-3 rounded-2xl border border-line bg-fill p-3 transition hover:border-accent"
               >
                 <BookCover
                   book={

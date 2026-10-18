@@ -535,6 +535,7 @@ export function ObservatoryMap({
 
   return (
     <div
+      data-theme="dark"
       className={cn("map-dark-frame relative", height <= 0 && "map-fullbleed")}
       style={height > 0 ? { height } : undefined}
     >
@@ -610,7 +611,7 @@ export function ObservatoryMap({
                     key={reader.user.id}
                     type="button"
                     onClick={() => setActiveReader(reader)}
-                    className="persona-chip shrink-0 cursor-pointer rounded-full border border-line bg-white/5 py-1.5 pl-1.5 pr-3 text-left transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                    className="persona-chip shrink-0 cursor-pointer rounded-full border border-line bg-fill py-1.5 pl-1.5 pr-3 text-left transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                     aria-label={`${reader.user.displayName}${place ? ` in ${place}` : ""}${book ? ` reading ${book.title}` : ""}. Activate to see what they are reading.`}
                   >
                     <PersonaGlyph reader={reader} size={30} />
@@ -652,7 +653,7 @@ export function ObservatoryMap({
               <Link
                 key={b.id}
                 href={`/books/${b.id}`}
-                className="flex shrink-0 cursor-pointer items-center gap-2 rounded-full border border-line bg-stage/80 px-3 py-1.5 text-xs font-semibold text-ink transition hover:border-accent hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="flex shrink-0 cursor-pointer items-center gap-2 rounded-full border border-line bg-stage/80 px-3 py-1.5 text-xs font-semibold text-ink transition hover:border-accent hover:bg-fill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <BookCover book={b} size={20} />
                 <span className="max-w-[120px] truncate">{b.title}</span>
@@ -722,7 +723,7 @@ function PersonaPopover({ reader, onClose }: { reader: MapReader; onClose: () =>
     <div
       role="dialog"
       aria-label={`${reader.user.displayName} is reading now`}
-      className="rounded-2xl border border-line bg-stage/90 p-3.5 shadow-2xl backdrop-blur-md"
+      className="rounded-2xl border border-line bg-stage/90 p-3.5 shadow-pop backdrop-blur-md"
     >
       <div className="flex items-start gap-2.5">
         <PersonaGlyph reader={reader} size={40} />
@@ -755,7 +756,7 @@ function PersonaPopover({ reader, onClose }: { reader: MapReader; onClose: () =>
             <li key={book.id}>
               <Link
                 href={`/books/${book.id}`}
-                className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-line bg-white/[0.03] p-2 transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-line bg-fill p-2 transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <BookCover book={book} size={30} />
                 <span className="min-w-0">
@@ -767,14 +768,14 @@ function PersonaPopover({ reader, onClose }: { reader: MapReader; onClose: () =>
           ))}
         </ul>
       ) : (
-        <p className="mt-2 rounded-xl border border-line bg-white/[0.03] p-2 text-[11px] text-ink-muted">
+        <p className="mt-2 rounded-xl border border-line bg-fill p-2 text-[11px] text-ink-muted">
           This shelf is private or between books right now.
         </p>
       )}
 
       <Link
         href={`/users/${reader.user.id}`}
-        className="mt-3 flex cursor-pointer items-center justify-center rounded-full border border-line bg-white/5 py-2.5 text-xs font-bold text-ink transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        className="mt-3 flex cursor-pointer items-center justify-center rounded-full border border-line bg-fill py-2.5 text-xs font-bold text-ink transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         View public shelf
       </Link>

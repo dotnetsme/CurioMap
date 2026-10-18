@@ -30,7 +30,7 @@ export function TopReadersStrip({ regions }: { regions: RegionStat[] }) {
                 </div>
               </div>
             </div>
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-fill-2">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-signal via-accent to-heat-hot"
                 style={{ width: `${Math.max(8, (r.activeReaders / max) * 100)}%` }}

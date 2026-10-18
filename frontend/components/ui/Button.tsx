@@ -6,13 +6,10 @@ import { LoaderCircle } from "lucide-react";
 type Variant = "primary" | "accent" | "ghost" | "danger" | "subtle";
 
 const variants: Record<Variant, string> = {
-  primary:
-    "bg-accent text-accent-ink shadow-lg shadow-accent/25 hover:bg-accent-strong active:scale-[0.98]",
-  accent:
-    "bg-accent text-accent-ink shadow-lg shadow-accent/25 hover:bg-accent-strong active:scale-[0.98]",
-  danger: "bg-heat-hot text-white hover:bg-heat-hot-2 active:scale-[0.98]",
-  ghost:
-    "border border-line bg-transparent text-ink hover:border-accent hover:bg-white/5",
+  primary: "bg-accent text-accent-ink hover:bg-accent-strong",
+  accent: "bg-accent text-accent-ink hover:bg-accent-strong",
+  danger: "bg-heat-hot text-white hover:bg-heat-hot-2",
+  ghost: "bg-fill text-accent hover:bg-fill-2",
   subtle: "text-ink-muted hover:text-ink",
 };
 
@@ -31,7 +28,7 @@ export function Button({
   return (
     <button
       disabled={disabled || isLoading}
-      className={`inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[10px] px-5 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-[15px] font-medium tracking-[-0.01em] transition duration-150 ease-out active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
       {...props}
     >
       {isLoading ? (

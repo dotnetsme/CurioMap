@@ -92,13 +92,13 @@ export function BookDetail({ bookId }: { bookId: string }) {
               </h1>
               <p className="mt-1 text-[15px] text-ink-muted">by {book.author}</p>
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-                                <span className="flex items-center gap-2 rounded-full border border-line bg-white/5 px-3 py-1.5">
+                                <span className="flex items-center gap-2 rounded-full border border-line bg-fill px-3 py-1.5">
                                     <Stars value={rating} size={14} onRate={rate} />
                                     <span className="text-xs font-medium text-ink-muted">
                     {rating ? `You rated ${rating}/5` : "Rate it"}
                   </span>
                   {ratingStats ? (
-                    <span className="ml-2 rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-ink-faint">
+                    <span className="ml-2 rounded-full bg-fill px-2 py-0.5 text-[10px] text-ink-faint">
                       {ratingStats.average.toFixed(2)} · {ratingStats.count} ratings
                     </span>
                   ) : null}

@@ -43,7 +43,7 @@ export function AuthGate({
           </Link>
           <Link
             href="/auth/register"
-            className="inline-flex items-center gap-2 rounded-full border border-line-2 px-6 py-2.5 text-sm font-semibold text-ink transition hover:bg-white/5"
+            className="inline-flex items-center gap-2 rounded-full border border-line-2 px-6 py-2.5 text-sm font-semibold text-ink transition hover:bg-fill"
           >
             Join free
           </Link>

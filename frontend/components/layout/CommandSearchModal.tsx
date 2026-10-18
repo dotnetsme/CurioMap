@@ -194,7 +194,7 @@ export function CommandSearchModal({
         aria-modal="true"
         aria-label="Quick search and command palette"
         onClick={(e) => e.stopPropagation()}
-        className="card relative flex max-h-[85vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-line-2 bg-stage-2/95 shadow-2xl backdrop-blur-2xl ring-1 ring-white/10"
+        className="card relative flex max-h-[85vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl border border-line bg-material shadow-pop backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-line"
       >
         {/* Input Header */}
         <div className="relative flex items-center border-b border-line px-4 py-3.5">
@@ -216,13 +216,13 @@ export function CommandSearchModal({
             <button
               type="button"
               onClick={() => setQuery("")}
-              className="mr-2 flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-ink-faint hover:bg-white/10 hover:text-ink"
+              className="mr-2 flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-ink-faint hover:bg-fill-2 hover:text-ink"
               aria-label="Clear query"
             >
               <X size={14} />
             </button>
           ) : null}
-          <kbd className="hidden sm:inline-block rounded border border-line bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-ink-faint">
+          <kbd className="hidden sm:inline-block rounded border border-line bg-fill px-1.5 py-0.5 font-mono text-[10px] text-ink-faint">
             ESC
           </kbd>
         </div>
@@ -247,7 +247,7 @@ export function CommandSearchModal({
                       className={`flex min-h-11 cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 transition ${
                         isSelected
                           ? "bg-accent/15 text-ink ring-1 ring-accent/30"
-                          : "text-ink-muted hover:bg-white/5 hover:text-ink"
+                          : "text-ink-muted hover:bg-fill hover:text-ink"
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
@@ -255,7 +255,7 @@ export function CommandSearchModal({
                           className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition ${
                             isSelected
                               ? "bg-accent text-accent-ink"
-                              : "bg-white/5 text-ink-faint"
+                              : "bg-fill text-ink-faint"
                           }`}
                         >
                           <Icon size={16} />
@@ -301,7 +301,7 @@ export function CommandSearchModal({
                       className={`flex min-h-12 cursor-pointer items-center justify-between rounded-xl px-3 py-2 transition ${
                         isSelected
                           ? "bg-accent/15 text-ink ring-1 ring-accent/30"
-                          : "text-ink-muted hover:bg-white/5 hover:text-ink"
+                          : "text-ink-muted hover:bg-fill hover:text-ink"
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
@@ -319,7 +319,7 @@ export function CommandSearchModal({
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         {book.readersCount > 0 ? (
-                          <span className="rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-mono text-ink-muted">
+                          <span className="rounded-full bg-fill-2 px-2 py-0.5 text-[11px] font-mono text-ink-muted">
                             {book.readersCount} {book.readersCount === 1 ? "reader" : "readers"}
                           </span>
                         ) : null}
@@ -339,7 +339,7 @@ export function CommandSearchModal({
                   className={`mt-1 flex min-h-11 cursor-pointer items-center justify-between rounded-xl border border-line-2 px-3 py-2.5 transition ${
                     selectedIndex === results.length
                       ? "bg-accent text-accent-ink font-semibold"
-                      : "bg-stage text-ink hover:bg-white/5"
+                      : "bg-stage text-ink hover:bg-fill"
                   }`}
                 >
                   <span className="flex items-center gap-2 text-sm">
@@ -352,7 +352,7 @@ export function CommandSearchModal({
             </div>
           ) : !loading ? (
             <div className="py-8 text-center">
-              <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-ink-faint">
+              <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-fill text-ink-faint">
                 <BookOpen size={18} />
               </span>
               <p className="mt-3 text-sm font-medium text-ink">
@@ -378,12 +378,12 @@ export function CommandSearchModal({
         <div className="flex items-center justify-between border-t border-line bg-stage-3/40 px-4 py-2 text-[11px] text-ink-faint">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <kbd className="rounded bg-white/10 px-1 py-0.5 font-mono">↑</kbd>
-              <kbd className="rounded bg-white/10 px-1 py-0.5 font-mono">↓</kbd>
+              <kbd className="rounded bg-fill-2 px-1 py-0.5 font-mono">↑</kbd>
+              <kbd className="rounded bg-fill-2 px-1 py-0.5 font-mono">↓</kbd>
               <span>navigate</span>
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="rounded bg-white/10 px-1 py-0.5 font-mono">↵</kbd>
+              <kbd className="rounded bg-fill-2 px-1 py-0.5 font-mono">↵</kbd>
               <span>select</span>
             </span>
           </div>
