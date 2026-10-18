@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 namespace CurioMap.Api.Data;
 
 /// <summary>
-/// Applies EF Core migrations and initial catalog/demo seed data at startup.
+/// Optionally applies EF Core migrations, then initial catalog/demo seed data at startup.
 ///
 /// Seed gating: scripts whose filename contains "_seed_demo_" or that live in the
 /// demo range (0013-0014) are SKIPPED unless Seed:DemoReaders is true. The book
@@ -32,7 +32,7 @@ public static class DbInitializer
             || id.StartsWith("0014_", StringComparison.Ordinal);
     }
 
-    public static async Task InitializeAsync(IServiceProvider services, ILogger logger)
+    public static async Task InitializeAsync(IServiceProvider services, ILogger logger, bool migrate = true)
     {
         using var scope = services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -45,11 +45,18 @@ public static class DbInitializer
             return;
         }
 
-        await BaselineExistingDatabaseIfNecessaryAsync(db, logger);
+        if (migrate)
+        {
+            await BaselineExistingDatabaseIfNecessaryAsync(db, logger);
 
-        logger.LogInformation("Applying pending EF Core database migrations...");
-        await db.Database.MigrateAsync();
-        logger.LogInformation("EF Core migrations applied successfully.");
+            logger.LogInformation("Applying pending EF Core database migrations...");
+            await db.Database.MigrateAsync();
+            logger.LogInformation("EF Core migrations applied successfully.");
+        }
+        else
+        {
+            logger.LogInformation("Startup migration skipped; schema is applied by the release command.");
+        }
 
         // Check if initial book seed is needed
         var hasBooks = await db.Books.AnyAsync();

@@ -227,9 +227,13 @@ if (usingDevJwtFallback)
 app.UseMiddleware<SecurityHeadersMiddleware>();
 
 // ---------------------------------------------------------------------------
-// Database: apply ordered SQL migrations + seed at startup (advisory-locked).
+// Database: seed at startup; EF migrations only in Development or when
+// Database:MigrateOnStartup=true. Deployed environments migrate via the Fly
+// release_command (efbundle) so DDL never runs through the pooled connection.
 // ---------------------------------------------------------------------------
-await DbInitializer.InitializeAsync(app.Services, app.Logger);
+var migrateOnStartup = app.Environment.IsDevelopment()
+    || app.Configuration.GetValue<bool>("Database:MigrateOnStartup");
+await DbInitializer.InitializeAsync(app.Services, app.Logger, migrateOnStartup);
 
 app.UseExceptionHandler();
 app.UseCors();

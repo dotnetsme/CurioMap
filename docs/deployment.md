@@ -123,5 +123,7 @@ dotnet run --project backend/src/CurioMap.Api
 npm --prefix frontend run dev         # :3000, /api → :8080
 ```
 
-Migrations + seed apply automatically at API startup. To wipe local data:
+In Development the API applies EF migrations and seed data at startup. Deployed
+environments skip startup migration (set `Database__MigrateOnStartup=true` to opt in) and
+apply the schema through the Fly `release_command` (`efbundle`) during CI/CD. To wipe local data:
 `docker compose down -v`.

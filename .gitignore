@@ -143,3 +143,4 @@ docker-compose.override.yml
 .agent/
 __pycache__/
 *.pyc
+.logs/
