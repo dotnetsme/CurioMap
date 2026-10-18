@@ -53,7 +53,7 @@ function MessageRow({ message, onReact }: { message: Message; onReact?: (m: Mess
         <Avatar avatarId={message.author.avatarId} name={message.author.displayName} size={28} />
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-ink">{message.author.displayName}</p>
-          <p className="text-[11px] text-ink-3">
+          <p className="text-[11px] text-ink-faint">
                         {timeAgo(message.createdAt)}
           </p>
         </div>
@@ -66,7 +66,7 @@ function MessageRow({ message, onReact }: { message: Message; onReact?: (m: Mess
           </button>
         ) : null}
       </div>
-      <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-ink-2">{message.content}</p>
+      <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-ink-muted">{message.content}</p>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         {kinds.map(({ kind, label }) => {
           const summary = message.reactions.find((r) => r.kind === kind);
@@ -126,7 +126,7 @@ export function MessageList({
 }) {
   if (messages.length === 0) {
     return (
-      <div className="card p-6 text-sm text-ink-3">
+      <div className="card p-6 text-sm text-ink-faint">
         No messages yet. Be the first to share a thought.
       </div>
     );

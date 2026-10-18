@@ -36,7 +36,7 @@ export function CircleStreakChip({ handle }: { handle: string }) {
         stats.freezeCount > 0 ? ` · ${stats.freezeCount} freeze${stats.freezeCount === 1 ? "" : "s"}` : ""
       }`}
     >
-      <Flame size={16} className={stats.activeToday ? "text-amber-500" : "text-ink-3"} aria-hidden />
+      <Flame size={16} className={stats.activeToday ? "text-amber-500" : "text-ink-faint"} aria-hidden />
       {stats.currentStreak}-day circle streak
       {stats.freezeCount > 0 ? (
         <span className="inline-flex items-center gap-0.5 text-sky-500">

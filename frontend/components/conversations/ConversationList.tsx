@@ -21,14 +21,14 @@ export function ConversationCard({ conversation }: { conversation: Conversation 
       <div className="flex items-center gap-2">
         <Badge tone={topicTones[conversation.topicType] ?? "slate"}>{conversation.topicType}</Badge>
         {conversation.isArchived ? <Badge tone="slate">archived</Badge> : null}
-        <span className="ml-auto text-xs text-ink-3">
+        <span className="ml-auto text-xs text-ink-faint">
           {conversation.messageCount} {conversation.messageCount === 1 ? "message" : "messages"}
         </span>
       </div>
       <Link href={href} className="mt-2 block text-lg font-semibold text-ink hover:text-accent">
         {conversation.title}
       </Link>
-      <div className="mt-3 flex items-center gap-2 text-xs text-ink-3">
+      <div className="mt-3 flex items-center gap-2 text-xs text-ink-faint">
         <Avatar avatarId={conversation.createdBy.avatarId} name={conversation.createdBy.displayName} size={22} />
         <span>{conversation.createdBy.displayName}</span>
         <span aria-hidden>·</span>
@@ -41,7 +41,7 @@ export function ConversationCard({ conversation }: { conversation: Conversation 
 export function ConversationList({ conversations }: { conversations: Conversation[] }) {
   if (conversations.length === 0) {
     return (
-      <div className="card p-6 text-sm text-ink-3">
+      <div className="card p-6 text-sm text-ink-faint">
         No conversations yet. Start the first one — short threads work best.
       </div>
     );

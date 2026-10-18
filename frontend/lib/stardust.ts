@@ -22,11 +22,11 @@ interface Particle {
 }
 
 const COSMIC_COLORS = [
-  "#06b6d4", // Hyper Cyan
-  "#22d3ee", // Cyan Glow
-  "#8b5cf6", // Electric Violet
-  "#a855f7", // Purple Flare
-  "#f59e0b", // Supernova Amber
+  "#64d2ff", // Hyper Cyan
+  "#5ac8fa", // Cyan Glow
+  "#2997ff", // Electric Violet
+  "#bf5af2", // Purple Flare
+  "#ff9f0a", // Supernova Amber
   "#ffffff", // Star White
 ];
 

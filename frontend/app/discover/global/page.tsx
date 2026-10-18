@@ -153,7 +153,7 @@ export default function GlobalMapPage() {
   }
 
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden bg-stage">
+    <div data-theme="dark" className="fixed inset-0 z-0 overflow-hidden bg-stage">
       <CuriosityMapShell
         regions={data.regions}
         readers={personas}
@@ -174,7 +174,7 @@ export default function GlobalMapPage() {
       <header className="pointer-events-none absolute top-0 left-0 right-0 z-[500]">
         <div className="flex items-center justify-between gap-3 px-3 py-2 sm:px-5">
           <div className="pointer-events-auto flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-full border border-line bg-stage/75 px-3 py-1.5 backdrop-blur-md">
+            <div className="flex items-center gap-2 rounded-full border border-line bg-material px-3 py-1.5 backdrop-blur-xl backdrop-saturate-150">
               <div className="relative h-4 w-4">
                 <span className="absolute h-full w-full rounded-full bg-signal/40 animate-ping" />
                 <span className="absolute inset-0.5 h-3 w-3 rounded-full bg-signal" />
@@ -186,7 +186,7 @@ export default function GlobalMapPage() {
           </div>
 
           {statsData && (
-            <div className="pointer-events-auto hidden sm:flex items-center gap-3 rounded-full border border-line bg-stage/70 px-3.5 py-1.5 backdrop-blur-md">
+            <div className="pointer-events-auto hidden sm:flex items-center gap-3 rounded-full border border-line bg-material px-3.5 py-1.5 backdrop-blur-xl backdrop-saturate-150">
               <StatPill
                 icon={<Users size={13} />}
                 value={statsData.readers}
@@ -219,7 +219,7 @@ export default function GlobalMapPage() {
 
           <button
             onClick={handleToggleSidebar}
-            className="pointer-events-auto flex items-center gap-2 rounded-full border border-line bg-stage/75 px-3 py-1.5 text-xs font-semibold text-ink-muted backdrop-blur-md transition hover:border-accent hover:text-ink"
+            className="pointer-events-auto flex items-center gap-2 rounded-full border border-line bg-material px-3 py-1.5 text-xs font-semibold text-ink-muted backdrop-blur-xl backdrop-saturate-150 transition hover:border-accent hover:text-ink"
           >
             {sidebarOpen ? <X size={14} /> : <Sparkles size={14} />}
             <span className="hidden sm:inline">
@@ -239,10 +239,10 @@ export default function GlobalMapPage() {
             type="button"
             onClick={() => setSelectedTopic(null)}
             className={cn(
-              "flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-xs font-semibold backdrop-blur-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+              "flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-xs font-semibold backdrop-blur-xl backdrop-saturate-150 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
               selectedTopic === null
                 ? "border-accent bg-accent/20 text-ink"
-                : "border-line bg-stage/75 text-ink-muted hover:border-line-strong hover:text-ink",
+                : "border-line bg-material text-ink-muted hover:border-line-2 hover:text-ink",
             )}
           >
             <Compass size={13} className={selectedTopic === null ? "text-accent" : "text-ink-muted"} />
@@ -265,10 +265,10 @@ export default function GlobalMapPage() {
                 type="button"
                 onClick={() => setSelectedTopic(active ? null : t.topic)}
                 className={cn(
-                  "flex min-h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-xs font-semibold backdrop-blur-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+                  "flex min-h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-xs font-semibold backdrop-blur-xl backdrop-saturate-150 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
                   active
                     ? "border-accent bg-accent/20 text-ink"
-                    : "border-line bg-stage/75 text-ink-muted hover:border-line-strong hover:text-ink",
+                    : "border-line bg-material text-ink-muted hover:border-line-2 hover:text-ink",
                 )}
               >
                 <span>{t.topic}</span>
@@ -292,7 +292,7 @@ export default function GlobalMapPage() {
       {activeRegion && (
         <aside className="absolute left-0 top-26 sm:top-24 bottom-0 z-[500] w-full max-w-xs pointer-events-none">
           <div className="p-4">
-            <section className="pointer-events-auto rounded-2xl border border-line bg-stage/85 p-4 backdrop-blur-md">
+            <section className="pointer-events-auto rounded-2xl border border-line bg-material p-4 backdrop-blur-xl backdrop-saturate-150">
               <div className="flex items-center gap-2 text-xs font-semibold text-signal">
                 <TrendingUp size={12} />
                 <span>HOT RIGHT NOW</span>
@@ -338,7 +338,7 @@ export default function GlobalMapPage() {
         )}
       >
         <div className="no-scrollbar flex h-full flex-col gap-4 overflow-y-auto p-4 pb-28">
-          <section className="rounded-2xl border border-line bg-stage/85 p-4 backdrop-blur-md">
+          <section className="rounded-2xl border border-line bg-material p-4 backdrop-blur-xl backdrop-saturate-150">
             <p className="text-xs font-semibold text-ink-muted">MAP LAYER</p>
             <div className="mt-2 flex gap-2">
               {(["heat", "bubbles", "dark"] as MapMode[]).map((m) => (
@@ -362,7 +362,7 @@ export default function GlobalMapPage() {
           </section>
 
           {user && (
-            <section className="rounded-2xl border border-line bg-stage/85 p-4 backdrop-blur-md">
+            <section className="rounded-2xl border border-line bg-material p-4 backdrop-blur-xl backdrop-saturate-150">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold text-ink-muted">
                   READERS NEAR YOU
@@ -415,7 +415,7 @@ export default function GlobalMapPage() {
           )}
 
           {activeRegion && activeRegion.topBooks.length > 0 && (
-            <section className="rounded-2xl border border-line bg-stage/85 p-4 backdrop-blur-md">
+            <section className="rounded-2xl border border-line bg-material p-4 backdrop-blur-xl backdrop-saturate-150">
               <p className="text-xs font-semibold text-ink-muted">
                 TOP BOOKS HERE
               </p>
@@ -444,7 +444,7 @@ export default function GlobalMapPage() {
             </section>
           )}
 
-          <section className="rounded-2xl border border-line bg-stage/85 p-4 backdrop-blur-md">
+          <section className="rounded-2xl border border-line bg-material p-4 backdrop-blur-xl backdrop-saturate-150">
             <p className="text-xs font-semibold text-ink-muted">
               MOST ACTIVE REGIONS
             </p>
@@ -478,7 +478,7 @@ export default function GlobalMapPage() {
       {/* Bottom Bar */}
       {activeRegion && activeRegion.topBooks.length > 0 && (
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-[500] p-4 sm:p-6">
-          <div className="no-scrollbar pointer-events-auto flex gap-2 overflow-x-auto rounded-2xl border border-line bg-stage/85 px-4 py-3 backdrop-blur-md">
+          <div className="no-scrollbar pointer-events-auto flex gap-2 overflow-x-auto rounded-2xl border border-line bg-material px-4 py-3 backdrop-blur-xl backdrop-saturate-150">
             <div className="flex shrink-0 items-center gap-1.5 pr-2">
               <Flame size={14} className="text-heat-hot" />
               <span className="text-xs font-bold text-ink-muted">TRENDING</span>
@@ -487,7 +487,7 @@ export default function GlobalMapPage() {
               <Link
                 key={b.id}
                 href={`/books/${b.id}`}
-                className="flex shrink-0 items-center gap-2 rounded-full border border-line bg-stage/80 px-3 py-1.5 text-xs font-semibold text-ink transition hover:border-accent hover:bg-fill"
+                className="flex shrink-0 items-center gap-2 rounded-full border border-line bg-material px-3 py-1.5 text-xs font-semibold text-ink transition hover:border-accent hover:bg-fill"
               >
                 <BookCover book={b} size={20} />
                 <span className="max-w-[120px] truncate">{b.title}</span>

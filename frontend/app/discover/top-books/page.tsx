@@ -25,7 +25,7 @@ export default function TopBooksPage() {
 
   return (
     <div className="flex flex-col gap-6 py-4">
-      <h1 className="font-display text-3xl font-bold tracking-tight text-ink">Top books being read</h1>
+      <h1 className="display text-4xl text-ink-strong sm:text-5xl">Top books being read</h1>
       <p className="text-sm text-ink-muted">
         Ranked by public “reading” status across every region that lights up the map.
       </p>

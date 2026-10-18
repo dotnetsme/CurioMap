@@ -57,7 +57,7 @@ export function BadgeToast({ kinds, onDismiss }: { kinds: string[]; onDismiss: (
           role="status"
           aria-live="polite"
         >
-          <div className="flex flex-col gap-2.5 rounded-2xl border border-amber/40 bg-stage/95 p-4 shadow-[0_0_32px_rgba(245,158,11,0.2)] backdrop-blur-md">
+          <div className="flex flex-col gap-2.5 rounded-2xl border border-amber/40 bg-material backdrop-blur-xl p-4 backdrop-blur-md">
             <div className="flex items-center justify-between">
               <span className="label-sm font-bold text-amber">
                 {count === 1 ? "★ Badge earned!" : `★ ${count} badges earned!`}
@@ -75,7 +75,7 @@ export function BadgeToast({ kinds, onDismiss }: { kinds: string[]; onDismiss: (
               const Icon = meta.icon;
               return (
                 <div key={kind} className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-soft/20 text-amber shadow-[0_0_12px_rgba(245,158,11,0.25)]">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-soft/20 text-amber">
                     <Icon className="size-5" aria-hidden />
                   </span>
                   <div className="min-w-0">

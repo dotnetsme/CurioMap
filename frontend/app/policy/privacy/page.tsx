@@ -1,7 +1,7 @@
 export default function PrivacyPolicyPage() {
   return (
     <div className="mx-auto max-w-2xl py-4">
-      <h1 className="font-display text-3xl font-bold tracking-tight text-ink">Privacy Policy</h1>
+      <h1 className="display text-4xl text-ink-strong sm:text-5xl">Privacy Policy</h1>
       <p className="mt-2 text-sm text-ink-muted">
         CurioMap is <strong>privacy-first by architecture</strong>, not by policy note.
         Here is exactly what we store and why.
@@ -35,7 +35,7 @@ export default function PrivacyPolicyPage() {
       ].map((section) => (
         <section key={section.title} className="glass mt-4 p-5">
           <h2 className="font-semibold text-ink">{section.title}</h2>
-          <p className="mt-2 text-sm leading-relaxed text-ink-2">{section.body}</p>
+          <p className="mt-2 text-sm leading-relaxed text-ink-muted">{section.body}</p>
         </section>
       ))}
     </div>

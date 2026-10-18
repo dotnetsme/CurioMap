@@ -3,6 +3,7 @@
 import { Flame } from "lucide-react";
 import Link from "next/link";
 import { Avatar } from "@/components/profile/Avatar";
+import { HEAT_GRADIENT } from "@/components/discover/map-style";
 import { Reveal } from "@/components/ui/Reveal";
 import type { RegionStat } from "@/types";
 
@@ -32,8 +33,8 @@ export function TopReadersStrip({ regions }: { regions: RegionStat[] }) {
             </div>
             <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-fill-2">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-signal via-accent to-heat-hot"
-                style={{ width: `${Math.max(8, (r.activeReaders / max) * 100)}%` }}
+                className="h-full rounded-full"
+                style={{ background: HEAT_GRADIENT, width: `${Math.max(8, (r.activeReaders / max) * 100)}%` }}
               />
             </div>
             {r.topBooks.length > 0 ? (

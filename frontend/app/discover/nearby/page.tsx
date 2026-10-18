@@ -35,8 +35,8 @@ function NearbyBody() {
     <div className="mx-auto flex max-w-2xl flex-col gap-6 py-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="label-sm text-accent-strong">Nearby discovery</p>
-          <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+          <p className="text-sm font-semibold text-accent">Nearby discovery</p>
+          <h1 className="mt-1 display text-4xl text-ink-strong sm:text-5xl">
             Readers near you
           </h1>
           {data ? (
@@ -46,7 +46,7 @@ function NearbyBody() {
             </p>
           ) : null}
         </div>
-        <Link href="/me/settings" className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-3 underline-offset-2 hover:text-ink hover:underline">
+        <Link href="/me/settings" className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-faint underline-offset-2 hover:text-ink hover:underline">
           <ShieldCheck size={13} /> Manage location privacy
         </Link>
       </div>

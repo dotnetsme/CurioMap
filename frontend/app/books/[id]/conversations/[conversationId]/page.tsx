@@ -35,26 +35,26 @@ export default function ConversationThreadPage({ params }: { params: Promise<{ i
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-5 py-4">
       <div>
-        <p className="text-xs text-ink-3">
+        <p className="text-xs text-ink-faint">
           {conversation.book ? (
             <>
               in{" "}
               <Link
                 href={`/books/${conversation.book.id}`}
-                className="text-ink-2 underline hover:text-ink"
+                className="text-ink-muted underline hover:text-ink"
               >
                 {conversation.book.title}
               </Link>
             </>
           ) : null}
         </p>
-        <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-ink">
+        <h1 className="mt-1 display text-3xl text-ink-strong">
           {conversation.title}
         </h1>
         <div className="mt-2 flex flex-wrap gap-2">
           <Badge tone="violet">{conversation.topicType}</Badge>
           {conversation.isArchived ? <Badge tone="slate">archived — read only</Badge> : null}
-          <span className="text-xs text-ink-3">
+          <span className="text-xs text-ink-faint">
             started by {conversation.createdBy.displayName}
           </span>
         </div>

@@ -87,7 +87,7 @@ export function BookDetail({ bookId }: { bookId: string }) {
             </div>
             <div className="min-w-0 flex-1">
               <p className="label-sm text-signal/80">Book · {book.conversationsCount} circles</p>
-              <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-ink-strong text-balance sm:text-4xl">
+              <h1 className="mt-1 display text-4xl text-ink-strong">
                 {book.title}
               </h1>
               <p className="mt-1 text-[15px] text-ink-muted">by {book.author}</p>

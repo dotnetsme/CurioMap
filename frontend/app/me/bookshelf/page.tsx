@@ -12,7 +12,7 @@ export default function MyBookshelfPage() {
       body="Sign in to shelve books and put your city on the curiosity map."
     >
       <div className="flex flex-col gap-4 py-4">
-        <h1 className="font-display text-3xl font-bold tracking-tight text-ink">My bookshelf</h1>
+        <h1 className="display text-4xl text-ink-strong sm:text-5xl">My bookshelf</h1>
         <BookshelfList />
       </div>
     </AuthGate>

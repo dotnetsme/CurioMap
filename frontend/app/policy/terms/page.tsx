@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function TermsOfUsePage() {
   return (
     <div className="mx-auto max-w-2xl py-4">
-      <h1 className="font-display text-3xl font-bold tracking-tight text-ink">Terms of Use</h1>
+      <h1 className="display text-4xl text-ink-strong sm:text-5xl">Terms of Use</h1>
       <p className="mt-2 text-sm text-ink-muted">
         Version 1.0 · Effective 2026-09-18 · Binding between you and the CurioMap
         maintainers. The full formal text lives in the repository
@@ -75,11 +75,11 @@ export default function TermsOfUsePage() {
       ].map((section) => (
         <section key={section.title} className="glass mt-4 p-5">
           <h2 className="font-semibold text-ink">{section.title}</h2>
-          <p className="mt-2 text-sm leading-relaxed text-ink-2">{section.body}</p>
+          <p className="mt-2 text-sm leading-relaxed text-ink-muted">{section.body}</p>
         </section>
       ))}
 
-      <p className="mt-6 text-xs leading-relaxed text-ink-3">
+      <p className="mt-6 text-xs leading-relaxed text-ink-faint">
         This page is a summary for readability. Where wording differs, the formal
         text in <code>docs/terms-of-use.md</code> (version-controlled with the
         code) is the binding version between you and the CurioMap maintainers.

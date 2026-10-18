@@ -35,10 +35,10 @@ export function ProfileHeader({
           {profile.isAuthor ? <Badge tone="accent">Author</Badge> : null}
         </div>
         {profile.handle !== "anonymous" ? (
-          <p className="text-sm text-ink-3">@{profile.handle}</p>
+          <p className="text-sm text-ink-faint">@{profile.handle}</p>
         ) : null}
-        {profile.bio ? <p className="mt-2 max-w-xl text-sm text-ink-2">{profile.bio}</p> : null}
-        <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-ink-3">
+        {profile.bio ? <p className="mt-2 max-w-xl text-sm text-ink-muted">{profile.bio}</p> : null}
+        <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-ink-faint">
           <span className="inline-flex items-center gap-1.5">
             <MapPin size={13} /> {locationLabel}
           </span>

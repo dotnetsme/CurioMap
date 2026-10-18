@@ -87,7 +87,7 @@ export function CircleDetail({ handle }: { handle: Promise<string> | string }) {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-ink">{circle.name}</h1>
-            <p className="text-sm text-ink-3">/{circle.handle}</p>
+            <p className="text-sm text-ink-faint">/{circle.handle}</p>
           </div>
           <div className="flex items-center gap-2">
             {membership?.role === "moderator" ? (
@@ -112,9 +112,9 @@ export function CircleDetail({ handle }: { handle: Promise<string> | string }) {
           </div>
         </div>
 
-        {circle.description ? <p className="text-ink-2">{circle.description}</p> : null}
+        {circle.description ? <p className="text-ink-muted">{circle.description}</p> : null}
 
-        <div className="flex flex-wrap gap-4 text-sm text-ink-3">
+        <div className="flex flex-wrap gap-4 text-sm text-ink-faint">
           <span className="flex items-center gap-1">
             <Users size={16} />
             {circle.memberCount}
@@ -145,7 +145,7 @@ export function CircleDetail({ handle }: { handle: Promise<string> | string }) {
               avatars={circle.members.slice(0, 8).map((m) => ({ avatarId: m.avatarId, name: m.displayName }))}
               size={28}
             />
-            <span className="text-xs text-ink-3">
+            <span className="text-xs text-ink-faint">
               {circle.members.length > 8 ? `+${circle.members.length - 8} more` : ""}
             </span>
           </div>

@@ -24,7 +24,7 @@ export function GlobalMap({ regions }: { regions: RegionStat[] }) {
           <radialGradient id="dot" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="#ec4899" stopOpacity="0.9" />
             <stop offset="60%" stopColor="#7c3aed" stopOpacity="0.45" />
-            <stop offset="100%" stopColor="#22d3ee" stopOpacity="0" />
+            <stop offset="100%" stopColor="#5ac8fa" stopOpacity="0" />
           </radialGradient>
         </defs>
 
@@ -38,7 +38,7 @@ export function GlobalMap({ regions }: { regions: RegionStat[] }) {
             x2={W}
             y1={(i / 10) * H}
             y2={(i / 10) * H}
-            stroke="#8b5cf6"
+            stroke="#0a84ff"
             strokeOpacity="0.12"
           />
         ))}
@@ -49,7 +49,7 @@ export function GlobalMap({ regions }: { regions: RegionStat[] }) {
             y2={H}
             x1={(i / 12) * W}
             x2={(i / 12) * W}
-            stroke="#8b5cf6"
+            stroke="#0a84ff"
             strokeOpacity="0.12"
           />
         ))}
@@ -65,7 +65,7 @@ export function GlobalMap({ regions }: { regions: RegionStat[] }) {
                 <circle cx={x} cy={y} r={radius} fill="url(#dot)">
                   <title>{`${r.country}${r.region ? ` / ${r.region}` : ""} — ${r.activeReaders} readers`}</title>
                 </circle>
-                <circle cx={x} cy={y} r={2.5} fill="#22d3ee" fillOpacity={0.5 + intensity * 0.5} />
+                <circle cx={x} cy={y} r={2.5} fill="#5ac8fa" fillOpacity={0.5 + intensity * 0.5} />
               </g>
             );
           })}

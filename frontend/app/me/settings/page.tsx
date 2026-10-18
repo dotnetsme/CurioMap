@@ -117,9 +117,9 @@ function SettingsForm() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 py-4">
-      <h1 className="font-display text-3xl font-bold tracking-tight text-ink">Settings</h1>
+      <h1 className="display text-4xl text-ink-strong sm:text-5xl">Settings</h1>
       {message ? (
-        <div className="flex items-center gap-2.5 rounded-xl border border-signal/40 bg-signal/15 p-3.5 text-sm font-medium text-ink shadow-[0_0_14px_rgba(6,182,212,0.15)]">
+        <div className="flex items-center gap-2.5 rounded-xl border border-signal/40 bg-signal/15 p-3.5 text-sm font-medium text-ink">
           <span className="h-2 w-2 rounded-full bg-signal" />
           {message}
         </div>

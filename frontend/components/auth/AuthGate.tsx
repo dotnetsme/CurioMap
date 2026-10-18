@@ -35,7 +35,7 @@ export function AuthGate({
           <Icon size={26} />
         </span>
         {eyebrow ? <p className="label-sm text-signal">{eyebrow}</p> : null}
-        <h1 className="font-display text-3xl font-bold text-ink-strong">{title}</h1>
+        <h1 className="display text-4xl text-ink-strong">{title}</h1>
         <p className="text-sm leading-relaxed text-ink-muted">{body}</p>
         <div className="flex flex-wrap justify-center gap-3">
           <Link href="/auth/login" className="btn-accent">

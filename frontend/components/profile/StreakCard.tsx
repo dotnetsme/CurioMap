@@ -61,7 +61,7 @@ export function StreakCard({ userId }: { userId?: string }) {
           <Flame
             className={`size-8 transition-transform duration-300 ${
               stats.activeToday
-                ? "text-amber drop-shadow-[0_0_12px_rgba(245,158,11,0.65)] animate-pulse"
+                ? "text-amber animate-pulse"
                 : "text-ink-muted"
             }`}
             aria-hidden
@@ -103,7 +103,7 @@ export function StreakCard({ userId }: { userId?: string }) {
                 title={earned ? `${meta.name} — ${meta.description}` : `${meta.description} (locked)`}
                 className={`flex flex-col items-center gap-1 rounded-xl border px-1 py-2 text-center transition-all ${
                   earned
-                    ? "border-amber/40 bg-amber-soft/20 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+                    ? "border-amber/40 bg-amber-soft/20"
                     : "border-line bg-stage-2 opacity-50"
                 }`}
               >
@@ -158,7 +158,7 @@ function ReadingHeatmap({ activeDays, days }: { activeDays: string[]; days: numb
         <p className="flex items-center gap-1 text-[10px] text-ink-faint">
           less
           <span className="size-[9px] rounded-[2px] bg-stage-3 border border-line/40" aria-hidden />
-          <span className="size-[9px] rounded-[2px] bg-amber shadow-[0_0_4px_rgba(245,158,11,0.5)]" aria-hidden />
+          <span className="size-[9px] rounded-[2px] bg-amber" aria-hidden />
           more
         </p>
       </div>
@@ -172,7 +172,7 @@ function ReadingHeatmap({ activeDays, days }: { activeDays: string[]; days: numb
             title={c.iso}
             className={`size-[10px] rounded-[2px] transition-colors ${
               c.active
-                ? "bg-amber shadow-[0_0_6px_rgba(245,158,11,0.55)]"
+                ? "bg-amber"
                 : "bg-stage-3 border border-line/30 hover:border-line"
             }`}
           />

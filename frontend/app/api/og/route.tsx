@@ -21,9 +21,9 @@ export async function GET(request: NextRequest) {
           flexDirection: "column",
           alignItems: "flex-start",
           justifyContent: "space-between",
-          backgroundColor: "#07090e",
+          backgroundColor: "#000000",
           backgroundImage:
-            "radial-gradient(circle at 25% 20%, rgba(139, 92, 246, 0.25) 0%, transparent 55%), radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.2) 0%, transparent 50%)",
+            "radial-gradient(circle at 25% 20%, rgba(41, 151, 255, 0.25) 0%, transparent 55%), radial-gradient(circle at 80% 80%, rgba(100, 210, 255, 0.2) 0%, transparent 50%)",
           padding: "60px 70px",
           fontFamily: "sans-serif",
           color: "#f8fafc",
@@ -46,8 +46,8 @@ export async function GET(request: NextRequest) {
               width: "12px",
               height: "12px",
               borderRadius: "50%",
-              backgroundColor: "#06b6d4",
-              boxShadow: "0 0 10px #06b6d4",
+              backgroundColor: "#64d2ff",
+              boxShadow: "0 0 10px #64d2ff",
             }}
           />
           <span
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
                 gap: "12px",
                 fontSize: "24px",
                 fontWeight: 700,
-                color: "#f59e0b",
+                color: "#ff9f0a",
               }}
             >
               <span>{streak}-DAY READING STREAK</span>
@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
                   style={{
                     fontSize: "20px",
                     fontWeight: 700,
-                    color: "#06b6d4",
+                    color: "#64d2ff",
                   }}
                 >
                   {readers}
@@ -150,7 +150,7 @@ export async function GET(request: NextRequest) {
             style={{
               fontSize: "18px",
               fontWeight: 600,
-              color: "#8b5cf6",
+              color: "#2997ff",
             }}
           >
             curiomap.app

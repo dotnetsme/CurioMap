@@ -96,7 +96,7 @@ export function DiscussionPanel() {
                 <Avatar avatarId={event.actor.avatarId} name={event.actor.displayName} size={34} />
               </Link>
               <div className="min-w-0 flex-1">
-                <p className="text-[12.5px] leading-relaxed text-ink-2">
+                <p className="text-[12.5px] leading-relaxed text-ink-muted">
                   <Link
                     href={`/users/${event.actor.id}`}
                     className="font-semibold text-ink hover:text-accent-strong"

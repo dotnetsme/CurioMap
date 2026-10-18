@@ -139,7 +139,7 @@ export function FeedList({ events }: { events: FeedEvent[] }) {
                 />
               </Link>
               <div className="min-w-0 flex-1">
-                <p className="text-sm leading-relaxed text-ink-2">
+                <p className="text-sm leading-relaxed text-ink-muted">
                   <Link
                     href={`/users/${event.actor.id}`}
                     className="font-semibold text-ink hover:text-accent"

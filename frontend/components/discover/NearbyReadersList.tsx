@@ -77,7 +77,7 @@ export function NearbyReadersList({
                       Reading{" "}
                       <Link
                         href={`/books/${reader.books[0].id}`}
-                        className="font-medium text-ink-2 hover:text-accent-strong"
+                        className="font-medium text-ink-muted hover:text-accent-strong"
                       >
                         {reader.books[0].title}
                       </Link>

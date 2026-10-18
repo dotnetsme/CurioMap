@@ -24,7 +24,7 @@ export function Stars({
           <Star
             size={size}
             strokeWidth={filled ? 0 : 1.8}
-            className={filled ? "fill-amber-400 text-amber-400" : "text-ink-3"}
+            className={filled ? "fill-amber-400 text-amber-400" : "text-ink-faint"}
             aria-hidden
           />
         );

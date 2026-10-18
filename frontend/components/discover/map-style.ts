@@ -73,11 +73,18 @@ function clampNum(v: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, v));
 }
 
-/** Heat gradient: cyan aurora → electric violet → supernova rose flame. */
+/** Heat ramp stops (cool → warm → hot), tuned for the dark basemap. */
+export const HEAT_COLD = "#64d2ff";
+export const HEAT_WARM = "#bf5af2";
+export const HEAT_HOT = "#ff375f";
+
+/** CSS gradient matching `heatColor`, for legends and meters. */
+export const HEAT_GRADIENT = `linear-gradient(to right, ${HEAT_COLD}, ${HEAT_WARM}, ${HEAT_HOT})`;
+
 export function heatColor(intensity: number): string {
   const t = clampNum(intensity, 0, 1);
-  if (t < 0.5) return mix("#06b6d4", "#8b5cf6", t / 0.5);
-  return mix("#8b5cf6", "#f43f5e", (t - 0.5) / 0.5);
+  if (t < 0.5) return mix(HEAT_COLD, HEAT_WARM, t / 0.5);
+  return mix(HEAT_WARM, HEAT_HOT, (t - 0.5) / 0.5);
 }
 
 function mix(a: string, b: string, k: number): string {

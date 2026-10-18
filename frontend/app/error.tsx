@@ -19,11 +19,11 @@ export default function GlobalError({
 
   return (
     <div className="mx-auto flex min-h-[50vh] max-w-lg flex-col items-center justify-center py-12 text-center">
-      <div className="relative mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-heat-hot/40 bg-heat-hot/10 text-heat-hot shadow-[0_0_24px_rgba(244,63,94,0.2)]">
+      <div className="relative mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-heat-hot/40 bg-heat-hot/10 text-heat-hot">
         <AlertCircle size={32} />
       </div>
 
-      <h1 className="font-display text-2xl font-bold tracking-tight text-ink-strong sm:text-3xl">
+      <h1 className="display text-3xl text-ink-strong">
         Something flickered in the dark
       </h1>
       <p className="mt-2 text-sm leading-relaxed text-ink-muted">

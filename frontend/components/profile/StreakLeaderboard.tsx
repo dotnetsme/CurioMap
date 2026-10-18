@@ -53,7 +53,7 @@ export function StreakLeaderboard({ limit = 10 }: { limit?: number }) {
             >
               <span
                 className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
-                  i < 3 ? RANK_STYLES[i] : "bg-surface-2 text-ink-3"
+                  i < 3 ? RANK_STYLES[i] : "bg-surface-2 text-ink-faint"
                 }`}
               >
                 {i + 1}

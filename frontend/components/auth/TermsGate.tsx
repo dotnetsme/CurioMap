@@ -62,7 +62,7 @@ export function TermsGate({ children }: { children: ReactNode }) {
         <ScrollText size={26} />
       </span>
       <h1 className="font-display text-2xl font-bold text-ink">Terms of Use updated</h1>
-      <p className="text-sm leading-relaxed text-ink-2">
+      <p className="text-sm leading-relaxed text-ink-muted">
         We&apos;ve revised our Terms of Use (version 1.0). To keep using CurioMap,
         please review and accept the updated terms. Your reading data, streaks,
         and privacy settings are unchanged.

@@ -41,7 +41,7 @@ export function SearchPageClient({ initialQuery }: { initialQuery: string }) {
   return (
     <div className="flex flex-col gap-6 py-4">
       <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight text-ink-strong">Search books</h1>
+        <h1 className="display text-4xl text-ink-strong sm:text-5xl">Search books</h1>
         <p className="mt-1 text-sm text-ink-muted">Find books and discover who is reading them around the world.</p>
       </div>
       <BookSearchBar initialQuery={query} />

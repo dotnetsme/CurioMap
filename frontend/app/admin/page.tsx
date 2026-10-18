@@ -4,7 +4,7 @@ import { BackfillButton } from "@/components/admin/BackfillButton";
 export default function AdminPage() {
   return (
     <div className="mx-auto max-w-3xl py-4">
-      <h1 className="font-display text-3xl font-bold tracking-tight text-ink">Moderation</h1>
+      <h1 className="display text-4xl text-ink-strong sm:text-5xl">Moderation</h1>
       <p className="mt-1 text-sm text-ink-muted">Reported messages — review and action.</p>
       <div className="mt-6">
         <ReportsBoard />

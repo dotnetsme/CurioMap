@@ -22,7 +22,7 @@ export function MessageInput({
 
   if (!user) {
     return (
-      <div className="card p-4 text-sm text-ink-2">
+      <div className="card p-4 text-sm text-ink-muted">
         <Link href="/auth/login" className="text-accent hover:text-accent-strong underline">
           Sign in
         </Link>{" "}

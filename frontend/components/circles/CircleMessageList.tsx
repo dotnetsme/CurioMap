@@ -104,7 +104,7 @@ export function CircleMessageList({
     <div className="flex flex-col gap-4">
       <div className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto rounded-lg bg-surface p-3">
         {messages.length === 0 ? (
-          <p className="py-8 text-center text-sm text-ink-3">
+          <p className="py-8 text-center text-sm text-ink-faint">
             No messages yet. Be the first to share your thoughts!
           </p>
         ) : (
@@ -121,9 +121,9 @@ export function CircleMessageList({
                   <span className="text-sm font-semibold text-ink">
                     {msg.author.displayName}
                   </span>
-                  <span className="text-xs text-ink-3">{timeAgo(msg.createdAt)}</span>
+                  <span className="text-xs text-ink-faint">{timeAgo(msg.createdAt)}</span>
                 </div>
-                <p className="text-sm text-ink-2">{msg.content}</p>
+                <p className="text-sm text-ink-muted">{msg.content}</p>
                 <div className="mt-1 flex flex-wrap gap-1">
                   {REACTIONS.map((r) => {
                     const reacted = msg.reactions?.find((x) => x.kind === r.kind);
@@ -171,7 +171,7 @@ export function CircleMessageList({
           </Button>
         </form>
       ) : (
-        <p className="text-center text-sm text-ink-3">
+        <p className="text-center text-sm text-ink-faint">
           Join the circle to post messages.
         </p>
       )}

@@ -68,7 +68,7 @@ export function NewCircleForm({ onCreated }: { onCreated: (c: Circle) => void })
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-full p-1 text-ink-3 hover:bg-surface hover:text-ink"
+                className="rounded-full p-1 text-ink-faint hover:bg-surface hover:text-ink"
               >
                 <X size={18} />
               </button>

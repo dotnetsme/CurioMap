@@ -90,7 +90,7 @@ export function ShelfGlance() {
                 {entry.status}
               </Badge>
               {entry.visibility === "private" ? (
-                <span className="inline-flex items-center gap-1 text-[10.5px] font-medium text-ink-3">
+                <span className="inline-flex items-center gap-1 text-[10.5px] font-medium text-ink-faint">
                   <Lock size={10} /> private
                 </span>
               ) : null}

@@ -548,14 +548,14 @@ export function ObservatoryMap({
       />
 
       {!ready ? (
-        <div className="absolute inset-0 z-10 grid place-items-center bg-stage/70">
+        <div className="absolute inset-0 z-10 grid place-items-center bg-material">
           <p className="text-xs text-ink-faint">lighting up the map…</p>
         </div>
       ) : null}
 
       {/* Bottom control bar. Anchored left so it never covers the OpenStreetMap
           attribution, which the tile policy requires to stay visible. */}
-      <div className="pointer-events-auto absolute bottom-3 left-3 z-20 flex items-center gap-1.5 rounded-full border border-line bg-stage/85 px-3 py-1.5 backdrop-blur-md">
+      <div className="pointer-events-auto absolute bottom-3 left-3 z-20 flex items-center gap-1.5 rounded-full border border-line bg-material px-3 py-1.5 backdrop-blur-xl backdrop-saturate-150">
         <button
           type="button"
           aria-label="Reset world view"
@@ -644,7 +644,7 @@ export function ObservatoryMap({
       {/* Optional trending books rail (surfaced by callers via topBooks) */}
       {topBooks.length > 0 ? (
         <div className="pointer-events-none absolute inset-x-3 bottom-32 z-20 mx-auto max-w-2xl">
-          <div className="no-scrollbar pointer-events-auto flex items-center gap-2 overflow-x-auto rounded-2xl border border-line bg-stage/85 px-4 py-3 backdrop-blur-md">
+          <div className="no-scrollbar pointer-events-auto flex items-center gap-2 overflow-x-auto rounded-2xl border border-line bg-material px-4 py-3 backdrop-blur-xl backdrop-saturate-150">
             <div className="flex shrink-0 items-center gap-1.5 pr-2">
               <span className="h-2 w-2 rounded-full bg-heat-hot animate-ping" />
               <span className="text-xs font-bold text-ink-muted">TRENDING</span>
@@ -653,7 +653,7 @@ export function ObservatoryMap({
               <Link
                 key={b.id}
                 href={`/books/${b.id}`}
-                className="flex shrink-0 cursor-pointer items-center gap-2 rounded-full border border-line bg-stage/80 px-3 py-1.5 text-xs font-semibold text-ink transition hover:border-accent hover:bg-fill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="flex shrink-0 cursor-pointer items-center gap-2 rounded-full border border-line bg-material px-3 py-1.5 text-xs font-semibold text-ink transition hover:border-accent hover:bg-fill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <BookCover book={b} size={20} />
                 <span className="max-w-[120px] truncate">{b.title}</span>
@@ -723,7 +723,7 @@ function PersonaPopover({ reader, onClose }: { reader: MapReader; onClose: () =>
     <div
       role="dialog"
       aria-label={`${reader.user.displayName} is reading now`}
-      className="rounded-2xl border border-line bg-stage/90 p-3.5 shadow-pop backdrop-blur-md"
+      className="rounded-2xl border border-line bg-material p-3.5 shadow-pop backdrop-blur-xl backdrop-saturate-150"
     >
       <div className="flex items-start gap-2.5">
         <PersonaGlyph reader={reader} size={40} />

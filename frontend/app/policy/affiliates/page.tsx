@@ -1,7 +1,7 @@
 export default function AffiliatesPolicyPage() {
   return (
     <div className="mx-auto max-w-2xl py-4">
-      <h1 className="font-display text-3xl font-bold tracking-tight text-ink">Affiliate &amp; Ads Policy</h1>
+      <h1 className="display text-4xl text-ink-strong sm:text-5xl">Affiliate &amp; Ads Policy</h1>
       <p className="mt-2 text-sm text-ink-muted">
         Financing CurioMap without selling you out.
       </p>
@@ -26,7 +26,7 @@ export default function AffiliatesPolicyPage() {
       ].map((section) => (
         <section key={section.title} className="glass mt-4 p-5">
           <h2 className="font-semibold text-ink">{section.title}</h2>
-          <p className="mt-2 text-sm leading-relaxed text-ink-2">{section.body}</p>
+          <p className="mt-2 text-sm leading-relaxed text-ink-muted">{section.body}</p>
         </section>
       ))}
     </div>

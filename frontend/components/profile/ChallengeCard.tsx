@@ -77,7 +77,7 @@ export function ChallengeCard() {
 
       <div className="flex flex-1 flex-col gap-2 text-center sm:text-left">
         <div className="flex items-center justify-center gap-2 sm:justify-start">
-          <Flame className="size-4 text-amber drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+          <Flame className="size-4 text-amber" />
           <h3 className="font-display text-base font-bold text-ink-strong">{stats.year} Reading Challenge</h3>
         </div>
 

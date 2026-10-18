@@ -66,9 +66,9 @@ export function Ring({
         />
         <defs>
           <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#06b6d4" />
-            <stop offset="50%" stopColor="#8b5cf6" />
-            <stop offset="100%" stopColor="#f59e0b" />
+            <stop offset="0%" style={{ stopColor: "var(--signal)" }} />
+            <stop offset="60%" style={{ stopColor: "var(--accent)" }} />
+            <stop offset="100%" style={{ stopColor: "var(--accent-strong)" }} />
           </linearGradient>
         </defs>
       </svg>

@@ -5,7 +5,7 @@ export default function NotFound() {
   return (
     <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center py-12 text-center">
       <div className="relative mb-6">
-        <div className="h-20 w-20 rounded-full border border-line-2 bg-accent-soft/30 p-5 shadow-[0_0_32px_rgba(139,92,246,0.3)] backdrop-blur-md">
+        <div className="h-20 w-20 rounded-full border border-line-2 bg-accent-soft/30 p-5 backdrop-blur-md">
           <Compass className="h-full w-full text-signal animate-pulse" />
         </div>
         <span className="absolute -bottom-1 -right-1 rounded-full border border-line bg-stage-2 px-2 py-0.5 font-mono text-[10px] font-bold text-accent">
@@ -13,7 +13,7 @@ export default function NotFound() {
         </span>
       </div>
 
-      <h1 className="font-display text-3xl font-bold tracking-tight text-ink-strong sm:text-4xl">
+      <h1 className="display text-4xl text-ink-strong sm:text-5xl">
         Uncharted Coordinates
       </h1>
       <p className="mt-2.5 text-sm leading-relaxed text-ink-muted">

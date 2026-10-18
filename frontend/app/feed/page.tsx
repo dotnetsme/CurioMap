@@ -50,7 +50,7 @@ export default function FeedPage() {
           <p className="inline-flex items-center gap-1.5 text-sm font-medium text-accent-strong">
             <Flame size={12} /> Activity
           </p>
-          <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+          <h1 className="mt-1 display text-4xl text-ink-strong sm:text-5xl">
             Your feed
           </h1>
           <p className="mt-1 text-sm text-ink-muted">People you follow · books you care about</p>

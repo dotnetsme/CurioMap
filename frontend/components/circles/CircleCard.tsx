@@ -20,7 +20,7 @@ export function CircleCard({ circle }: { circle: Circle }) {
             <h3 className="truncate text-lg font-semibold text-ink hover:text-accent">
               {circle.name}
             </h3>
-            <p className="text-sm text-ink-3">/{circle.handle}</p>
+            <p className="text-sm text-ink-faint">/{circle.handle}</p>
           </div>
           {circle.book ? (
             <Badge tone="accent">{circle.book.title}</Badge>
@@ -28,10 +28,10 @@ export function CircleCard({ circle }: { circle: Circle }) {
         </div>
 
         {circle.description ? (
-          <p className="line-clamp-2 text-sm text-ink-2">{circle.description}</p>
+          <p className="line-clamp-2 text-sm text-ink-muted">{circle.description}</p>
         ) : null}
 
-        <div className="mt-auto flex items-center gap-3 text-xs text-ink-3">
+        <div className="mt-auto flex items-center gap-3 text-xs text-ink-faint">
           <span className="flex items-center gap-1">
             <Users size={14} />
             {circle.memberCount}
@@ -62,7 +62,7 @@ export function CircleCard({ circle }: { circle: Circle }) {
           </span>
         </div>
 
-        <div className="text-xs text-ink-3">
+        <div className="text-xs text-ink-faint">
           Active {timeAgo(circle.lastActivityAt)}
         </div>
       </Link>

@@ -41,7 +41,7 @@ export default function BookConversationsPage({ params }: { params: Promise<{ id
       <div className="glass flex items-center gap-4 p-4">
         <BookCover book={book} size={56} />
         <div className="min-w-0 flex-1">
-          <p className="label-sm text-ink-3">Discussions on</p>
+          <p className="label-sm text-ink-faint">Discussions on</p>
           <Link href={`/books/${book.id}`} className="text-lg font-semibold text-ink hover:text-accent-strong">
             {book.title}
           </Link>
