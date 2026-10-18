@@ -38,6 +38,17 @@ public class RefreshTokenService(AppDbContext db, IOptions<JwtOptions> options)
 
         var hash = Hash(raw);
 
+        // The retrying execution strategy rejects user-initiated transactions unless the
+        // whole transaction runs as one retriable unit.
+        return await db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+        {
+            db.ChangeTracker.Clear();
+            return await RotateAsync(hash, ct);
+        });
+    }
+
+    private async Task<(User User, RefreshToken NewToken, string Raw)?> RotateAsync(string hash, CancellationToken ct)
+    {
         // Rotation must be atomic: lock the token row so concurrent use of the
         // same token cannot mint two sessions. A reused (already revoked) token
         // indicates theft: wipe the whole family (all live tokens for the user).

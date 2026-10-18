@@ -160,9 +160,30 @@ public static class DbUrl
         // crash on first boot with "No SSL enabled connection from this host".
         // Npgsql's default (Prefer) upgrades when the server supports it and
         // proceeds in the clear on loopback. Remote hosts (Neon/Fly) keep Require.
-        var ssl = IsLoopback(uri.Host) ? "" : ";SSL Mode=Require;Trust Server Certificate=true";
+        // An explicit libpq-style `?sslmode=` always wins, so a non-loopback host without TLS
+        // (e.g. the `postgres` service in docker compose) can opt out with `?sslmode=disable`.
+        var ssl = SslModeFromQuery(uri.Query) switch
+        {
+            "disable" => ";SSL Mode=Disable",
+            "allow" or "prefer" => ";SSL Mode=Prefer",
+            "require" or "verify-ca" or "verify-full" => ";SSL Mode=Require;Trust Server Certificate=true",
+            _ => IsLoopback(uri.Host) ? "" : ";SSL Mode=Require;Trust Server Certificate=true",
+        };
 
         return $"Host={uri.Host};Port={port};Database={database};Username={user};Password={pass}{ssl}";
+    }
+
+    private static string? SslModeFromQuery(string query)
+    {
+        foreach (var pair in query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var kv = pair.Split('=', 2);
+            if (kv.Length == 2 && kv[0].Equals("sslmode", StringComparison.OrdinalIgnoreCase))
+            {
+                return kv[1].ToLowerInvariant();
+            }
+        }
+        return null;
     }
 
     private static bool IsLoopback(string host) =>

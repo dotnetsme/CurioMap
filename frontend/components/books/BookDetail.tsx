@@ -8,6 +8,7 @@ import { BuyLinks } from "@/components/books/BuyLinks";
 import { AddToBookshelf } from "@/components/bookshelf/AddToBookshelf";
 import { ConversationList } from "@/components/conversations/ConversationList";
 import { NewConversationForm } from "@/components/conversations/NewConversationForm";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { Badge } from "@/components/ui/Badge";
 import { ErrorState, PageLoading } from "@/components/ui/Feedback";
 import { Reveal } from "@/components/ui/Reveal";
@@ -34,6 +35,8 @@ export function BookDetail({ bookId }: { bookId: string }) {
   const [tab, setTab] = useState<"circles" | "about">("circles");
     const [rating, setRating] = useState(0);
   const [ratingStats, setRatingStats] = useState<{ average: number; count: number } | null>(null);
+  const [signInHint, setSignInHint] = useState(false);
+  const { user } = useAuth();
 
   const load = useCallback(async () => {
     setError(null);
@@ -65,6 +68,10 @@ export function BookDetail({ bookId }: { bookId: string }) {
   }, [bookId, loadRating]);
 
     async function rate(v: number) {
+    if (!user) {
+      setSignInHint(true);
+      return;
+    }
     setRating(v);
     try {
       const stats = await rateBook(bookId, v);
@@ -86,7 +93,7 @@ export function BookDetail({ bookId }: { bookId: string }) {
               <BookCover book={book} size={150} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-signal">Book · {book.conversationsCount} circles</p>
+              <p className="text-sm font-medium text-signal">Book · {book.conversationsCount} {book.conversationsCount === 1 ? "discussion" : "discussions"}</p>
               <h1 className="mt-1 display text-4xl text-ink-strong">
                 {book.title}
               </h1>
@@ -99,10 +106,16 @@ export function BookDetail({ bookId }: { bookId: string }) {
                   </span>
                   {ratingStats ? (
                     <span className="ml-2 rounded-full bg-fill px-2 py-0.5 text-xs text-ink-faint">
-                      {ratingStats.average.toFixed(2)} · {ratingStats.count} ratings
+                      {ratingStats.average.toFixed(2)} · {ratingStats.count}{" "}
+                      {ratingStats.count === 1 ? "rating" : "ratings"}
                     </span>
                   ) : null}
                 </span>
+                {signInHint && !user ? (
+                  <Link href="/auth/login" className="text-xs font-medium text-accent-strong underline">
+                    Sign in to rate this book
+                  </Link>
+                ) : null}
                 <span className="flex items-center gap-1.5 text-xs font-medium text-ink-muted">
                   <BookOpenCheck size={14} /> {book.readersCount} reading now
                 </span>
@@ -130,7 +143,7 @@ export function BookDetail({ bookId }: { bookId: string }) {
                 onClick={() => setTab("circles")}
                 className={`flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-1.5 transition ${tab === "circles" ? "bg-stage-2 text-ink-strong shadow-sm" : "text-ink-faint hover:text-ink"}`}
               >
-                <MessagesSquare size={14} /> Circles ({conversations.length})
+                <MessagesSquare size={14} /> Discussions ({conversations.length})
               </button>
               <button
                 onClick={() => setTab("about")}

@@ -1,3 +1,5 @@
+import type { AuthUser } from "@/types";
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -40,28 +42,48 @@ async function extractError(res: Response): Promise<string> {
   return fallback;
 }
 
-let refreshPromise: Promise<boolean> | null = null;
+export interface RefreshResult {
+  user: AuthUser;
+  accessToken: string;
+  expiresIn: number;
+}
 
-async function tryRefresh(): Promise<boolean> {
+let refreshPromise: Promise<RefreshResult | null> | null = null;
+
+/**
+ * Silent re-authentication via the httpOnly refresh cookie. Single-flight for the whole app:
+ * refresh tokens are single-use, so two concurrent calls (StrictMode double-mount, a 401 retry
+ * racing the mount refresh) would present the same token and trip reuse detection, which
+ * revokes the session.
+ */
+export function refreshSession(): Promise<RefreshResult | null> {
   refreshPromise ??= (async () => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10_000);
     try {
       const res = await fetch("/api/auth/refresh", {
         method: "POST",
         credentials: "include",
+        signal: controller.signal,
       });
-      if (!res.ok) return false;
-      const data = await res.json();
-      accessToken = data.accessToken ?? null;
-      return accessToken !== null;
+      if (!res.ok) return null;
+      const data = (await res.json()) as RefreshResult;
+      if (!data?.accessToken || !data?.user) return null;
+      accessToken = data.accessToken;
+      return data;
     } catch {
-      return false;
+      return null;
+    } finally {
+      clearTimeout(timer);
     }
-  })();
-  try {
-    return await refreshPromise;
-  } finally {
+  })().finally(() => {
     refreshPromise = null;
-  }
+  });
+  return refreshPromise;
+}
+
+async function tryRefresh(): Promise<boolean> {
+  return (await refreshSession()) !== null;
 }
 
 export async function api<T>(

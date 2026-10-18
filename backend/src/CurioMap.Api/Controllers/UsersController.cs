@@ -18,6 +18,14 @@ public class UsersController(AppDbContext db, CurrentUser me, ProfanityFilter pr
 {
     private static readonly Regex HandlePattern = new("^[a-z0-9][a-z0-9_]{2,39}$", RegexOptions.Compiled);
 
+    /// <summary>Names that would let a reader pose as staff or the system.</summary>
+    private static readonly HashSet<string> ReservedHandles = new(StringComparer.Ordinal)
+    {
+        "admin", "administrator", "root", "support", "help", "staff", "moderator", "mod",
+        "system", "curiomap", "official", "security", "anonymous", "null", "undefined",
+        AccountDeletionService.DeletedReaderHandle,
+    };
+
     [HttpGet("{id:guid}")]
     [AllowAnonymous]
     public async Task<ActionResult<PublicProfileDto>> Profile(Guid id)
@@ -82,6 +90,10 @@ public class UsersController(AppDbContext db, CurrentUser me, ProfanityFilter pr
             if (!HandlePattern.IsMatch(handle))
             {
                 throw new AppException(400, "Handles must be 3–40 characters: lowercase letters, digits and underscores.");
+            }
+            if (ReservedHandles.Contains(handle))
+            {
+                throw new AppException(400, "That handle is reserved. Please choose another.");
             }
             if (profanity.ContainsProfanity(handle))
             {

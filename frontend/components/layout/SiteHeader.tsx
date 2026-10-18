@@ -53,8 +53,15 @@ export function SiteHeader() {
       if (menuRef.current && !menuRef.current.contains(e.target as Node))
         setMenuOpen(false);
     };
+    const onEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("keydown", onEscape);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("keydown", onEscape);
+    };
   }, []);
 
   // ⌘K / Ctrl+K opens quick command search modal

@@ -1,0 +1,46 @@
+name: Feature request
+description: Suggest an improvement or new capability
+title: "feat: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        CurioMap is **privacy-first by design**. Proposals that add telemetry, exact coordinates, or new
+        personal data need a very strong case — please explain the privacy impact below.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the need, not the solution. Who benefits?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would you like to see? Sketches and examples help.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    id: privacy
+    attributes:
+      label: Privacy and safety impact
+      description: Does this collect, expose or infer anything about readers? Could it be abused?
+      placeholder: "None — purely presentational."
+    validations:
+      required: true
+  - type: dropdown
+    id: contribute
+    attributes:
+      label: Would you like to build this?
+      options:
+        - "Yes, I'd like to implement it"
+        - "I'd like help implementing it"
+        - "No, I'm just suggesting it"
+    validations:
+      required: true

@@ -5,13 +5,15 @@ namespace CurioMap.Api.Contracts;
 public record RegisterRequest(
     [Required, EmailAddress, MaxLength(320)] string Email,
     [Required, MinLength(8), MaxLength(128)] string Password,
-    bool AcceptTerms = true);
+    bool AcceptTerms = false);
 
 public record LoginRequest(
     [Required, EmailAddress, MaxLength(320)] string Email,
     [Required, MaxLength(128)] string Password);
 
 public record RefreshRequest(string? RefreshToken);
+
+public record DeleteAccountRequest([Required, MaxLength(128)] string Password);
 
 public record AcceptTermsRequest(bool Accept);
 

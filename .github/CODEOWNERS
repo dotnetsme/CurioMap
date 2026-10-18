@@ -1,0 +1,16 @@
+# Code owners are automatically requested for review on pull requests.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# TODO(maintainer): replace `@curiomap/maintainers` with your GitHub username or team, then
+# uncomment. An unresolvable owner is reported as an error by GitHub, so it is left commented.
+#
+# *                               @curiomap/maintainers
+#
+# Privacy- and security-critical code deserves a second pair of eyes:
+# /backend/src/CurioMap.Api/Auth/            @curiomap/maintainers
+# /backend/src/CurioMap.Api/Services/AccountDeletionService.cs  @curiomap/maintainers
+# /backend/src/CurioMap.Api/Migrations/      @curiomap/maintainers
+# /.github/                                  @curiomap/maintainers
+# /SECURITY.md                               @curiomap/maintainers
+# /docs/privacy-policy.md                    @curiomap/maintainers
+# /docs/terms-of-use.md                      @curiomap/maintainers

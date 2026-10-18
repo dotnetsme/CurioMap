@@ -34,11 +34,29 @@ public class RateLimitIntegrationTests : IClassFixture<RateLimitedTestFactory>
         for (var attempt = 0; attempt < 21; attempt++)
         {
             var response = await client.PostAsJsonAsync("/auth/register",
-                new RegisterRequest($"rate_{Guid.NewGuid():N}@curiomap.local", "Password123!"));
+                new RegisterRequest($"rate_{Guid.NewGuid():N}@curiomap.local", "Password123!", true));
             statuses.Add(response.StatusCode);
         }
 
         Assert.Equal(HttpStatusCode.OK, statuses[0]);
         Assert.Equal(HttpStatusCode.TooManyRequests, statuses[^1]);
+    }
+
+    [Fact]
+    public async Task Session_Refresh_Does_Not_Spend_The_Sign_In_Budget()
+    {
+        var client = _factory.CreateClient();
+
+        // Anonymous page loads call /auth/refresh (401, no cookie). A burst of them must not
+        // starve /auth/login or /auth/register, which share nothing with it any more.
+        for (var attempt = 0; attempt < 25; attempt++)
+        {
+            await client.PostAsJsonAsync("/auth/refresh", new { });
+        }
+
+        var register = await client.PostAsJsonAsync("/auth/register",
+            new RegisterRequest($"rate_{Guid.NewGuid():N}@curiomap.local", "Password123!", true));
+
+        Assert.Equal(HttpStatusCode.OK, register.StatusCode);
     }
 }

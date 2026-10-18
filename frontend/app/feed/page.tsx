@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Flame } from "lucide-react";
+import { AuthGate } from "@/components/auth/AuthGate";
 import { FeedList } from "@/components/feed/FeedList";
 import { Button } from "@/components/ui/Button";
 import { BookCardSkeleton } from "@/components/ui/Skeleton";
@@ -10,6 +11,18 @@ import { feed } from "@/lib/api/feed";
 import type { FeedEvent } from "@/types";
 
 export default function FeedPage() {
+  return (
+    <AuthGate
+      icon={Flame}
+      title="Your feed"
+      body="Sign in to see what the readers you follow are reading, finishing and discussing."
+    >
+      <FeedView />
+    </AuthGate>
+  );
+}
+
+function FeedView() {
   const [events, setEvents] = useState<FeedEvent[] | null>(null);
   const [nextOffset, setNextOffset] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);

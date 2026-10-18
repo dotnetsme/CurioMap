@@ -9,6 +9,9 @@ name: map-e2e
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   map-live-probe:
     name: Leaflet interaction probe (headless Chrome)

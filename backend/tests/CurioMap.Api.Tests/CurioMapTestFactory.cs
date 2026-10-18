@@ -110,6 +110,7 @@ public class CurioMapTestFactory : WebApplicationFactory<Program>
                     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(
                         _ => RateLimitPartition.GetNoLimiter("test"));
                     options.AddPolicy<string>("auth", _ => RateLimitPartition.GetNoLimiter("test"));
+                    options.AddPolicy<string>("refresh", _ => RateLimitPartition.GetNoLimiter("test"));
                     options.AddPolicy<string>("write", _ => RateLimitPartition.GetNoLimiter("test"));
                     options.AddPolicy<string>("search", _ => RateLimitPartition.GetNoLimiter("test"));
                 });
@@ -135,20 +136,35 @@ public class CurioMapTestFactory : WebApplicationFactory<Program>
 
 public class InMemoryTestCacheService : ICacheService
 {
+    // Per-request, so tests that seed data and then read a cached endpoint see fresh results.
     private readonly Dictionary<string, (object Value, DateTime ExpiresAt)> _store = new();
+
+    // Deleted-account markers must outlive a request (production keeps them in shared Redis).
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (object Value, DateTime ExpiresAt)> Shared = new();
+
+    private static bool IsShared(string key) => key.StartsWith("deleted-user:", StringComparison.Ordinal);
 
     public Task<T?> GetAsync<T>(string key)
     {
-        if (_store.TryGetValue(key, out var entry) && entry.ExpiresAt > DateTime.UtcNow)
+        var found = IsShared(key) ? Shared.TryGetValue(key, out var shared) ? (true, shared) : (false, default)
+                                  : _store.TryGetValue(key, out var local) ? (true, local) : (false, default);
+        if (found.Item1 && found.Item2.ExpiresAt > DateTime.UtcNow)
         {
-            return Task.FromResult<T?>((T)entry.Value);
+            return Task.FromResult<T?>((T)found.Item2.Value);
         }
         return Task.FromResult<T?>(default);
     }
 
     public Task SetAsync<T>(string key, T value, TimeSpan ttl)
     {
-        _store[key] = (value!, DateTime.UtcNow.Add(ttl));
+        if (IsShared(key))
+        {
+            Shared[key] = (value!, DateTime.UtcNow.Add(ttl));
+        }
+        else
+        {
+            _store[key] = (value!, DateTime.UtcNow.Add(ttl));
+        }
         return Task.CompletedTask;
     }
 
@@ -167,6 +183,7 @@ public class InMemoryTestCacheService : ICacheService
     public Task RemoveAsync(string key)
     {
         _store.Remove(key);
+        Shared.TryRemove(key, out _);
         return Task.CompletedTask;
     }
 }

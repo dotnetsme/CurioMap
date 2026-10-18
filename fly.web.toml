@@ -5,6 +5,10 @@ primary_region = "fra"
 [build]
   dockerfile = "infra/web.Dockerfile"
 
+  # Next.js bakes the /api rewrite target into the build, so it must be a build arg too.
+  [build.args]
+    API_INTERNAL_URL = "http://curiomap-api.internal:8080"
+
 [http_service]
   internal_port = 3000
   force_https = true

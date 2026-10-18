@@ -1,0 +1,29 @@
+# https://editorconfig.org — honoured by VS Code, Visual Studio, Rider, JetBrains and most editors.
+root = true
+
+# Line endings are handled by .gitattributes (eol=lf in the repo, your native endings in your
+# checkout). Do not set end_of_line here: it makes `dotnet format` flag every file on Windows.
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+
+# C# keeps the formatting `dotnet format` already enforces in CI (4 spaces); no extra whitespace
+# rules here so existing files are not churned.
+[*.{cs,csx,csproj,slnx,props,targets}]
+indent_size = 4
+
+[*.sql]
+indent_size = 4
+
+[*.{ts,tsx,js,mjs,json,yml,yaml,css,toml}]
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Trailing double-space is a markdown line break.
+[*.md]
+trim_trailing_whitespace = false
+insert_final_newline = true
+
+[Makefile]
+indent_style = tab

@@ -22,6 +22,7 @@ public class AuthController(
     JwtTokenService jwt,
     RefreshTokenService refresh,
     HandleGenerator handles,
+    AccountDeletionService accountDeletion,
     IOptions<AdminOptions> adminOptions,
     IOptions<JwtOptions> jwtOptions,
     IWebHostEnvironment env) : ControllerBase
@@ -36,9 +37,8 @@ public class AuthController(
     [EnableRateLimiting("auth")]
     public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
     {
-        // Backward-compatible register flow: older clients and tests may omit the
-        // field entirely, but a deliberate opt-out must still be rejected.
-        if (request.AcceptTerms == false)
+        // Consent must be explicit: omitting the field is treated the same as declining.
+        if (!request.AcceptTerms)
         {
             throw new AppException(400, "You must accept the Terms of Use to create an account.");
         }
@@ -104,7 +104,7 @@ public class AuthController(
 
     [HttpPost("refresh")]
     [AllowAnonymous]
-    [EnableRateLimiting("auth")]
+    [EnableRateLimiting("refresh")]
     public async Task<ActionResult<AuthResponse>> Refresh([FromBody] RefreshRequest? request)
     {
         var raw = Request.Cookies[RefreshCookie] ?? request?.RefreshToken;
@@ -126,8 +126,45 @@ public class AuthController(
     {
         var raw = Request.Cookies[RefreshCookie] ?? request?.RefreshToken;
         await refresh.RevokeAsync(raw);
-        // Clear with the same cookie attributes used when setting it, or the
-        // browser keeps the stale refresh cookie (path/SameSite/Secure mismatch).
+        ClearRefreshCookie();
+        return Ok(new LogoutResponse(true));
+    }
+
+    /// <summary>
+    /// Permanently deletes the signed-in reader's account. Requires the current password so a stolen
+    /// access token alone cannot erase an account. Returns 403 (not 401) on a wrong password: the web
+    /// client treats 401 as "session expired" and would try to refresh instead of showing the error.
+    /// </summary>
+    [HttpPost("delete-account")]
+    [Authorize]
+    [EnableRateLimiting("auth")]
+    public async Task<ActionResult<LogoutResponse>> DeleteAccount(DeleteAccountRequest request)
+    {
+        var userId = me.RequireUserId();
+        var user = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId)
+            ?? throw new AppException(404, "User not found.");
+
+        if (!hasher.Verify(request.Password, user.PasswordHash))
+        {
+            throw new AppException(403, "Password is incorrect.");
+        }
+
+        // Never leave the instance without anyone able to moderate.
+        if (user.IsAdmin && !await db.Users.AnyAsync(u => u.IsAdmin && u.Id != userId))
+        {
+            throw new AppException(409, "You are the only administrator. Promote another admin before deleting this account.");
+        }
+
+        await accountDeletion.DeleteAsync(userId);
+        ClearRefreshCookie();
+        return Ok(new LogoutResponse(true));
+    }
+
+    /// <summary>
+    /// Clears the refresh cookie with the same attributes used when setting it, or the browser keeps
+    /// the stale cookie (path/SameSite/Secure mismatch).
+    /// </summary>
+    private void ClearRefreshCookie() =>
         Response.Cookies.Append(RefreshCookie, string.Empty, new CookieOptions
         {
             Path = "/",
@@ -136,8 +173,6 @@ public class AuthController(
             SameSite = SameSiteMode.Lax,
             Expires = DateTimeOffset.UnixEpoch,
         });
-        return Ok(new LogoutResponse(true));
-    }
 
     [HttpGet("me")]
     [Authorize]

@@ -3,6 +3,7 @@ import type {
   Circle,
   CircleDetail,
   CircleListResponse,
+  CircleMember,
   CircleMessagesPage,
   CircleMessage,
   CircleStreakStats,
@@ -25,8 +26,14 @@ export function listCircles(
   return api(`/circles?${q.toString()}`, { auth: false });
 }
 
-export function getCircle(handle: string): Promise<CircleDetail> {
-  return api(`/circles/${handle}`, { auth: false });
+/** The API nests the circle ({ circle, members, recentMessages }); callers want it flat. */
+export async function getCircle(handle: string): Promise<CircleDetail> {
+  const { circle, members, recentMessages } = await api<{
+    circle: Circle;
+    members: CircleMember[];
+    recentMessages: CircleMessage[];
+  }>(`/circles/${handle}`, { auth: false });
+  return { ...circle, members, recentMessages };
 }
 
 export function createCircle(payload: CreateCirclePayload): Promise<Circle> {

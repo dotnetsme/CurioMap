@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
 
+# Least privilege: jobs only read the repo. The deploy job runs behind the `fly` environment.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -13,6 +17,7 @@ jobs:
   api:
     name: API (build + test + migrations)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -29,11 +34,12 @@ jobs:
       - name: Verify EF Core Migration Bundle
         run: |
           dotnet tool install --global dotnet-ef --version 10.0.10
-          dotnet ef migrations bundle --project backend/src/CurioMap.Api/CurioMap.Api.csproj -o /tmp/efbundle --nologo
+          dotnet ef migrations bundle --project backend/src/CurioMap.Api/CurioMap.Api.csproj -o /tmp/efbundle
 
   web:
-    name: Web (lint + build)
+    name: Web (lint + typecheck + build)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: frontend
@@ -46,7 +52,33 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm run lint
+      - run: npx tsc --noEmit
       - run: npm run build
+
+  images:
+    # The production images must keep building: a broken Dockerfile otherwise only surfaces at deploy.
+    name: Container images (build only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/api.Dockerfile
+          push: false
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+      - name: Build web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/web.Dockerfile
+          push: false
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
 
   deploy:
     name: Deploy to Fly.io
@@ -55,12 +87,13 @@ jobs:
     # Configure the approval in GitHub: Settings → Environments → fly →
     # "Required reviewers". The environment below enforces it.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [api, web]
+    needs: [api, web, images]
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment: fly
     steps:
       - uses: actions/checkout@v4
-      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - uses: superfly/flyctl-actions/setup-flyctl@1.5
       - name: Deploy API (EF Core migrations executed via Fly release_command)
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

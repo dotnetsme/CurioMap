@@ -40,6 +40,11 @@ export default function GlobalMapPage() {
   const [nearbyRetryCount, setNearbyRetryCount] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  // On phones the sidebar spans the whole width and would hide the map, so start collapsed there.
+  useEffect(() => {
+    if (window.matchMedia("(max-width: 639px)").matches) setSidebarOpen(false);
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     topics()
@@ -216,25 +221,28 @@ export default function GlobalMapPage() {
               </div>
             </div>
           )}
-
-          <button
-            onClick={handleToggleSidebar}
-            className="pointer-events-auto flex items-center gap-2 rounded-full border border-line bg-material px-3 py-1.5 text-xs font-semibold text-ink-muted backdrop-blur-xl backdrop-saturate-150 transition hover:border-accent hover:text-ink"
-          >
-            {sidebarOpen ? <X size={14} /> : <Sparkles size={14} />}
-            <span className="hidden sm:inline">
-              {sidebarOpen ? "Close" : "Activity"}
-            </span>
-          </button>
         </div>
       </header>
+
+      {/* Activity toggle: floats below the site header (the header strip above is covered by it). */}
+      <button
+        onClick={handleToggleSidebar}
+        aria-label={sidebarOpen ? "Close activity panel" : "Open activity panel"}
+        aria-expanded={sidebarOpen}
+        className="absolute right-3 top-[4.75rem] z-[501] flex items-center gap-2 rounded-full border border-line bg-material px-3 py-1.5 text-xs font-semibold text-ink-muted backdrop-blur-xl backdrop-saturate-150 transition hover:border-accent hover:text-ink sm:right-5 sm:top-[5.25rem]"
+      >
+        {sidebarOpen ? <X size={14} /> : <Sparkles size={14} />}
+        <span className="hidden sm:inline">
+          {sidebarOpen ? "Close" : "Activity"}
+        </span>
+      </button>
 
       {/* Curiosity Vectors / Theme Selector */}
       <nav
         aria-label="Curiosity vectors"
         className="pointer-events-none absolute top-14 left-0 right-0 z-[500] px-3 sm:px-5"
       >
-        <div className="no-scrollbar pointer-events-auto flex items-center gap-1.5 overflow-x-auto py-1">
+        <div className="no-scrollbar pointer-events-auto flex items-center gap-1.5 overflow-x-auto py-1 pr-14 sm:pr-24">
           <button
             type="button"
             onClick={() => setSelectedTopic(null)}
@@ -333,7 +341,8 @@ export default function GlobalMapPage() {
       {/* Activity Sidebar */}
       <aside
         className={cn(
-          "absolute top-12 right-0 bottom-0 z-[500] w-full max-w-xs transition-transform duration-300 ease-out",
+          // Starts below the category chips and the activity toggle.
+          "absolute top-36 sm:top-32 right-0 bottom-0 z-[500] w-full max-w-xs transition-transform duration-300 ease-out",
           sidebarOpen ? "translate-x-0" : "translate-x-full",
         )}
       >

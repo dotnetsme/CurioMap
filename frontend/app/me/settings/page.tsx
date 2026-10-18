@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Settings2 } from "lucide-react";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { AvatarSelector } from "@/components/profile/AvatarSelector";
+import { DeleteAccountSection } from "@/components/profile/DeleteAccountSection";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Select, Textarea } from "@/components/ui/Input";
 import { ErrorState, PageLoading } from "@/components/ui/Feedback";
@@ -31,7 +32,10 @@ function SettingsForm() {
   const [savingIdentity, setSavingIdentity] = useState(false);
   const [savingLocation, setSavingLocation] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  // Save errors render inline so the form (and the user's input) survives a rejected save.
   const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
 
   function loadLocationFields(loc: Settings["location"]) {
     setCountry(loc?.country ?? "");
@@ -53,13 +57,18 @@ function SettingsForm() {
         setBio(user.bio ?? "");
         loadLocationFields(s.location);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load settings");
+        setLoadError(e instanceof Error ? e.message : "Failed to load settings");
       }
     })();
   }, [user]);
 
+  // Bring a rejected save into view once (not on every keystroke re-render).
+  useEffect(() => {
+    if (error) errorRef.current?.scrollIntoView({ block: "center" });
+  }, [error]);
+
   if (!user) return null;
-  if (error) return <ErrorState message={error} />;
+  if (loadError) return <ErrorState message={loadError} />;
   if (!settings || !profile) return <PageLoading />;
 
   async function saveIdentity() {
@@ -122,6 +131,16 @@ function SettingsForm() {
         <div className="flex items-center gap-2.5 rounded-xl border border-signal/40 bg-signal/15 p-3.5 text-sm font-medium text-ink">
           <span className="h-2 w-2 rounded-full bg-signal" />
           {message}
+        </div>
+      ) : null}
+      {error ? (
+        <div
+          ref={errorRef}
+          role="alert"
+          className="flex items-center gap-2.5 rounded-xl border border-heat-hot/40 bg-heat-hot/10 p-3.5 text-sm font-medium text-ink"
+        >
+          <span className="h-2 w-2 rounded-full bg-heat-hot" />
+          {error}
         </div>
       ) : null}
 
@@ -217,6 +236,8 @@ function SettingsForm() {
           grid — and only if visibility allows.
         </p>
       </section>
+
+      <DeleteAccountSection />
     </div>
   );
 }

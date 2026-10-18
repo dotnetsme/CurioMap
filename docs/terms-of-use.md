@@ -7,8 +7,8 @@ project maintainers ("CurioMap", "we", "us") governing your access to and use of
 the CurioMap website, API, and related services (the "Service"). By creating an
 account, ticking the consent checkbox at registration, or otherwise using the
 Service, you accept these Terms and our
-[Privacy Policy](/policy/privacy) and
-[Affiliate & Ads Policy](/policy/affiliates) (together, the "Policies").
+[Privacy Policy](privacy-policy.md) and
+[Affiliate & Ads Policy](affiliate-ads-policy.md) (together, the "Policies").
 If you do not agree, do not use the Service.
 
 > **Plain-language summary** (non-binding, provided for accessibility): be kind,
@@ -101,7 +101,7 @@ bookstores (Amazon, Bookshop.org, Kobo). Purchases pay us a commission at no
 additional cost to you; links are labeled and carry `rel="sponsored nofollow"`.
 Third-party stores have their own terms and privacy practices; your purchase is
 strictly between you and the store. We do not run third-party tracking ads; see
-the [Affiliate & Ads Policy](/policy/affiliates).
+the [Affiliate & Ads Policy](affiliate-ads-policy.md).
 
 ## 5. Intellectual property and open source
 

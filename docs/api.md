@@ -7,10 +7,11 @@ REST + JWT. Live machine-readable spec: **`/openapi/v1.json`**; human reference:
 
 | method | path | body / query | notes |
 |---|---|---|---|
-| POST | `/auth/register` | `{ email, password }` | anonymous by default; auto-generates handle |
+| POST | `/auth/register` | `{ email, password, acceptTerms }` | anonymous by default; auto-generates handle; `acceptTerms` must be `true` (omitting it is a 400) |
 | POST | `/auth/login` | `{ email, password }` | returns `{ user, accessToken, expiresIn }` + sets refresh cookie |
 | POST | `/auth/refresh` | cookie | rotates refresh token; also accepts `{ refreshToken }` |
 | POST | `/auth/logout` | cookie | revokes refresh token |
+| POST | `/auth/delete-account` | `{ password }` | permanently deletes the signed-in account (403 on wrong password); see *Account deletion* below |
 | GET | `/auth/me` | — | `{ user }` (self view includes own fuzzed location) |
 
 ## Users & identity
@@ -110,3 +111,20 @@ event, rendered in followers' feeds with the badge name in the payload.
 Bearer header `Authorization: Bearer <accessToken>`. Rotating refresh via the httpOnly
 `curio_rt` cookie (or `{ refreshToken }` body). 401s are replayed once through `/auth/refresh`
 by the web client.
+
+## Account deletion
+
+`POST /auth/delete-account` (authenticated, `auth` rate limit) re-verifies the password, then in one
+transaction removes the reader and what they authored. The foreign keys on messages, circles and reports are
+`NO ACTION`, so `AccountDeletionService` handles each case explicitly:
+
+- Deleted: profile, shelf, ratings, badges, streaks, follows, sessions, every message and circle message the
+  reader posted, their reactions, and the reports they filed.
+- A conversation they started that others replied to is kept and handed to the placeholder account
+  `deleted_reader` (fixed id `00000000-0000-0000-0000-00000000de1e`, unusable credentials, reserved handle). One nobody
+  replied to is deleted.
+- A circle they created passes to its longest-standing other member (promoted to moderator); a circle with no
+  other members is deleted.
+
+Access tokens are stateless, so the deletion is also recorded in the cache (`deleted-user:{id}`) for the token
+lifetime and `JwtBearer` rejects those tokens with a 401.

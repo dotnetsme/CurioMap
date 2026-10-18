@@ -1,0 +1,14 @@
+CurioMap
+Copyright 2026 CurioMap contributors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+It includes or depends on third-party software and data, each under its own terms:
+
+- Book metadata and cover images: Open Library (https://openlibrary.org/), Internet Archive.
+- Map data: (c) OpenStreetMap contributors, available under the Open Database License
+  (https://www.openstreetmap.org/copyright). Map rendering uses Leaflet (BSD-2-Clause).
+- Web framework and libraries: Next.js, React, Tailwind CSS, lucide-react and others, under their
+  respective permissive licences. See frontend/package.json and the package licences.
+- API framework and libraries: .NET, ASP.NET Core, Entity Framework Core, Npgsql and others, under their
+  respective permissive licences. See backend/src/CurioMap.Api/CurioMap.Api.csproj.

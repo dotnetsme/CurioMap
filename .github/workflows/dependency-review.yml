@@ -1,0 +1,19 @@
+name: dependency-review
+
+# Blocks pull requests that introduce dependencies with known vulnerabilities or disallowed licences.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure

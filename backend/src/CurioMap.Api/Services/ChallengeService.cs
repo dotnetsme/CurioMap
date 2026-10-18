@@ -47,7 +47,7 @@ public class ChallengeService(AppDbContext db) : IChallengeService
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.UserId == userId && c.Year == targetYear, ct);
 
-        var yearStart = new DateTime(targetYear, 1, 1);
+        var yearStart = new DateTime(targetYear, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var yearEnd = yearStart.AddYears(1);
 
         var finishedThisYear = await db.BookshelfEntries

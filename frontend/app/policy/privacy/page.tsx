@@ -26,7 +26,7 @@ export default function PrivacyPolicyPage() {
         },
         {
           title: "Data retention",
-          body: "Conversations auto-archive after 30 days of inactivity (they become read-only). You can delete your accounts data on request; we retain no analytics beyond aggregate region counters needed to render the map.",
+          body: "Conversations auto-archive after 30 days of inactivity (they become read-only). You can delete your account yourself under Settings → Delete account (your profile, shelf and everything you posted are removed; threads others replied to stay, shown as “deleted_reader”); we retain no analytics beyond aggregate region counters needed to render the map.",
         },
         {
           title: "What we do NOT do",

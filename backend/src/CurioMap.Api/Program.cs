@@ -41,16 +41,16 @@ var redisUrl = !string.IsNullOrWhiteSpace(redisEnv)
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-{
-    // Dynamic JSON opt-in: Dictionary<string,string> etc. map to jsonb (Npgsql 8+ requirement).
-    var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
-    dataSourceBuilder.EnableDynamicJson();
-    var dataSource = dataSourceBuilder.Build();
+// One data source (= one connection pool) for the whole process. Building it inside the
+// AddDbContext lambda created a new pool per request and exhausted Postgres connections.
+// Dynamic JSON opt-in: Dictionary<string,string> etc. map to jsonb (Npgsql 8+ requirement).
+var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+dataSourceBuilder.EnableDynamicJson();
+builder.Services.AddSingleton(dataSourceBuilder.Build());
 
-    options.UseNpgsql(dataSource, npgsql => npgsql.EnableRetryOnFailure(3))
-           .UseSnakeCaseNamingConvention();
-});
+builder.Services.AddDbContext<AppDbContext>((sp, options) =>
+    options.UseNpgsql(sp.GetRequiredService<NpgsqlDataSource>(), npgsql => npgsql.EnableRetryOnFailure(3))
+           .UseSnakeCaseNamingConvention());
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
@@ -82,15 +82,21 @@ builder.Services.AddScoped<IStreakService, StreakService>();
 builder.Services.AddScoped<ICircleStreakService, CircleStreakService>();
 builder.Services.AddHostedService<ConversationArchiver>();
 
+// Third-party APIs (Open Library in particular) ask consumers to identify themselves with contact
+// information. Operators of a fork should override this with their own project URL.
+var externalUserAgent = builder.Configuration["ExternalApis:UserAgent"]
+    ?? "CurioMap/1.0 (+https://github.com/curiomap/curiomap)";
 builder.Services.AddHttpClient<OpenLibraryService>(client =>
 {
     client.BaseAddress = new Uri("https://openlibrary.org/");
     client.Timeout = TimeSpan.FromSeconds(5);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd(externalUserAgent);
 });
 builder.Services.AddHttpClient<GoogleBooksService>(client =>
 {
     client.BaseAddress = new Uri("https://www.googleapis.com/");
     client.Timeout = TimeSpan.FromSeconds(5);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd(externalUserAgent);
 });
 builder.Services.AddHttpClient<GeoResolveService>(client =>
 {
@@ -127,6 +133,7 @@ builder.Services.AddScoped<CurrentUser>();
 builder.Services.AddScoped<HandleGenerator>();
 builder.Services.AddScoped<ProfanityFilter>();
 builder.Services.AddScoped<ActivityService>();
+builder.Services.AddScoped<AccountDeletionService>();
 builder.Services.AddScoped<AffiliateLinkService>();
 builder.Services.AddSingleton<ClientIpResolver>();
 builder.Services.AddHttpContextAccessor();
@@ -177,6 +184,23 @@ builder.Services
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(30),
         };
+        options.Events = new JwtBearerEvents
+        {
+            // Reject access tokens of accounts deleted after the token was issued.
+            OnTokenValidated = async context =>
+            {
+                var sub = context.Principal?.FindFirst("sub")?.Value;
+                if (!Guid.TryParse(sub, out var userId))
+                {
+                    return;
+                }
+                var cache = context.HttpContext.RequestServices.GetRequiredService<ICacheService>();
+                if (await cache.GetAsync<bool>(AccountDeletionService.DeletedMarkerKey(userId)))
+                {
+                    context.Fail("Account deleted.");
+                }
+            },
+        };
     });
 
 builder.Services.AddAuthorization(options =>
@@ -202,6 +226,11 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy("auth", context => RateLimitPartition.GetFixedWindowLimiter(
         PartitionKey(context),
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 20, Window = TimeSpan.FromMinutes(1) }));
+    // Silent session refresh runs on every page load for returning visitors, so it gets its own, larger
+    // budget; sharing the credential-guessing budget above locked people out of signing in.
+    options.AddPolicy("refresh", context => RateLimitPartition.GetFixedWindowLimiter(
+        PartitionKey(context),
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 60, Window = TimeSpan.FromMinutes(1) }));
     options.AddPolicy("write", context => RateLimitPartition.GetFixedWindowLimiter(
         PartitionKey(context),
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 40, Window = TimeSpan.FromMinutes(1) }));

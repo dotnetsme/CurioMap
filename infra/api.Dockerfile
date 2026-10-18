@@ -12,7 +12,7 @@ RUN dotnet publish backend/src/CurioMap.Api/CurioMap.Api.csproj -c Release -o /p
 # Build EF Core migration bundle for Fly.io release_command
 RUN dotnet tool install --global dotnet-ef --version 10.0.10
 ENV PATH="${PATH}:/root/.dotnet/tools"
-RUN dotnet ef migrations bundle --project backend/src/CurioMap.Api/CurioMap.Api.csproj -c Release -o /publish/efbundle --nologo
+RUN dotnet ef migrations bundle --project backend/src/CurioMap.Api/CurioMap.Api.csproj --configuration Release -o /publish/efbundle
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
@@ -21,6 +21,8 @@ COPY --from=build /publish ./
 RUN chmod +x ./efbundle
 ENV PORT=8080
 ENV ASPNETCORE_URLS=http://+:8080
+# Run as the unprivileged `app` user that ships with the aspnet base image (uid 1654).
+USER $APP_UID
 EXPOSE 8080
 HEALTHCHECK --interval=15s --timeout=5s --retries=5 \
   CMD curl -f http://127.0.0.1:8080/health || exit 1

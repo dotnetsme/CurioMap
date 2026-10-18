@@ -110,7 +110,7 @@ export function NearbyReadersList({
               <div className="min-w-0 flex-1">
                 <Link
                   href={`/users/${reader.user.id}`}
-                  className="font-semibold text-ink hover:text-accent-strong transition-colors"
+                  className="block truncate font-semibold text-ink hover:text-accent-strong transition-colors"
                 >
                   {reader.user.displayName}
                 </Link>
@@ -119,7 +119,9 @@ export function NearbyReadersList({
                 </p>
               </div>
               {user && user.id !== reader.user.id ? (
-                <FollowButton userId={reader.user.id} isFollowing={null} />
+                <span className="shrink-0">
+                  <FollowButton userId={reader.user.id} isFollowing={null} />
+                </span>
               ) : null}
             </div>
             {reader.books.length > 0 ? (

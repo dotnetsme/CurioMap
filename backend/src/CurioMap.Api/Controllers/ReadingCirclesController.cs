@@ -143,29 +143,35 @@ public class ReadingCirclesController(
         // Join is a count-then-insert: serialize per-circle on Postgres (SQLite
         // serializes writers itself, so tests need no lock) to stop two readers
         // racing past the MaxMembers gate.
-        await using var tx = await db.Database.BeginTransactionAsync();
-        if (db.Database.IsNpgsql())
+        // The retrying execution strategy rejects user-initiated transactions unless the
+        // whole transaction runs as one retriable unit.
+        return await db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
         {
-            await db.Database.ExecuteSqlRawAsync("SELECT 1 FROM reading_circles WHERE id = {0} FOR UPDATE", circle.Id);
-        }
+            db.ChangeTracker.Clear();
+            await using var tx = await db.Database.BeginTransactionAsync();
+            if (db.Database.IsNpgsql())
+            {
+                await db.Database.ExecuteSqlRawAsync("SELECT 1 FROM reading_circles WHERE id = {0} FOR UPDATE", circle.Id);
+            }
 
-        if (await db.CircleMemberships.AnyAsync(m => m.CircleId == circle.Id && m.UserId == userId))
-        {
-            await tx.RollbackAsync();
+            if (await db.CircleMemberships.AnyAsync(m => m.CircleId == circle.Id && m.UserId == userId))
+            {
+                await tx.RollbackAsync();
+                return (ActionResult)Ok();
+            }
+
+            var count = await db.CircleMemberships.CountAsync(m => m.CircleId == circle.Id);
+            if (circle.MaxMembers.HasValue && count >= circle.MaxMembers.Value)
+            {
+                await tx.RollbackAsync();
+                throw new AppException(409, "This circle is full.");
+            }
+
+            db.CircleMemberships.Add(new CircleMembership { CircleId = circle.Id, UserId = userId });
+            await db.SaveChangesAsync();
+            await tx.CommitAsync();
             return Ok();
-        }
-
-        var count = await db.CircleMemberships.CountAsync(m => m.CircleId == circle.Id);
-        if (circle.MaxMembers.HasValue && count >= circle.MaxMembers.Value)
-        {
-            await tx.RollbackAsync();
-            throw new AppException(409, "This circle is full.");
-        }
-
-        db.CircleMemberships.Add(new CircleMembership { CircleId = circle.Id, UserId = userId });
-        await db.SaveChangesAsync();
-        await tx.CommitAsync();
-        return Ok();
+        });
     }
 
     [HttpPost("/circles/{id}/leave")]

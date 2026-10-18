@@ -7,6 +7,10 @@ WORKDIR /src
 # deploy) — a runtime env var or secret on the web app has no effect.
 ARG NEXT_PUBLIC_MAP_TILE_URL=https://tile.openstreetmap.org/{z}/{x}/{y}.png
 ENV NEXT_PUBLIC_MAP_TILE_URL=$NEXT_PUBLIC_MAP_TILE_URL
+# The /api proxy target is also resolved at build time (next.config.ts `rewrites`, baked into the
+# standalone output). Production sets it on the Fly build; the local compose stack passes http://api:8080.
+ARG API_INTERNAL_URL=http://localhost:8080
+ENV API_INTERNAL_URL=$API_INTERNAL_URL
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci --no-audit --no-fund
 COPY frontend ./
@@ -22,6 +26,8 @@ COPY --from=build /src/.next/static ./.next/static
 COPY --from=build /src/public ./public
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
+# Run as the unprivileged `node` user from the base image.
+USER node
 EXPOSE 3000
 HEALTHCHECK --interval=15s --timeout=5s --retries=5 \
   CMD curl -f http://127.0.0.1:3000/ || exit 1

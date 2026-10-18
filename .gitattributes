@@ -1,0 +1,24 @@
+# Normalise line endings so Windows, macOS and Linux contributors produce identical diffs.
+* text=auto eol=lf
+
+# Windows-only launchers must keep CRLF.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary assets: never touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+
+# Generated / lock files: keep out of language stats and collapse in diffs.
+package-lock.json linguist-generated=true
+frontend/package-lock.json linguist-generated=true
+backend/src/CurioMap.Api/Migrations/*.Designer.cs linguist-generated=true
+backend/src/CurioMap.Api/Migrations/AppDbContextModelSnapshot.cs linguist-generated=true
+graphify-out/** linguist-generated=true

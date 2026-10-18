@@ -22,7 +22,9 @@ you marked private.
 
 ## Data retention
 - Conversations auto-archive after **30 days** of inactivity (read-only).
-- Delete account on request; aggregate region counters only (never individuals).
+- Delete your account yourself under **Settings → Delete account**: your profile, shelf, ratings and everything
+  you posted are removed. Threads you started that others replied to remain, shown as "deleted_reader".
+  We keep aggregate region counters only (never individuals).
 - No tracking pixels, no device fingerprints, no third-party ad SDKs.
 
 ## What we do not do

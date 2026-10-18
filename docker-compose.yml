@@ -1,6 +1,11 @@
-# Local development dependencies for CurioMap.
-# Usage: docker compose up -d
-# Postgres is exposed on 5433 and Redis on 6380 to avoid clashing with other projects.
+# CurioMap local development stack.
+#
+#   docker compose up -d                      # infrastructure only: Postgres, Redis, smtp4dev
+#   docker compose --profile app up -d --build  # ...plus the API and web app, fully containerised
+#
+# Postgres is exposed on 5433 and Redis on 6380 so they do not clash with a Postgres/Redis you
+# may already run on the default ports. The credentials below are for local development only.
+# See docs/development.md for the full guide.
 
 services:
   postgres:
@@ -44,6 +49,46 @@ services:
     environment:
       - ServerOptions__HostName=smtp4dev
 
+  # --- Optional: the application itself (profile "app") -------------------------------------
+  # Handy if you do not want to install the .NET SDK or Node.js. For day-to-day development,
+  # running the API and web app on your machine (npm run dev) gives faster feedback.
+
+  api:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: infra/api.Dockerfile
+    container_name: curiomap-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # Development mode: public dev-only JWT secret, demo readers seeded. Never reuse for a real deploy.
+      ASPNETCORE_ENVIRONMENT: Development
+      DATABASE_URL: postgres://curiomap:curiomap@postgres:5432/curiomap?sslmode=disable
+      REDIS_URL: redis:6379
+      Cors__Origins__0: http://localhost:3000
+      # Register with this email to get a moderator account (see /admin).
+      Admin__Emails__0: admin@curiomap.local
+    ports:
+      - "8080:8080"
+
+  web:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: infra/web.Dockerfile
+      args:
+        # Next.js bakes the /api proxy target in at build time.
+        API_INTERNAL_URL: http://api:8080
+    container_name: curiomap-web
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
 
 volumes:
   curiomap_pgdata:

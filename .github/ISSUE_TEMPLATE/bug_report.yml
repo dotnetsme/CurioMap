@@ -1,0 +1,64 @@
+name: Bug report
+description: Something is broken or behaves unexpectedly
+title: "bug: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. **Please do not report security vulnerabilities here** —
+        see [SECURITY.md](https://github.com/curiomap/curiomap/security/policy) for private reporting.
+        Never paste real emails, tokens or exact locations into an issue.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where does it happen?
+      options:
+        - Web app (UI)
+        - API
+        - Map / discovery
+        - Auth / accounts
+        - Reading circles
+        - Local setup / Docker
+        - Documentation
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, browser, and how you run CurioMap (npm run dev, docker compose --profile app, hosted).
+      placeholder: "Windows 11, Chrome 130, npm run dev"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / screenshots
+      description: Browser console errors, API log lines, or a screenshot. Redact anything personal.
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: This is not a security vulnerability.
+          required: true

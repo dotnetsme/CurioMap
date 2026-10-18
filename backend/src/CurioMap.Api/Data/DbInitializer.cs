@@ -144,7 +144,16 @@ public static class DbInitializer
             using var reader = new StreamReader(stream);
             var sql = await reader.ReadToEndAsync();
 
-            await db.Database.ExecuteSqlRawAsync(sql);
+            // Run the script verbatim on the raw connection. ExecuteSqlRawAsync treats `{...}`
+            // as format placeholders, and the seeds contain jsonb literals such as '{}'.
+            var connection = db.Database.GetDbConnection();
+            if (connection.State != System.Data.ConnectionState.Open)
+            {
+                await connection.OpenAsync();
+            }
+            await using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            await command.ExecuteNonQueryAsync();
             var id = script[ResourcePrefix.Length..].Replace(".sql", "", StringComparison.Ordinal);
             logger.LogInformation("Applied seed script {SeedScript}", id);
         }

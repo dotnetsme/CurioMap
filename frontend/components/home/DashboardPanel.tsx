@@ -20,7 +20,8 @@ export function DashboardPanel({
   className?: string;
 }) {
   return (
-    <section className={`card flex h-full flex-col p-5 ${className}`}>
+    // min-w-0: as a grid item the panel must be allowed to shrink, or the truncating hint widens the page.
+    <section className={`card flex h-full min-w-0 flex-col p-5 ${className}`}>
       <header className="mb-3 flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2.5">
           <span

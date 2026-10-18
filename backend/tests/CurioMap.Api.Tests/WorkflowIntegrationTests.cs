@@ -39,7 +39,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         var client = _factory.CreateClient();
         var registration = await client.PostAsJsonAsync(
             "/auth/register",
-            new RegisterRequest($"route_{Guid.NewGuid():N}@curiomap.local", "Password123!"));
+            new RegisterRequest($"route_{Guid.NewGuid():N}@curiomap.local", "Password123!", true));
         var auth = await registration.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(auth);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
@@ -91,7 +91,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         var password = "StrongPassword123!";
 
         // 1. Register
-        var regResponse = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, password));
+        var regResponse = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, password, true));
         Assert.Equal(HttpStatusCode.OK, regResponse.StatusCode);
         var regData = await regResponse.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(regData);
@@ -106,7 +106,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
 
         // 3. Duplicate registration rejected with 409 Conflict
         var dupClient = _factory.CreateClient();
-        var dupResponse = await dupClient.PostAsJsonAsync("/auth/register", new RegisterRequest(email, password));
+        var dupResponse = await dupClient.PostAsJsonAsync("/auth/register", new RegisterRequest(email, password, true));
         Assert.Equal(HttpStatusCode.Conflict, dupResponse.StatusCode);
 
         // 4. Login with registered credentials
@@ -126,7 +126,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
     {
         var client = _factory.CreateClient();
         var email = $"geo_{Guid.NewGuid():N}@curiomap.local";
-        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!"));
+        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!", true));
         var auth = await reg.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(auth);
 
@@ -162,7 +162,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
     {
         var client = _factory.CreateClient();
         var email = $"shelf_{Guid.NewGuid():N}@curiomap.local";
-        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!"));
+        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!", true));
         var auth = await reg.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(auth);
 
@@ -183,7 +183,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
     {
         var client = _factory.CreateClient();
         var email = $"streak_{Guid.NewGuid():N}@curiomap.local";
-        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!"));
+        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!", true));
         var auth = await reg.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(auth);
 
@@ -209,7 +209,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
     {
         var client = _factory.CreateClient();
         var email = $"circle_lead_{Guid.NewGuid():N}@curiomap.local";
-        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!"));
+        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!", true));
         var auth = await reg.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(auth);
 
@@ -244,7 +244,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         // 4. Another user joins the circle
         var memberClient = _factory.CreateClient();
         var memberEmail = $"member_{Guid.NewGuid():N}@curiomap.local";
-        var memberReg = await memberClient.PostAsJsonAsync("/auth/register", new RegisterRequest(memberEmail, "Password123!"));
+        var memberReg = await memberClient.PostAsJsonAsync("/auth/register", new RegisterRequest(memberEmail, "Password123!", true));
         var memberAuth = await memberReg.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(memberAuth);
 
@@ -260,7 +260,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         // exceed MaxMembers (the gate is what the per-circle lock protects).
         var client = _factory.CreateClient();
         var reg = await client.PostAsJsonAsync("/auth/register",
-            new RegisterRequest($"cap_lead_{Guid.NewGuid():N}@curiomap.local", "Password123!"));
+            new RegisterRequest($"cap_lead_{Guid.NewGuid():N}@curiomap.local", "Password123!", true));
         var auth = await reg.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(auth);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
@@ -276,7 +276,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         {
             var c = _factory.CreateClient();
             var r = await c.PostAsJsonAsync("/auth/register",
-                new RegisterRequest($"cap_{Guid.NewGuid():N}@curiomap.local", "Password123!"));
+                new RegisterRequest($"cap_{Guid.NewGuid():N}@curiomap.local", "Password123!", true));
             var a = await r.Content.ReadFromJsonAsync<AuthResponse>();
             Assert.NotNull(a);
             c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", a.AccessToken);
@@ -501,7 +501,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         // Caller: registered normally, region_city visibility so the city scope resolves.
         var caller = _factory.CreateClient();
         var callerEmail = $"nearby_caller_{Guid.NewGuid():N}@curiomap.local";
-        var reg = await caller.PostAsJsonAsync("/auth/register", new RegisterRequest(callerEmail, "Password123!"));
+        var reg = await caller.PostAsJsonAsync("/auth/register", new RegisterRequest(callerEmail, "Password123!", true));
         var auth = await reg.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(auth);
         caller.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
@@ -513,7 +513,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         // Private-shelf reader in the same city must never surface in discovery.
         var privateClient = _factory.CreateClient();
         var privateEmail = $"nearby_private_{Guid.NewGuid():N}@curiomap.local";
-        var privateReg = await privateClient.PostAsJsonAsync("/auth/register", new RegisterRequest(privateEmail, "Password123!"));
+        var privateReg = await privateClient.PostAsJsonAsync("/auth/register", new RegisterRequest(privateEmail, "Password123!", true));
         var privateAuth = await privateReg.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(privateAuth);
         privateClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", privateAuth.AccessToken);
@@ -624,7 +624,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
 
         var client = _factory.CreateClient();
         var email = $"salon_creator_{Guid.NewGuid():N}@curiomap.local";
-        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!"));
+        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!", true));
         var auth = await reg.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(auth);
 
@@ -669,7 +669,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
 
         var client = _factory.CreateClient();
         var email = $"rater_{Guid.NewGuid():N}@curiomap.local";
-        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!"));
+        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!", true));
         var auth = await reg.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(auth);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
@@ -686,7 +686,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
     {
         var client = _factory.CreateClient();
         var email = $"challenge_{Guid.NewGuid():N}@curiomap.local";
-        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!"));
+        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!", true));
         var auth = await reg.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(auth);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
@@ -707,7 +707,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         // must carry a double so 1 book in month 9 renders as ~0.11, not 0.
         var client = _factory.CreateClient();
         var email = $"challenge_avg_{Guid.NewGuid():N}@curiomap.local";
-        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!"));
+        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, "Password123!", true));
         var auth = await reg.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(auth);
 
@@ -882,13 +882,13 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         const string password = "Password123!";
 
         var client = _factory.CreateClient();
-        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, password));
+        var reg = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(email, password, true));
         Assert.Equal(HttpStatusCode.OK, reg.StatusCode);
 
         var upperEmail = $"{local.ToUpperInvariant()}@CURIOMAP.LOCAL";
 
         // Same address, different casing → conflict, not a second account.
-        var duplicate = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(upperEmail, password));
+        var duplicate = await client.PostAsJsonAsync("/auth/register", new RegisterRequest(upperEmail, password, true));
         Assert.Equal(HttpStatusCode.Conflict, duplicate.StatusCode);
 
         // Login with the upper-cased form still resolves the same account.
@@ -906,7 +906,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
     {
         var client = _factory.CreateClient();
         var reg = await client.PostAsJsonAsync("/auth/register",
-            new RegisterRequest($"{prefix}_{Guid.NewGuid():N}@curiomap.local", "Password123!"));
+            new RegisterRequest($"{prefix}_{Guid.NewGuid():N}@curiomap.local", "Password123!", true));
         Assert.Equal(HttpStatusCode.OK, reg.StatusCode);
         var auth = await reg.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(auth);
@@ -1127,7 +1127,7 @@ public class WorkflowIntegrationTests : IClassFixture<CurioMapTestFactory>
         using (var bootstrap = _factory.CreateClient())
         {
             var reg = await bootstrap.PostAsJsonAsync("/auth/register",
-                new RegisterRequest($"theft_{Guid.NewGuid():N}@curiomap.local", "Password123!"));
+                new RegisterRequest($"theft_{Guid.NewGuid():N}@curiomap.local", "Password123!", true));
             Assert.Equal(HttpStatusCode.OK, reg.StatusCode);
             Assert.True(reg.Headers.TryGetValues("Set-Cookie", out var cookies));
             rawRefresh = CaptureRefreshCookie(cookies);

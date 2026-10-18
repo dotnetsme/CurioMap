@@ -1,4 +1,4 @@
-import { api, setAccessToken } from "./http";
+import { api, refreshSession, setAccessToken } from "./http";
 import type { AuthUser } from "@/types";
 
 interface AuthResponse {
@@ -31,25 +31,16 @@ export async function login(email: string, password: string): Promise<AuthRespon
 }
 
 /** Silent re-authentication via the httpOnly refresh cookie. */
-export async function refresh(): Promise<AuthResponse | null> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 10_000);
-  try {
-    const res = await fetch("/api/auth/refresh", {
-      method: "POST",
-      credentials: "include",
-      signal: controller.signal,
-    });
-    if (!res.ok) return null;
-    const data = (await res.json()) as AuthResponse;
-    if (!data?.accessToken || !data?.user) return null;
-    setAccessToken(data.accessToken);
-    return data;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
-  }
+export function refresh(): Promise<AuthResponse | null> {
+  return refreshSession();
+}
+
+/** Permanently deletes the signed-in account. The server re-checks the password (403 if wrong). */
+export function deleteAccount(password: string): Promise<{ success: boolean }> {
+  return api("/auth/delete-account", {
+    method: "POST",
+    body: JSON.stringify({ password }),
+  });
 }
 
 export async function logout(): Promise<void> {
