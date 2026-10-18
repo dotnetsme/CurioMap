@@ -32,7 +32,7 @@ conversations — wrapped in privacy-first defaults and radical transparency.
 backend/            .NET 10 API (CurioMap.Api) + xUnit tests
 frontend/           Next.js web app
 infra/              Fly.io configs + deployment notes
-docs/               vision, architecture, data model, API, roadmap, policies, dev logs
+docs/               vision, architecture, design system, data model, API, roadmap, policies, dev logs
 docker-compose.yml  local Postgres (5433) + Redis (6380)
 ```
 

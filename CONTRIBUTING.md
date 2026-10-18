@@ -32,6 +32,7 @@ Be curious, be kind, be honest.
 - **API**: REST, JSON, camelCase; enums cross the wire as lowercase snake_case (`reading`, `region_city`).
 - **DB**: snake_case everywhere; the EF model must stay in sync with the SQL migrations.
 - **Frontend**: TypeScript strict; API access only through `lib/api/*`; no direct `fetch` in components.
+- **UI**: follow [docs/design-system.md](docs/design-system.md) — theme tokens only (no hex or raw palette colours), both light and dark checked, reduced motion respected.
 - **Privacy is a feature**: never add telemetry, exact coordinates, or personal data without an issue discussing it first.
 
 ## Easy wins (great first issues)
