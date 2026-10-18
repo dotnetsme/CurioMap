@@ -155,10 +155,15 @@ This document establishes non-negotiable architectural rules, domain invariants,
 
 ## 3. Frontend & UI/UX PRO MAX Rules
 
+- **Apple Design Skill (MANDATORY, NON-NEGOTIABLE)**:
+  - Every UX/UI change (new page, component, interaction, animation, copy-affecting layout, or restyle) MUST follow [`APPLE-DESIGN-SKILL.md`](APPLE-DESIGN-SKILL.md): respond on press, 1:1 direct manipulation, spring and interruptible motion, restraint, and `prefers-reduced-motion` support.
+  - Implementation conventions live in [`docs/design-system.md`](docs/design-system.md): theme tokens only (no hex values or raw Tailwind palette colours), light and dark both verified (the map stays `data-theme="dark"`), system font stack, pill buttons, soft depth instead of glows.
+  - Before completing a UI change, state in the PR or reply which rules from `APPLE-DESIGN-SKILL.md` it applies, and verify both themes visually or explain why that was not possible.
+  - If a rule in this file conflicts with `APPLE-DESIGN-SKILL.md`, the stricter accessibility or privacy rule wins; flag the conflict in the same change.
 - **Accessibility & Contrast**:
-  - All interactive controls must support keyboard navigation, visible focus rings (`focus-visible:ring-2 focus-visible:ring-indigo-500`), and accessible labels (`aria-label`).
-- **Dark Glass Aesthetic & Styling**:
-  - Tailwind CSS v4 CSS-first configuration, dark glass aesthetic (`backdrop-blur`, subtle borders, curated HSL color schemes).
+  - All interactive controls must support keyboard navigation, visible focus rings (the global `:focus-visible` outline in `globals.css`, or `focus-visible:ring-2 focus-visible:ring-accent` on custom controls), and accessible labels (`aria-label`).
+- **Apple-Style Light/Dark Styling**:
+  - Tailwind CSS v4 CSS-first configuration with semantic tokens (`bg-stage-2`, `text-ink-muted`, `border-line`, `bg-material` for translucent bars). Component classes (`.card`, `.btn-*`, `.field`) live in `@layer components` so utilities can override them.
 - **Mobile-First & Touch Ergonomics**:
   - Enforce touch target sizes of at least **44x44 px** (primary action targets prefer **48px × 48px** / `min-h-[48px]`) with ≥8px spacing for interactive elements.
   - Form inputs must specify `text-base sm:text-sm` (minimum 16px font size on mobile viewports) to prevent iOS Safari auto-zoom.

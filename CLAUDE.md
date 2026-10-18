@@ -63,3 +63,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+## 5. UI/UX Changes
+
+Any UX/UI change must follow `APPLE-DESIGN-SKILL.md` and `docs/design-system.md` (see AGENTS.md §3). Use theme tokens, check light and dark, respect reduced motion.
