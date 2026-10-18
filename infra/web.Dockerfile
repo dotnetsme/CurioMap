@@ -1,5 +1,5 @@
 # CurioMap web — standalone Next.js output (no heavy runtime deps)
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 RUN apk add --no-cache libc6-compat
 WORKDIR /src
 # Public map basemap provider (ADR 0007). Next inlines NEXT_PUBLIC_* values at
@@ -16,7 +16,7 @@ RUN npm ci --no-audit --no-fund
 COPY frontend ./
 RUN npm run build
 
-FROM node:24-alpine AS runtime
+FROM node:26-alpine AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 RUN apk add --no-cache curl
