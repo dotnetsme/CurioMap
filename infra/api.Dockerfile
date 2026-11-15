@@ -14,7 +14,7 @@ RUN dotnet tool install --global dotnet-ef --version 10.0.10
 ENV PATH="${PATH}:/root/.dotnet/tools"
 RUN dotnet ef migrations bundle --project backend/src/CurioMap.Api/CurioMap.Api.csproj --configuration Release -o /publish/efbundle
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS runtime
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 COPY --from=build /publish ./
