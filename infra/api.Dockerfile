@@ -1,5 +1,5 @@
 # CurioMap API — production image (built via GitHub Actions, run on Fly.io)
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 WORKDIR /src
 COPY NuGet.config NuGet.config
 COPY backend/CurioMap.slnx backend/CurioMap.slnx
